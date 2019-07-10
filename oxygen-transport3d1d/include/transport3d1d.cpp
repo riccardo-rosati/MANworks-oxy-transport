@@ -29,7 +29,7 @@
  	{
  	#ifdef M3D1D_VERBOSE_
  	std::cout << "initialize transport problem..."<<std::endl<<std::endl;
- 	#endif
+ 	#endi
 
 	PARAM.read_command_line(argc, argv);
 	//1. Import data (algorithm specifications, boundary conditions, ...)	
