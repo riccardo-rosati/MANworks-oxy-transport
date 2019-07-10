@@ -149,18 +149,18 @@ Dt = 1.35E-09;
 Dv = 5E-07;
 
 
-%Max rate of metabolization [1/s]
-m =  0.062; 
-%Concentration guess [kg/m^3]
-C0 =  14;
+%Max oxygen consumption rate [1/s]
+m0 =  3.7; 
+%Tissue concentration guess [kg/m^3]
+Ct_guess =  1;
+%Vessel concentration guess [kg/m^3]
+Cv_guess =  1;
 %Partial pressure at half max rate of metabolization [mmHg]
 Pm_50 = 4;
 %Solubility of oxygen in the tissue [kg/(m^3*mmHg]
 alpha_t = 2.8E-5;
 %Mean Corpuscolar Hematocrit Concentration [kg/m^3]
-MCHC = 0.34E-3;
-%Hematocrit [-]
-Ht = 0.45; 
+MCHC = 0.34;
 %Hufner factor [-]
 N = 1.36;
 %Hill constant [-]
