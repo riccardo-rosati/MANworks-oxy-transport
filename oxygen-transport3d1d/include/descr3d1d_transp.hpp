@@ -45,8 +45,8 @@ struct descr3d1d_transp {
 	size_type STATIONARY;
 	//! Flag to add the advection term
 	size_type ADVECTION;
-	//! Flag to add network diffusion term
-	size_type NETWORKDIFFUSION;		
+	//! Flag to study the hematocrit distribution all over the network (0 = constant; 1= transport)"))
+	size_type HEMATOCRIT_TRANSPORT;
 	// Solver information
 	//! Identifief of the monolithic solver for transport problem
 	std::string SOLVE_METHOD;
@@ -93,6 +93,7 @@ struct descr3d1d_transp {
 		OUTPUT = FILE_.string_value("OUTPUT","Output Directory");
 		STATIONARY = size_type(FILE_.int_value("STATIONARY", "Flag to make the problem stationary")); 
 		ADVECTION = size_type(FILE_.int_value("ADVECTION", "Flag to add the advection term"));
+		HEMATOCRIT_TRANSPORT = size_type(FILE_.int_value("HEMATOCRIT_TRANSPORT","Flag to study the hematocrit distribution all over the network (0 = constant; 1= transport)"));
 	
 		CONFORMING = size_type(FILE_.int_value("CONFORMING", "Flag for conforming imported mesh by gmsh")); 
 		FACE = size_type(FILE_.int_value("FACE", "NNumber of region of the first face of the boundary of the 3d domain"));
