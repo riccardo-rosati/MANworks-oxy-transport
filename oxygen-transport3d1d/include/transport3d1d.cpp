@@ -801,9 +801,9 @@ the integral on Gamma from the whole Omega domain.
 	// Vessel-to-vessel exchange matrix
 	sparse_matrix_type Bvv(dof_transp.Cv(), dof_transp.Cv());gmm::clear(Bvv);
 	// Aux tissue-to-vessel averaging matrix
-	sparse_matrix_type Mbar(dof_transp.Cv(), dof_transp.Ct());gmm::clear(Mbar);
+	sparse_matrix_type Mbar(dof.Pv(), dof.Pt());gmm::clear(Mbar);
 	// Aux tissue-to-vessel interpolation matrix
-	sparse_matrix_type Mlin(dof_transp.Cv(), dof_transp.Ct());gmm::clear(Mlin);
+	sparse_matrix_type Mlin(dof.Pv(), dof.Pt());gmm::clear(Mlin);
 	
 	
 	//Descriptors for the problem solved
@@ -849,15 +849,16 @@ the integral on Gamma from the whole Omega domain.
 	vector_type consump_coeff(dof_transp.Ct()); gmm::clear(consump_coeff);
 
 	vector_type PRESS50(dof_transp.Ct(), PARAM.real_value("Pm_50")); //riempio il vettore con lo scalare Pm_50
-	gmm::scale(PRESS50, param_transp.alpha_t_); 
-	vector_type ct_guess(dof_transp.Ct(), param_transp.Ct0_);
-	gmm::add(PRESS50, ct_guess, consump_coeff);
+	gmm::scale(PRESS50, param_transp.alpha_t()); 
+	vector_type ct_guess(dof_transp.Ct(), param_transp.Ct_guess());
+	gmm::add(PRESS50, ct_guess)
+	gmm::copy(ct_guess, consump_coeff);
 	//c'è un modo migliore?
 	for (size_type i=0; i<dof_transp.Ct(); i++)
 	{
 	consump_coeff[i] = 1.0/consump_coeff[i];
 	}
-	gmm::scale(consump_coeff, param_transp.m0_);
+	gmm::scale(consump_coeff, param_transp.m0());
 	 
 
 	//Build Mt, Dt, Lt and Rt 
@@ -950,7 +951,7 @@ the integral on Gamma from the whole Omega domain.
 					gmm::sub_interval(0, dof_transp.Ct()))); 	
 		
 	size_type shift = 0;
-	// build Bv and Av
+	// build Bv
 	for(size_type i=0; i<nb_branches; ++i){
 
 		if(i>0) shift += mf_Uvi[i-1].nb_dof();
@@ -959,25 +960,14 @@ the integral on Gamma from the whole Omega domain.
 
 
 		asm_advection_network(Bv, mimv, mf_Cv, mf_coefvi[i], mf_Uvi[i], mf_coefv, Uvi, param.lambdax(i), param.lambday(i), param.lambdaz(i),  param.R(), meshv.region(i) );
-		//asm_hemoadvection_network((Av, mimv, mf_Cv, mf_coefvi[i], mf_Uvi[i], mf_coefv, Uvi, param.lambdax(i), param.lambday(i), param.lambdaz(i),  param.R(), depsi, meshv.region(i) );
-
 	}
 	gmm::scale(Bv, pi);
-	//gmm::scale(Av,pi);
 
 	// Copy Av and Bv: advection in network
 	gmm::add(Bv,
 			  gmm::sub_matrix(AM_transp, 
 					gmm::sub_interval(dof_transp.Ct(), dof_transp.Cv()), 
 					gmm::sub_interval(dof_transp.Ct(), dof_transp.Cv())));
-	
-	
-	/*
-	gmm::add(Av,
-			  gmm::sub_matrix(AM_transp, 
-					gmm::sub_interval(dof_transp.Ct(), dof_transp.Cv()), 
-					gmm::sub_interval(dof_transp.Ct(), dof_transp.Cv())));
-	*/
 		}/* end of advection assembly*/ 
 
 
@@ -1046,8 +1036,7 @@ the integral on Gamma from the whole Omega domain.
 		  gmm::sub_vector(UM, 
 		  		  gmm::sub_interval(dof.Ut(), dof.Pt())),
 		  ONCOTIC);
-
-
+		
 	scalar_type picoef=param.sigma()*(param.pi_v()-param.pi_t());
         vector_type DeltaPi(dof.Pv(),picoef);
         gmm::add(gmm::scaled(DeltaPi,-1.0), ONCOTIC);	
@@ -1192,7 +1181,7 @@ the integral on Gamma from the whole Omega domain.
 		
 	//Right Hand Side for vessels
 //RR: non lavoro più con AM_temp e FM_temp ma direttamente con il vettore monolitico FM e la matrice monolitica AM --> non ho più bisogno di aggiornare il rhs nel tempo
-	vector_type cv_guess (dof_transp.Cv(), param_transp.Cv0_);
+	vector_type cv_guess (dof_transp.Cv(), param_transp.Cv_guess());
 	
 	sparse_matrix_type Avv(dof_transp.Cv(), dof_transp.Cv());
 	vector_type Fv(dof_transp.Cv());
@@ -1228,8 +1217,12 @@ the integral on Gamma from the whole Omega domain.
 		size_type shift_h=0;
 		scalar_type shift_coef=0;
 		
-		scalar_type k2 = pow((param_transp.Ps_50_*param_transp.alpha_t_),param_transp.delta_);
-		scalar_type k1 = param_transp.N_*param_transp.MCHC_;
+		
+		scalar_type k1;
+		k1= param_transp.N()*param_transp.MCHC();
+		
+		scalar_type k2;
+		k2 = pow((param_transp.Ps_50()*param_transp.alpha_t()),param_transp.delta());
 		
 	for(size_type i=0; i<nb_branches; ++i){
 
