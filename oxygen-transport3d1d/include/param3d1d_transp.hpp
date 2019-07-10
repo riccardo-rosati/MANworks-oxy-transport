@@ -46,9 +46,9 @@ struct param3d1d_transp {
 	//Max rate of oxygen metabolization [1/s]
 	scalar_type m0_;
 	//Tissue Concentration guess [kg/m^3]
-	scalar_type Ct0_;
+	scalar_type Ct_guess_;
 	//Vessel Concentration guess [kg/m^3]
-	scalar_type Cv0_;
+	scalar_type Cv_guess_;
 	//Partial pressure at half max rate of metabolization [mmHg]
 	scalar_type Pm_50_;
 	//Solubility of oxygen in the tissue [kg/(m^3*mmHg]
@@ -150,11 +150,10 @@ struct param3d1d_transp {
 
 		//RR: MICHEALIS-MENTEN: modifica termine di reazione: da m_ a m0_ (consumo massimo):
 			m0_    = FILE_.real_value("m0","Max rate of oxygen metabolization [1/s]");
-			Ct0_	= FILE_.real_value("Ct0","Tissue Concentration guess [kg/m^3]");
-			Cv0_	= FILE_.real_value("Cv0","Vessel Concentration guess [kg/m^3]");
+			Ct_guess_	= FILE_.real_value("Ct_guess","Tissue Concentration guess [kg/m^3]");
+			Cv_guess_	= FILE_.real_value("Cv_guess","Vessel Concentration guess [kg/m^3]");
 			Pm_50_	= FILE_.real_value("Pm_50","Partial pressure at half max rate of metabolization [mmHg]");
 			alpha_t_ = FILE_.real_value("alpha_t","Solubility of oxygen in the tissue [kg/(m^3*mmHg]");
-
 	
 		//RR: Parametri OSSIEMOGLOBINA
 			MCHC_	= FILE_.real_value("MCHC","Mean Corpuscolar Hematocrit Concentration [-]");
@@ -220,6 +219,29 @@ struct param3d1d_transp {
 	inline scalar_type C0t  () { return C0t_;  } const
 	//! Get the sinitial concentration in network
 	inline scalar_type C0v  () { return C0v_;  } const
+		
+	//RR: 
+	//! Get the maximum consumption rate
+	inline scalar_type m0  () { return m0_;  } const
+	//! Get the tissue concentration guess
+	inline scalar_type Ct_guess  () { return Ct_guess_;  } const
+	//! Get vessel concentration guess
+	inline scalar_type Cv_guess  () { return Cv_guess_;  } const
+	//! Get the tissue oxygen solubility
+	inline scalar_type alpha_t  () { return alpha_t_;  } const
+	//! Get the partial pressure at maximum consumption rate
+	inline scalar_type Pm_50  () { return Pm_50_;  } const
+	//! Get the time mean corpuscola hematocrit concentration
+	inline scalar_type MCHC  () { return MCHC_;  } const
+	//! Get the Hufner factor
+	inline scalar_type N  () { return N_;  } const
+	//! Get the plasma oxygen solubility
+	inline scalar_type alpha_pl  () { return alpha_pl_;  } const
+	//! Get the partial pressure at half saturation
+	inline scalar_type Ps_50  () { return Ps_50_;  } const
+	//! Get the Hill constant
+	inline scalar_type delta  () { return delta_;  } const
+		
 	//! Get the radius at a given mesh_region
 	//scalar_type R  (const getfem::mesh_im & mim, const size_type rg) { 
 	//	return compute_radius(mim, mf_datav_, R_, rg);  
@@ -249,6 +271,14 @@ struct param3d1d_transp {
 		out << "  D_alpha : "                << param.Dalpha_[0] << endl; 
 		out << "  T : "                << param.T_ << endl; 
 		out << "  dt : "                << param.dt_ << endl; 
+		out << "  m0 : "                << param.m0_ << endl;
+		out << "  Pm_50 : "                << param.Pm_50_ << endl;
+		out << "  Alpha_t : "                << param.alpha_t_ << endl;
+		out << "  N : "                << param.N_ << endl;
+		out << "  MCHC : "                << param.MCHC_ << endl;
+		out << "  Hill Constant : "                << param.delta_ << endl;
+		out << "  Ps_50 : "                << param.Ps_50_ << endl;
+		out << "  Alpha_pl : "                << param.alpha_pl_ << endl;
 		out << "--------------------------" << endl;
 
 		return out;            
