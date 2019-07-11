@@ -43,7 +43,6 @@ int main(int argc, char *argv[])
 		getfem::transport3d1d p; 
 		  
 		/// fluid problem: velocity field and pressure
-		
 		// Initialize the problem
 		p.problem3d1d::init(argc, argv);
 		// Build the monolithic system 
@@ -51,7 +50,7 @@ int main(int argc, char *argv[])
 		// Solve the problem 
 		if (!p.problem3d1d::solve()) GMM_ASSERT1(false, "solve procedure has failed");
 		// Save results in .vtk format
-		p.problem3d1d::export_vtk();
+		//p.problem3d1d::export_vtk();
 		// Display some global results: mean pressures, total flow rate
 		
 		std::cout << "--- FINAL RESULTS -------------------------" << std::endl; 
@@ -61,8 +60,46 @@ int main(int argc, char *argv[])
 		std::cout << "-------------------------------------------" << std::endl; 
 		std::cout << mass_coeff << std::endl;	
 		
-		
-		     
+		/*
+		// Initialize the problem
+		p.probelm3d1d::init(argc, argv);
+		// Build the monolithic system		
+		p.problem3d1d::assembly();*/
+			// Solve the problem
+			if(p.HEMATOCRIT_TRANSPORT(argc, argv))
+				{
+				if (!p.problem3d1d::solve()) GMM_ASSERT1(false, "solve procedure has failed");
+				p.problemHT::init_HT(argc, argv);
+				if (!p.problemHT::solve_fixpoint_HT()) GMM_ASSERT1(false, "solve procedure has failed");			
+		// Save results in .vtk format
+		//p.export_vtk_HT();
+		}
+//aggiungere trasporto (con os enza flag)
+			else
+				{if(!p.problem3d1d::LINEAR_LYMPH())
+					{
+					// Solve the problem
+					if (!p.problemHT::solve_fixpoint()) GMM_ASSERT1(false, "solve procedure has failed");
+					}
+				else
+					{
+					// Solve the problem
+					if (!p.solve()) GMM_ASSERT1(false, "solve procedure has failed");
+					}
+			}
+		// Save results in .vtk format
+		//p.export_vtk();
+
+		// Display some global results: mean pressures, total flow rate
+		std::cout << "--- FINAL RESULTS -------------------------" << std::endl; 
+		std::cout << "  Pt average            = " << p.problem3d1d::mean_pt()   << std::endl;
+		std::cout << "  Pv average            = " << p.problem3d1d::mean_pv()   << std::endl;
+		std::cout << "  Network-to-Tissue TFR = " << p.problem3d1d::flow_rate() << std::endl;
+		std::cout << "  Lymphatic FR          = " << p.problem3d1d::lymph_flow_rate() << std::endl;
+		std::cout << "  FR from the cube      = " << p.problem3d1d::cube_flow_rate() << std::endl;
+		std::cout << "-------------------------------------------" << std::endl; 	
+	}
+	     
 		//transport problem: concentration  
 		
 		//initialize 
