@@ -848,7 +848,7 @@ the integral on Gamma from the whole Omega domain.
 	vector_type PRESS50(dof_transp.Ct(), PARAM.real_value("Pm_50")); //riempio il vettore con lo scalare Pm_50
 	gmm::scale(PRESS50, param_transp.alpha_t()); 
 	vector_type ct_guess(dof_transp.Ct(), param_transp.Ct_guess());
-	gmm::add(PRESS50, ct_guess)
+	gmm::add(PRESS50, ct_guess);
 	gmm::copy(ct_guess, consump_coeff);
 	//c'è un modo migliore?
 	for (size_type i=0; i<dof_transp.Ct(); i++)
@@ -1029,7 +1029,8 @@ the integral on Gamma from the whole Omega domain.
 	gmm::copy(gmm::sub_vector(UM, 
 		  		  gmm::sub_interval(dof.Ut()+dof.Pt()+dof.Uv(), dof.Pv())),
 		  ONCOTIC);
-		cout<<"ONCOTIC size: "<<gmm::vsize(ONCOTIC)<<endl;
+		
+		cout<<"ONCOTIC size: "<<ONCOTIC.size()<<endl;
 		
 	gmm::mult_add(gmm::scaled(Mbar,-1.0), 
 		  gmm::sub_vector(UM, 
@@ -1038,7 +1039,7 @@ the integral on Gamma from the whole Omega domain.
 		gmm::copy(gmm::sub_vector(UM, 
 		  		  gmm::sub_interval(dof.Ut(), dof.Pt())), Um_pt);
 		
-		vector_type Um_pt(dof.Pt()); gmm::clean(Um_pt);
+		vector_type Um_pt(dof.Pt());
 		cout<<"Mbar rows: "<<gmm::mat_nrows(Mbar)<<"and columns: "<<gmm::mat_ncols(Mbar)<<endl;
 		cout<<"Umpt size: "<<gmm::vsize(Um_pt)<<endl;
 		
@@ -1115,19 +1116,6 @@ the integral on Gamma from the whole Omega domain.
 
 		
 	}/* end of assembly_mat_transp */
-
-	/*
-	vector_type cv_on_branch(vector_type Cv_old, size_type nb){
-	vector_type cv_i(nb);
-
-	size_type pos=0;
-		for (getfem::mr_visitor mrv(mf_Cv.linked_mesh().region(i)); !mrv.finished(); ++mrv)
-		for (auto b : mf_Cv.ind_basic_dof_of_element(mrv.cv()))
-			{
-			cv_i[pos] = Cv_old[b]; //ottengo cv_i --> la concentrazione definita ramo per ramo
-			pos++;}
-		return cv_i;
-	}*/
 
 	void 
 	transport3d1d::assembly_rhs_transp(void)
@@ -1230,28 +1218,38 @@ the integral on Gamma from the whole Omega domain.
 		k2 = pow((param_transp.Ps_50()*param_transp.alpha_t()),param_transp.delta());
 		
 	for(size_type i=0; i<nb_branches; ++i){
-
-		vector_type Hi(mf_Hi[i].nb_dof());
+		
+		vector_type cv_i(mf_Hi[i].nb_dof()); gmm::clear(cv_i);
+		vector_type Hi(mf_Hi[i].nb_dof()); gmm::clear(Hi);
 		scalar_type Ri = param.R(mimv, i);
+		vector_type Uvi(mf_Uvi[i].nb_dof()); gmm::clear(Uvi);
 		
 		vector_type psi(mf_Hi[i].nb_dof()); gmm::clear(psi);
+
 		
+		size_type pos=0;
+		for (getfem::mr_visitor mrv(mf_Cv.linked_mesh().region(i)); !mrv.finished(); ++mrv)
+		for (auto b : mf_Cv.ind_basic_dof_of_element(mrv.cv()))
+			{
+			cv_i[pos] = cv_guess[b]; //ottengo cv_i --> la concentrazione definita ramo per ramo
+			pos++;
+			}
+				
 		if(i>0) shift_h += mf_Hi[i-1].nb_dof();
-		if(i>0) shift_coef += mf_coefvi[i-1].nb_dof();
 		if(i>0) shift += mf_Uvi[i-1].nb_dof();
-		
-		nbdof_mfH = mf_Hi[i].nb_dof();
-		cv_i = cv_on_branch(vector_type cv_guess, size_type nbdof_mfH);
 		
 		gmm::copy(gmm::sub_vector(UM_HT, 
 			gmm::sub_interval(shift_h, mf_Hi[i].nb_dof())), Hi);
+		
+		gmm::add(gmm::sub_vector(UM,
+			gmm::sub_interval(dof.Ut()+dof.Pt()+shift, mf_Uvi[i].nb_dof())) ,  Uvi);
 			
 		for (size_type i=0; i<mf_Hi[i].nb_dof(); i++)
 		{
 		psi[i] = Hi[i]*k1*pow(cv_i[i], param_transp.delta_)/(pow(cv_i[i], param_transp.delta_)+k2);
 		}
 	
-	//asm_hemoadvection_rhs_network(Ov, mimv, mf_Cv, mf_coefvi[i], mf_Uvi[i], mf_Hi[i], Uvi, param.lambdax(i), param.lambday(i), param.lambdaz(i),  param.R(), psi, meshv.region(i));	
+	asm_hemoadvection_rhs_network(Ov, mimv, mf_Cv, mf_coefvi[i], mf_Uvi[i], mf_Hi[i], Uvi, param.lambdax(i), param.lambday(i), param.lambdaz(i),  param.R(), psi, meshv.region(i));	
 	}
 	
 	gmm::copy(Ov, gmm::sub_vector(FM_temp, 
