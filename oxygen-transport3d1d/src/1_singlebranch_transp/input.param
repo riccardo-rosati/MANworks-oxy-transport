@@ -37,6 +37,8 @@ CURVE_PROBLEM = 0;
 PRINT_RESIDUALS       = 1;
 % Flag to choose Lymphatic Drainage Curve (0 = sigmoid; 1= linear)
 LINEAR_LYMPHATIC_DRAINAGE = 1;
+% Flag to study the hematocrit distribution all over the network (0 = constant; 1= transport)
+HEMATOCRIT_TRANSPORT = 1;
 
 % Output directory
 OUTPUT   = './vtk/';
@@ -60,6 +62,10 @@ MESH_FILET = ' ';
 MESH_FILEV = './segment.pts';
 % Path to import the 1d list of points for transport
 MESH_FILEV_TRANSP = './segment_transp.pts';
+% Path to import the 1d list of points for Ht
+MESH_FILEH = './HT_BCs.pts'
+% Path to import the curvature of the vessels
+CURVE_FILE = './curve.pts'
 
 %Flag for conforming mesh: if =1, it requires OMEGA, SIGMA and GAMMA to be defined
 CONFORMING=0;
@@ -88,6 +94,8 @@ FEM_TYPEV   = 'FEM_PK(1,2)';
 FEM_TYPEV_P = 'FEM_PK(1,1)';  
 FEM_TYPEV_DATA = 'FEM_PK(1,0)';  
 FEM_TYPEV_C = 'FEM_PK(1,1)';  
+FEM_TYPEH = 'FEM_PK(1,1)';
+FEM_TYPEH_DATA = 'FEM_PK(1,0)';
 % GetFem type for the 3D Integration Method
 IM_TYPET    = 'IM_TETRAHEDRON(6)'; 
 % GetFem type for the 1D Integration Method
@@ -204,6 +212,19 @@ C_LF = 0.6573*133.32;
 % Coefficient D [Pa]
 D_LF = -2*133.32;
 
+%===================================
+%  HEMATOCRIT PROBLEM
+%===================================
+% Coefficient for MIX condition of hematocrit transport
+BETA_H=0;
+%Peclet Number for stabilization of hematocrit transport
+THETA=1;
+%Initial guess for hematocrit separation phase computation
+H_START=0.45;
+% Temperature of the blood
+Temp=37
+% Flag for Type of Viscosity (Vivo or vitro)
+Visco_v=0;
 
 %==============================================
 %  DIMENSIONLESS PARAMETER
