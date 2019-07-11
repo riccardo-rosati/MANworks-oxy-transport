@@ -1034,12 +1034,13 @@ the integral on Gamma from the whole Omega domain.
 		  gmm::sub_vector(UM, 
 		  		  gmm::sub_interval(dof.Ut(), dof.Pt())),
 		  ONCOTIC);
+		
+		vector_type Um_pt(dof.Pt());
 		gmm::copy(gmm::sub_vector(UM, 
 		  		  gmm::sub_interval(dof.Ut(), dof.Pt())), Um_pt);
 		
-		vector_type Um_pt(dof.Pt());
 		cout<<"Mbar rows: "<<gmm::mat_nrows(Mbar)<<"and columns: "<<gmm::mat_ncols(Mbar)<<endl;
-		cout<<"Umpt size: "<<gmm::vsize(Um_pt)<<endl;
+		cout<<"Umpt size: "<<Um_pt.size()<<endl;
 		
 	scalar_type picoef=param.sigma()*(param.pi_v()-param.pi_t());
         vector_type DeltaPi(dof.Pv(),picoef);
@@ -1294,7 +1295,7 @@ the integral on Gamma from the whole Omega domain.
 	assembly_rhs_transp();
 
 
-	}  end of update_transp
+	};  /*end of update_transp*/
 
 
 	// Aux function for solver:
