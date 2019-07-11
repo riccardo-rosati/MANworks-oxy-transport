@@ -749,9 +749,8 @@ the integral on Gamma from the whole Omega domain.
  	 //1) Build the monolithic matrix AM
 	 assembly_mat_transp();
 
-	 //2) Build the monolithic rhs FM
-	 assembly_rhs_transp();
-	 //CASO STAZIONARIO: NON SERVE PIÙ L'UPDATE, posso assemblare il rhs con la matrice monolitica
+	 //2) Build and update the monolithic rhs FM
+	 update_transp();
 	 
 	 }; // end of assembly
  
@@ -789,8 +788,6 @@ the integral on Gamma from the whole Omega domain.
 	sparse_matrix_type Dv(dof_transp.Cv(), dof_transp.Cv());gmm::clear(Dv);
 	//Advection matrix for network problem
 	sparse_matrix_type Bv(dof_transp.Cv(), dof_transp.Cv());gmm::clear(Bv);
-	//Oxyhemoglobin advection for network problem
-	//sparse_matrix_type Av(dof_transp.Cv(), dof_transp.Cv());gmm::clear(Av);
 
 	// Tissue-to-tissue exchange matrix
 	sparse_matrix_type Btt(dof_transp.Ct(), dof_transp.Ct());gmm::clear(Btt);
@@ -1032,10 +1029,18 @@ the integral on Gamma from the whole Omega domain.
 	gmm::copy(gmm::sub_vector(UM, 
 		  		  gmm::sub_interval(dof.Ut()+dof.Pt()+dof.Uv(), dof.Pv())),
 		  ONCOTIC);
+		cout<<"ONCOTIC size: "<<gmm::vsize(ONCOTIC)<<endl;
+		
 	gmm::mult_add(gmm::scaled(Mbar,-1.0), 
 		  gmm::sub_vector(UM, 
 		  		  gmm::sub_interval(dof.Ut(), dof.Pt())),
 		  ONCOTIC);
+		gmm::copy(gmm::sub_vector(UM, 
+		  		  gmm::sub_interval(dof.Ut(), dof.Pt())), Um_pt);
+		
+		vector_type Um_pt(dof.Pt()); gmm::clean(Um_pt);
+		cout<<"Mbar rows: "<<gmm::mat_nrows(Mbar)<<"and columns: "<<gmm::mat_ncols(Mbar)<<endl;
+		cout<<"Umpt size: "<<gmm::vsize(Um_pt)<<endl;
 		
 	scalar_type picoef=param.sigma()*(param.pi_v()-param.pi_t());
         vector_type DeltaPi(dof.Pv(),picoef);
@@ -1111,7 +1116,7 @@ the integral on Gamma from the whole Omega domain.
 		
 	}/* end of assembly_mat_transp */
 
-
+	/*
 	vector_type cv_on_branch(vector_type Cv_old, size_type nb){
 	vector_type cv_i(nb);
 
@@ -1122,7 +1127,7 @@ the integral on Gamma from the whole Omega domain.
 			cv_i[pos] = Cv_old[b]; //ottengo cv_i --> la concentrazione definita ramo per ramo
 			pos++;}
 		return cv_i;
-	}
+	}*/
 
 	void 
 	transport3d1d::assembly_rhs_transp(void)
@@ -1187,18 +1192,18 @@ the integral on Gamma from the whole Omega domain.
 	vector_type Fv(dof_transp.Cv());
 	vector_type Ov(dof_transp.Cv());
 	
-	gmm::add(	gmm::sub_matrix(AM_transp,
+	gmm::add(	gmm::sub_matrix(AM_temp,
 			gmm::sub_interval(dof_transp.Ct(),dof_transp.Cv()),
 			gmm::sub_interval(dof_transp.Ct(),dof_transp.Cv()))
 			, Avv);
-	gmm::scale(	gmm::sub_matrix(AM_transp,
+	gmm::scale(	gmm::sub_matrix(AM_temp,
 			gmm::sub_interval(dof_transp.Ct(),dof_transp.Cv()),
 			gmm::sub_interval(dof_transp.Ct(),dof_transp.Cv()))
 			, 0.0);	
 				
-	gmm::add(	 gmm::sub_vector(FM_transp, gmm::sub_interval(dof_transp.Ct(), dof_transp.Cv()))
+	gmm::add(	 gmm::sub_vector(FM_temp, gmm::sub_interval(dof_transp.Ct(), dof_transp.Cv()))
 			,Fv);	
-	gmm::scale(	 gmm::sub_vector(FM_transp, gmm::sub_interval(dof_transp.Ct(), dof_transp.Cv()))
+	gmm::scale(	 gmm::sub_vector(FM_temp, gmm::sub_interval(dof_transp.Ct(), dof_transp.Cv()))
 			,0.0);
 
 	scalar_type beta_v  = PARAM.real_value("BETAvessel_transp", "Coefficient for mixed BC for transport problem in vessels");
@@ -1238,7 +1243,7 @@ the integral on Gamma from the whole Omega domain.
 		nbdof_mfH = mf_Hi[i].nb_dof();
 		cv_i = cv_on_branch(vector_type cv_guess, size_type nbdof_mfH);
 		
-		gmm::copy(gmm::sub_vector(H_old, 
+		gmm::copy(gmm::sub_vector(UM_HT, 
 			gmm::sub_interval(shift_h, mf_Hi[i].nb_dof())), Hi);
 			
 		for (size_type i=0; i<mf_Hi[i].nb_dof(); i++)
@@ -1246,11 +1251,11 @@ the integral on Gamma from the whole Omega domain.
 		psi[i] = Hi[i]*k1*pow(cv_i[i], param_transp.delta_)/(pow(cv_i[i], param_transp.delta_)+k2);
 		}
 	
-	asm_hemoadvection_rhs_network(Ov, mimv, mf_Cv, mf_coefvi[i], mf_Uvi[i], mf_Hi[i], Uvi, param.lambdax(i), param.lambday(i), param.lambdaz(i),  param.R(), psi, meshv.region(i));	
+	//asm_hemoadvection_rhs_network(Ov, mimv, mf_Cv, mf_coefvi[i], mf_Uvi[i], mf_Hi[i], Uvi, param.lambdax(i), param.lambday(i), param.lambdaz(i),  param.R(), psi, meshv.region(i));	
 	}
 	
-	gmm::copy(Ov, gmm::sub_vector(FM_transp, 
-								gmm::sub_interval(dof_transp.Ct(),dof_transp.Cv())));
+	gmm::copy(Ov, gmm::sub_vector(FM_temp, 
+					gmm::sub_interval(dof_transp.Ct(),dof_transp.Cv())));
 	
 	
 	
@@ -1260,13 +1265,13 @@ the integral on Gamma from the whole Omega domain.
 	gmm::clear(Ov);
 	}/* end of assembly_rhs_transp */
 	
-/*
+
  //IN CASO STAZIONARIO: NON SERVE PIÙ L'UPDATE DEL RHS
 	void transport3d1d::update_transp (void){
 
 	
 	/*At each time step, the right hand side is modified by the time derivative term.
-	Since we must ensure in a strong way the Dirichlet conditions, by modifying the monolithic matrix and the rhs vector, we save both AM_transp and FM_transp, where are assembled the stationary terms; 	then, we work on AM_temp and FM_temp, modifying them when necessary.
+	Since we must ensure in a strong way the Dirichlet conditions, by modifying the monolithic matrix and the rhs vector, we save both AM_transp and FM_transp, where are assembled the stationary terms; 	then, we work on AM_temp and FM_temp, modifying them when necessary.*/
 	
 
 	#ifdef M3D1D_VERBOSE_
@@ -1297,7 +1302,7 @@ the integral on Gamma from the whole Omega domain.
 
 
 	}  end of update_transp
-*/
+
 
 	// Aux function for solver:
 	// contains the list of different methods for solving (SuperLU, SAMG,GMRES, etc)
