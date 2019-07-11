@@ -29,7 +29,7 @@
  	{
  	#ifdef M3D1D_VERBOSE_
  	std::cout << "initialize transport problem..."<<std::endl<<std::endl;
- 	#endi
+ 	#endif
 
 	PARAM.read_command_line(argc, argv);
 	//1. Import data (algorithm specifications, boundary conditions, ...)	
@@ -187,7 +187,6 @@
 
 
 	problem3d1d::set_im_and_fem();
-
 	}; // end of set_im_and_fem
 	
 	
@@ -203,7 +202,6 @@
 	#ifdef M3D1D_VERBOSE_
 	cout << param_transp ;
 	#endif
-
 	}; // end of build_param_transp
   
   
@@ -293,7 +291,7 @@
 	GMM_ASSERT1((face+i)!=gamma, "FACE=GAMMA: check the .param file");
 	GMM_ASSERT1((face+i)!=sigma, "FACE=SIGMA: check the .param file");
 	GMM_ASSERT1((face+i)!=omega, "FACE=OMEGA: check the .param file");
-}
+	}
 
 	//Check if sigma and omega are defined in the msh file
 	GMM_ASSERT1(mesht.has_region(sigma), "File .msh does not contain region SIGMA! Check .msh and .param!!");
@@ -1208,8 +1206,6 @@ the integral on Gamma from the whole Omega domain.
 					
 		size_type shift =0;
 		size_type shift_h=0;
-		scalar_type shift_coef=0;
-		
 		
 		scalar_type k1;
 		k1= param_transp.N()*param_transp.MCHC();
@@ -1226,7 +1222,6 @@ the integral on Gamma from the whole Omega domain.
 		
 		vector_type psi(mf_Hi[i].nb_dof()); gmm::clear(psi);
 
-		
 		size_type pos=0;
 		for (getfem::mr_visitor mrv(mf_Cv.linked_mesh().region(i)); !mrv.finished(); ++mrv)
 		for (auto b : mf_Cv.ind_basic_dof_of_element(mrv.cv()))
@@ -1249,7 +1244,7 @@ the integral on Gamma from the whole Omega domain.
 		psi[i] = Hi[i]*k1*pow(cv_i[i], param_transp.delta_)/(pow(cv_i[i], param_transp.delta_)+k2);
 		}
 	
-	asm_hemoadvection_rhs_network(Ov, mimv, mf_Cv, mf_coefvi[i], mf_Uvi[i], mf_Hi[i], Uvi, param.lambdax(i), param.lambday(i), param.lambdaz(i),  param.R(), psi, meshv.region(i));	
+	asm_hemoadvection_rhs_network(Ov, mimv, mf_Cv, mf_coefvi[i], mf_Uvi[i], mf_Hi[i], Uvi, param.lambdax(i), param.lambday(i), param.lambdaz(i),  Ri, psi, meshv.region(i));	
 	}
 	
 	gmm::copy(Ov, gmm::sub_vector(FM_temp, 
