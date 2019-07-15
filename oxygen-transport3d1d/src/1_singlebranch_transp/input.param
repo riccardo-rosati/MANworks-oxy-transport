@@ -100,8 +100,10 @@ FEM_TYPEH_DATA = 'FEM_PK(1,0)';
 IM_TYPET    = 'IM_TETRAHEDRON(6)'; 
 % GetFem type for the 1D Integration Method
 IM_TYPEV    = 'IM_GAUSS1D(6)'; 
-% GetFem type for the 1D Integration Method
+% GetFem type for the 1D Integration Method for transport
 IM_TYPEV_TRANSP    = 'IM_GAUSS1D(6)'; 
+% GetFem type for the 1D Integration Method for hematocrit
+IM_TYPEH    = 'IM_GAUSS1D(6)'; 
 % Solver for the monolithic 3D/1D linear system (fluid and transport problems)
 % direct:    'SuperLU'
 % iterative: 'CG','BiCGstab','GMRES','QMR','LSCG'
