@@ -1,13 +1,24 @@
 # Mixed Finite Element Methods for Coupled 3D/1D Fluid Problems
 #### *Politecnico di Milano* (ITALY)
 
+**Author** : Riccardo Rosati
+
+**Mailto** : <riccardo1.rosati@mail.polimi.it>
+
+**Date**   : July 2019
+
+#### *Previous projects*
+
+---------------------
 **Author** : Stefano Brambilla 
 
 **Mailto** : <s.brambilla93@gmail.com>
 
 **Date**   : March 2018
 
-#### *Previous projects*
+**Github Page** : https://github.com/stefano-brambilla-853558/MANworks
+
+-------------------------------------------------------
 
 **Authors** :  Luca Possenti, Simone Di Gregorio, Giorgio Raimondi, Fannie Gerosa
 
@@ -31,7 +42,7 @@
 -------------------------------------------------------
 ## THE PACKAGE
 - 'fluid_ht_curvature'    : The folder containing the code which solves velocity and pressure problem (Notaro, Possenti, Di Gregorio  code)
-- 'transport': The folder containing the code which solves transport problem (Brambilla code)
+- 'transport': The folder containing the code which solves transport problem (Rosati code)
 
 The details of the two libraries are in their respective README.md
 
