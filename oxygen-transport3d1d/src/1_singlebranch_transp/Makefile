@@ -14,7 +14,7 @@
 
 include ../../config.mk
 
-CPPFLAGS=-I../../include -I$(GETFEM_PREFIX)/include -I$(mkBoostInc) -I$(PROBLEM_FLUID_PREFIX)/include
+CPPFLAGS=-I../../include -I$(GETFEM_PREFIX)/include -I$(PROBLEM_FLUID_PREFIX)/include #-I$(mkBoostInc) 
 CXXFLAGS=-std=c++11 
 
 ifeq ($(DEBUG),yes)
@@ -24,10 +24,10 @@ else
   CPPFLAGS+=-DNDEBUG
 endif
 
-LDFLAGS+=-L../../lib -L$(GETFEM_PREFIX)/lib -L$(PROBLEM_FLUID_PREFIX)/lib -L$(mkBoostLib) -Wl,-rpath=../../lib -Wl,-rpath=$(PROBLEM_FLUID_PREFIX)/lib 
+LDFLAGS+=-L../../lib -L$(GETFEM_PREFIX)/lib -L$(PROBLEM_FLUID_PREFIX)/lib -Wl,-rpath=../../lib -Wl,-rpath=$(PROBLEM_FLUID_PREFIX)/lib #-L$(mkBoostLib)
 LDFLAGS+=-L../../utilities/muparser/lib -Wl,-rpath=../../utilities/muparser/lib 
 #LDFLAGS += -L/opt/lib/samg/
-LIBRARIES+=-lgetfem -lproblem3d1d -ltransport3d1d -lutil -lboost_iostreams -lboost_system -lboost_filesystem -lmuparser
+LIBRARIES+=-lgetfem -lproblem3d1d -ltransport3d1d -lutil -lmuparser -lboost_iostreams -lboost_system -lboost_filesystem 
 #LIBRARIES += -lamg -liomp5 
 
 SRCS=$(wildcard *.cpp)

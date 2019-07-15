@@ -15,7 +15,7 @@
 %  FLAGS
 %===================================
 % Flag to import dimensionless param
-TEST_PARAM = 1;
+TEST_PARAM = 0;
 % Flag to select a specific rhs
 TEST_RHS   = 0;
 %Flag to export parameters
@@ -63,7 +63,7 @@ MESH_FILEV = './segment.pts';
 % Path to import the 1d list of points for transport
 MESH_FILEV_TRANSP = './segment_transp.pts';
 % Path to import the 1d list of points for Ht
-MESH_FILEH = './HT_BCs.pts'
+MESH_FILEH = './segment_Ht.pts'
 % Path to import the curvature of the vessels
 CURVE_FILE = './curve.pts'
 
@@ -272,11 +272,12 @@ pi_t_adim = 2;
 %===================================
 % Faces:   x=0  x=L  y=0  y=L  z=0  z=L
 % BC labels (DIR / MIX)
-BClabel = 'MIX  MIX DIR  DIR  MIX  MIX'
+BClabel = 'MIX  MIX MIX  MIX  MIX  MIX'
 % BC values
-BCvalue = '0.0  0.0  0.00  7.0  0.0  0.0'
+BCvalue = '0.0  0.0  0.00  0.0  0.0  0.0'
 % Coefficient for MIX condition
-BETA = 1.10E-1;
+%BETA = 1.10E-1;
+BCbeta = '2.22E-6 2.22E-6 2.22E-6 2.22E-6 2.22E-6 2.22E-6';
 % Outside interstitial pressure for MIX condition
 P0 = -0;
 
