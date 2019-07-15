@@ -70,8 +70,8 @@ int main(int argc, char *argv[])
 			if(p.problemHT::HEMATOCRIT_TRANSPORT(argc, argv))
 				{
 				if (!p.problem3d1d::solve()) GMM_ASSERT1(false, "solve procedure has failed");
-				p.problemHT::init_HT(argc, argv);
-				if (!p.problemHT::solve_fixpoint_HT()) GMM_ASSERT1(false, "solve procedure has failed");
+				p.problemHT::init(argc, argv);
+				if (!p.problemHT::solve_fixpoint()) GMM_ASSERT1(false, "solve procedure has failed");
 				
 				//initialize the transport problem
 				p.init_transp(argc, argv);
