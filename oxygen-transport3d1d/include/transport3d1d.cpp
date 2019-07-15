@@ -1218,7 +1218,6 @@ the integral on Gamma from the whole Omega domain.
 		
 		vector_type cv_i(mf_Hi[i].nb_dof()); gmm::clear(cv_i);
 		vector_type Hi(mf_Hi[i].nb_dof()); gmm::clear(Hi);
-		scalar_type Ri = param.R(mimv, i);
 		vector_type Uvi(mf_Uvi[i].nb_dof()); gmm::clear(Uvi);
 		
 		vector_type psi(mf_Hi[i].nb_dof()); gmm::clear(psi);
@@ -1234,7 +1233,7 @@ the integral on Gamma from the whole Omega domain.
 		if(i>0) shift_h += mf_Hi[i-1].nb_dof();
 		if(i>0) shift += mf_Uvi[i-1].nb_dof();
 		
-		gmm::copy(gmm::sub_vector(UM_HT, 
+		gmm::add(gmm::sub_vector(UM_HT, 
 			gmm::sub_interval(shift_h, mf_Hi[i].nb_dof())), Hi);
 		
 		gmm::add(gmm::sub_vector(UM,
@@ -1245,7 +1244,7 @@ the integral on Gamma from the whole Omega domain.
 		psi[i] = Hi[i]*k1*pow(cv_i[i], param_transp.delta_)/(pow(cv_i[i], param_transp.delta_)+k2);
 		}
 	
-	asm_hemoadvection_rhs_network(Ov, mimv, mf_Cv, mf_coefvi[i], mf_Uvi[i], mf_Hi[i], Uvi, param.lambdax(i), param.lambday(i), param.lambdaz(i),  Ri, psi, meshv.region(i));	
+	asm_hemoadvection_rhs_network(Ov, mimv, mf_Cv, mf_coefvi[i], mf_Uvi[i], mf_Hi[i], Uvi, param.lambdax(i), param.lambday(i), param.lambdaz(i),  param.R(), psi, meshv.region(i));	
 	}
 	
 	gmm::copy(Ov, gmm::sub_vector(FM_temp, 
