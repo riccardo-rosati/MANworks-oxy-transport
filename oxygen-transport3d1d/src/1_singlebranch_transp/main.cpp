@@ -42,6 +42,7 @@ int main(int argc, char *argv[])
 		// Declare a new problem 
 		getfem::transport3d1d p; 
 		  
+		/*
 		/// fluid problem: velocity field and pressure
 		// Initialize the problem
 		p.problem3d1d::init(argc, argv);
@@ -58,35 +59,49 @@ int main(int argc, char *argv[])
 		std::cout << "  Pv average            = " << p.mean_pv()   << std::endl;
 		std::cout << "  Network-to-Tissue TFR = " << p.flow_rate() << std::endl;
 		std::cout << "-------------------------------------------" << std::endl; 
-		std::cout << mass_coeff << std::endl;	
+		*/
 		
-		/*
+		
 		// Initialize the problem
 		p.probelm3d1d::init(argc, argv);
 		// Build the monolithic system		
-		p.problem3d1d::assembly();*/
+		p.problem3d1d::assembly();
 			// Solve the problem
-			if(p.HEMATOCRIT_TRANSPORT(argc, argv))
+			if(p.problemHT::HEMATOCRIT_TRANSPORT(argc, argv))
 				{
 				if (!p.problem3d1d::solve()) GMM_ASSERT1(false, "solve procedure has failed");
 				p.problemHT::init_HT(argc, argv);
-				if (!p.problemHT::solve_fixpoint_HT()) GMM_ASSERT1(false, "solve procedure has failed");			
-		// Save results in .vtk format
-		//p.export_vtk_HT();
-		}
+				if (!p.problemHT::solve_fixpoint_HT()) GMM_ASSERT1(false, "solve procedure has failed");
+				
+				//initialize the transport problem
+				p.init_transp(argc, argv);
+				//assemble        
+				p.assembly_transp();    
+				//solve     
+				if (!p.solve_transp()) GMM_ASSERT1(false, "solve procedure has failed");  // the export is in the solve at each time step 
+				// Save results in .vtk format
+				//p.export_vtk_HT();
+				}
 //aggiungere trasporto (con os enza flag)
 			else
 				{if(!p.problem3d1d::LINEAR_LYMPH())
 					{
 					// Solve the problem
 					if (!p.problemHT::solve_fixpoint()) GMM_ASSERT1(false, "solve procedure has failed");
+					
+					//initialize the transport problem
+					p.init_transp(argc, argv);
+					//assemble        
+					p.assembly_transp();    
+					//solve     
+					if (!p.solve_transp()) GMM_ASSERT1(false, "solve procedure has failed");  // the export is in the solve at each time step 
 					}
 				else
 					{
 					// Solve the problem
 					if (!p.solve()) GMM_ASSERT1(false, "solve procedure has failed");
 					}
-			}
+				}
 		// Save results in .vtk format
 		//p.export_vtk();
 
@@ -98,20 +113,9 @@ int main(int argc, char *argv[])
 		std::cout << "  Lymphatic FR          = " << p.problem3d1d::lymph_flow_rate() << std::endl;
 		std::cout << "  FR from the cube      = " << p.problem3d1d::cube_flow_rate() << std::endl;
 		std::cout << "-------------------------------------------" << std::endl; 	
-	}
-	     
-		//transport problem: concentration  
-		
-		//initialize 
-		p.init_transp(argc, argv);
-		//assemble        
-		p.assembly_transp();    
-		//solve     
-		if (!p.solve_transp()) GMM_ASSERT1(false, "solve procedure has failed");  // the export is in the solve at each time step 
-
-		      
+			      
 		   
-		}  
+	}  
       
 	GMM_STANDARD_CATCH_ERROR;     
 		 
