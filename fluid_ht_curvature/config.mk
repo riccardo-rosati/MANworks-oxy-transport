@@ -1,9 +1,15 @@
+#path to getfem library
 GETFEM_PREFIX=$(mkGetfemInc)/../
+#flag (yes/no) for debug: DEBUG=no for optimized installation
+DEBUG= no
+#flag (yes/no) for verbose: VERBOSE=yes prints comments at runtime
+VERBOSE = no
+
 ifeq ($(WITH_SAMG),1)
-CXXFLAGS += -I${SAMG}/
-LFLAGS += -L/opt/lib/samg/
+CXXFLAGS += -I${SAMG}/ -DWITH_SAMG
+LDFLAGS += -L/opt/lib/samg/ -Wl,-rpath=/opt/lib/samg/
 CXXFLAGS+= -DSAMG_UNIX_LINUX -DSAMG_LCASE_USCORE -DPYRAMID_TRIANGULAR_FACETS
-LIBS += -lamg -liomp5
+LIBRARIES += -lamg -liomp5
 endif
 
 # getfem
@@ -16,4 +22,4 @@ LDFLAGS+=$(shell getfem-config --libs)
 LDFLAGS+=-L$(mkQhullLib)
 
 CXXFLAGS+=-std=c++14
-CXX=g++-5
+CXX=g++
