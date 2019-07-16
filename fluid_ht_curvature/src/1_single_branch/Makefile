@@ -12,25 +12,18 @@
 #   DATE        : April 2015
 # ====================================================================
 
-CPPFLAGS=-I../../include -I$(mkGetfemInc) -I$(mkBoostInc) 
-CXXFLAGS+=-std=c++11 
-# -D=M3D1D_VERBOSE_
+include ../../config.mk
 
-CXXFLAGS += -I ${SAMG}/
-CXXFLAGS+= -DSAMG_UNIX_LINUX -DSAMG_LCASE_USCORE -DPYRAMID_TRIANGULAR_FACETS
-
-
-
+CPPFLAGS=-I../../include -I$(mkGetfemInc) -I$(mkBoostInc) -DGMM_USES_LAPACK -DGMM_USES_BLAS
+CXXFLAGS=-std=c++14 -D=M3D1D_VERBOSE_
 ifeq ($(DEBUG),yes)
   OPTFLAGS=-g -Wall
 else
   OPTFLAGS=-O3 -march=native
   CPPFLAGS+=-DNDEBUG
 endif
-LDFLAGS=-L../../lib -L$(mkGetfemLib) -L$(mkBoostLib)
-LDFLAGS += -L/opt/lib/samg/
-LIBRARIES=-lproblem3d1d -lgetfem -lutil -lboost_iostreams -lboost_system -lboost_filesystem
-LIBRARIES += -lamg -liomp5
+LDFLAGS=-L../../lib -L$(mkGetfemLib) -L$(mkBoostLib) -Wl,-rpath=../../lib
+LIBRARIES=-lproblem3d1d -lgetfem -lutil -lboost_iostreams -lboost_system -lboost_filesystem -L/home/riccardo/Documenti/software/blas/blas/lib -lblas -llapack -L$(mkQhullLib) -lqhull
 
 SRCS=$(wildcard *.cpp)
 OBJS=$(SRCS:.cpp=.o)
