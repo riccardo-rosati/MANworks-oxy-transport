@@ -12,10 +12,12 @@
 #   DATE        : September 2016
 # ====================================================================
 
+#Da utilizzare su macchina virtuale, altrimenti usare Makefile_MOX
+
 include ../../config.mk
 
-CPPFLAGS=-I../../include -I$(GETFEM_PREFIX)/include -I$(PROBLEM_FLUID_PREFIX)/include #-I$(mkBoostInc) 
-CXXFLAGS=-std=c++11 
+CPPFLAGS=-I../../include -I$(mkGetfemInc) -I$(mkBoostInc) -DGMM_USES_LAPACK -DGMM_USES_BLAS
+CXXFLAGS=-std=c++14 -D=M3D1D_VERBOSE_
 
 ifeq ($(DEBUG),yes)
   OPTFLAGS=-g -Wall
@@ -24,16 +26,12 @@ else
   CPPFLAGS+=-DNDEBUG
 endif
 
-LDFLAGS+=-L../../lib -L$(GETFEM_PREFIX)/lib -L$(PROBLEM_FLUID_PREFIX)/lib -Wl,-rpath=../../lib -Wl,-rpath=$(PROBLEM_FLUID_PREFIX)/lib #-L$(mkBoostLib)
-LDFLAGS+=-L../../utilities/muparser/lib -Wl,-rpath=../../utilities/muparser/lib 
-#LDFLAGS += -L/opt/lib/samg/
-LIBRARIES+=-lgetfem -lproblem3d1d -ltransport3d1d -lutil -lmuparser -lboost_iostreams -lboost_system -lboost_filesystem 
-#LIBRARIES += -lamg -liomp5 
+LDFLAGS=-L../../lib -L$(mkGetfemLib) -L$(mkBoostLib) -Wl,-rpath=../../lib
+LIBRARIES=-lproblem3d1d -lgetfem -lutil -lboost_iostreams -lboost_system -lboost_filesystem -L/home/riccardo/Documenti/software/blas/blas/lib -lblas -llapack -L$(mkQhullLib) -lqhull
 
 SRCS=$(wildcard *.cpp)
 OBJS=$(SRCS:.cpp=.o)
 EXEC=M3D1D
-
 
 OUTDIR=vtk
 
@@ -47,7 +45,7 @@ all: $(EXEC)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(OPTFLAGS) -o $@ -c $<
 
 $(EXEC): $(OBJS)
-	$(CXX) $(OBJS) -o $@  $(LDFLAGS) $(LIBRARIES)
+	$(CXX) $(LDFLAGS) -o $@ $(OBJS) $(LIBRARIES)
 
 clean:
 	$(RM) $(OBJS) $(EXEC) *~ *.log
