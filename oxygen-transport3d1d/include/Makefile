@@ -14,7 +14,7 @@
 include ../config.mk
 
 CPPFLAGS+=-I. -I$(GETFEM_PREFIX)/include -I$(mkBoostInc) -I$(PROBLEM_FLUID_PREFIX)/include
-CXXFLAGS+=-std=c++11 -Wall -fPIC
+CXXFLAGS+=-std=c++14 -Wall -fPIC
 
 
 ifeq ($(DEBUG),yes)
