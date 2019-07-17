@@ -31,21 +31,30 @@
  	std::cout << "initialize transport problem..."<<std::endl<<std::endl;
  	#endif
 
+	//PARAM.read_command_line(argc, argv);
+	//1. Import data (algorithm specifications, boundary conditions, ...)	
+	//import_data_oxy_transp();	//OK!
+	//2. Import mesh for tissue (3D) and vessel network (1D)
+	build_mesh_oxy_transp();	//OK!	
+	//3. Set finite elements and integration methods
+	set_im_and_fem_oxy_transp();
+ 	//4. Build problem parameters
+ 	build_param_oxy)transp();
+	//5. Build the list of tissue boundary data
+	build_tissue_boundary_oxy_transp();
+	//6. Build the list of tissue boundary (and junction) data
+ 	build_vessel_boundary_oxy_transp();
+ 	}; // end of init
+	 
+	 
+	bool oxygen_transport3d1d::OXYGEN_TRANSPORT(argc, argv)
+	{
 	PARAM.read_command_line(argc, argv);
 	//1. Import data (algorithm specifications, boundary conditions, ...)	
-	import_data_oxy_transp();	//OK!
-	//2. Import mesh for tissue (3D) and vessel network (1D)
-	build_mesh_oxy_transp();
-	//3. Set finite elements and integration methods
-	set_im_and_fem_transp();
- 	//4. Build problem parameters
- 	build_param_transp();
-	//5. Build the list of tissue boundary data
-	build_tissue_boundary_transp();
-	//6. Build the list of tissue boundary (and junction) data
- 	build_vessel_boundary_transp();
-
- 	}; // end of init
+	import_data_oxy_transp();
+		 
+	return descr_oxy_transp.OXYGEN_TRANSPORT; 
+	}
 
 
  	// Aux methods for init
@@ -58,14 +67,14 @@
 	#endif
 
 	descr.import(PARAM);
-	descr_oxy_transp.import(PARAM);
+	descr_oxy_transp.import(PARAM); //da' lo stesso file in input sia per il fluido che per il trasport di oxy?
 
 	#ifdef M3D1D_VERBOSE_
 	cout << descr_oxy_transp;
 	#endif
 	 
  
-	}; //end of import_data_transp
+	}; //end of import_data_oxy_transp
 	
 	 
 	
@@ -139,7 +148,7 @@
 	}; // end of build_mesh_geometry
 
 	// Set finite elements methods and integration methods 
-	void transport3d1d::set_im_and_fem_transp(void)
+	void oxygen_transport3d1d::set_im_and_fem_oxy_transp(void)
 	{
 
 	#ifdef M3D1D_VERBOSE_
@@ -147,33 +156,33 @@
 	#endif
 	
 	
-	pfem pf_Ct = fem_descriptor(descr_transp.FEM_TYPET_C);
-	pfem pf_Cv = fem_descriptor(descr_transp.FEM_TYPEV_C);
+	pfem pf_Ot = fem_descriptor(descr_oxy_transp.FEM_TYPET_OT);
+	pfem pf_Ov = fem_descriptor(descr_oxy_transp.FEM_TYPEV_OV);
 
 	#ifdef M3D1D_VERBOSE_
 	cout << "Setting IMs and FEMs for tissue ..." << endl;
 	#endif
 		
 
-	mf_Ct.set_finite_element(mesht.convex_index(), pf_Ct);
+	mf_oxy_Ct.set_finite_element(mesht.convex_index(), pf_Ot);
 
 	#ifdef M3D1D_VERBOSE_
 	cout << "Setting IMs and FEMs for vessel branches ..." << endl;
 	#endif
 
-	mf_Cv.set_finite_element(meshv.convex_index(), pf_Cv);
+	mf_oxy_Cv.set_finite_element(meshv.convex_index(), pf_Ov);
 
 	
 	#ifdef M3D1D_VERBOSE_
 	cout << "Setting FEM dimensions for tissue and vessel problems ..." << endl;
 	#endif
 
-	dof_transp.set(mf_Ct, mf_Cv);
+	dof_oxy_transp.set(mf_oxy_Ct, mf_oxy_Cv);
 	#ifdef M3D1D_VERBOSE_
-	cout << std::scientific << dof_transp;
+	cout << std::scientific << dof_oxy_transp;
 	#endif
 	
-
+/*
 	// I had to delete the meshes and build them again, because of issues on the boundary conditions:
 	// Now i have to build again also the mesh_fem and mesh_im objects.
 	mimv.clear();
@@ -189,33 +198,34 @@
 
 
 	problem3d1d::set_im_and_fem();
-	}; // end of set_im_and_fem
+*/
+	}; // end of set_im_and_oxy_fem
 	
 	
 	// Build problem parameters
-	void transport3d1d::build_param_transp(void)
+	void oxygen_transport3d1d::build_param_oxy_transp(void)
 	{
 	
 	#ifdef M3D1D_VERBOSE_
 	cout << "Building parameters for tissue and vessel problems ..." << endl;
 	#endif
 	param.build(PARAM, mf_coeft, mf_coefv,mf_coefvi); 
-	param_transp.build(PARAM, mf_coeft, mf_coefv);
+	param_oxy_transp.build(PARAM, mf_coeft, mf_coefv);
 	#ifdef M3D1D_VERBOSE_
-	cout << param_transp ;
+	cout << param_oxy_transp ;
 	#endif
-	}; // end of build_param_transp
+	}; // end of build_param_oxy_transp
   
   
   	//Build boundary regions on tissue
 	void
-	transport3d1d::build_tissue_boundary_transp (void) 
+	oxygen_transport3d1d::build_tissue_boundary_oxy_transp (void) 
 	{
 	#ifdef M3D1D_VERBOSE_
 	cout << "Building tissue boundary ..." << endl;
 	#endif
 
-	size_type face=descr_transp.FACE;
+	size_type face=descr_oxy_transp.FACE;
 
 	BCt_transp.clear();
 	BCt_transp.reserve(2*DIMT);
@@ -270,19 +280,15 @@
 
 	GMM_ASSERT1(!(PARAM.int_value("TEST_GEOMETRY") && descr_transp.CONFORMING), "Test 3D mesh cannot be conforming! Check the .param file!!!");
 	
-	if(descr_transp.CONFORMING){
-	/*! \todo Regions SIGMA and GAMMA are described in .msh file from GMESH (using PhysicalVolume). 
-                  Build directly those regions ("if(dist(element, meshv)>0){OMEGA.add(element)}") 
-		  or build the indicator functions and rescale all the integrals by those functions.
-	*/
+	if(descr_oxy_transp.CONFORMING){
 	#ifdef M3D1D_VERBOSE_
 	cout << "The mesh is conforming with respect to the vessel!" << endl;
 	cout << "Checking the regions..." << endl;
 	#endif
 
-	size_type sigma=descr_transp.SIGMA;
-	size_type omega=descr_transp.OMEGA;
-	size_type gamma=descr_transp.GAMMA;	
+	size_type sigma=descr_oxy_transp.SIGMA;
+	size_type omega=descr_oxy_transp.OMEGA;
+	size_type gamma=descr_oxy_transp.GAMMA;	
 
 	//check if there is a overlap in regions!
 	GMM_ASSERT1(sigma!=gamma, "SIGMA=GAMMA: check the .param file");
@@ -365,94 +371,13 @@ the integral on Gamma from the whole Omega domain.
 *Altough "exactly" seems a strong word, looking at F2b_ and F2c_ in check=2, we can be sure enough of this assumption.
 
 */
-
-
-/*	//The following are some tests for the different regions
-	#ifdef M3D1D_VERBOSE_
-	dal::bit_vector nn = mesht.convex_index();
-	bgeot::size_type i;
-	size_type cont_sigma=0;
-	size_type cont_omega=0;
-	size_type cont_gamma=0;
-	size_type cont_gamma2=0;
-	size_type cont_gamma_sigma=0;	
-	size_type cont_gamma_omega=0;	
-	size_type cont_sigma_omega=0;
-	size_type cont_sigma_face=0;
-	size_type cont_omega_face=0;
-	size_type cont_gamma_sigma_face=0;	
-	size_type cont_gamma_omega_face=0;
-	size_type cont_gamma2_omega_face=0;
-	size_type cont_gamma2_omega_face_ext=0;
-	size_type cont_gamma_gamma2=0;
-
-
-	for (i << nn; i != bgeot::size_type(-1); i << nn) {
-		bgeot::pconvex_structure cvs = mesht.structure_of_convex(i);
-		if(mesht.region(sigma).is_in(i)) cont_sigma++;
-		if(mesht.region(omega).is_in(i)) cont_omega++;
-
-		for (bgeot::short_type f = 0; f < cvs->nb_faces(); ++f) {
-			if(mesht.region(gamma).is_in(i,f)) cont_gamma++;
-			if(mesht.region(gamma+1).is_in(i,f)) cont_gamma2++;
-			if(mesht.region(sigma).is_in(i,f)) cont_sigma_face++;
-			if(mesht.region(omega).is_in(i,f)) cont_omega_face++;
-			if( (mesht.region(gamma).is_in(i,f)) && (mesht.region(sigma).is_in(i,f)) ) cont_gamma_sigma++;
-			if( (mesht.region(gamma).is_in(i,f)) && (mesht.region(omega).is_in(i,f)) ) cont_gamma_omega++;
-			if( (mesht.region(sigma).is_in(i,f)) && (mesht.region(omega).is_in(i,f)) ) cont_sigma_omega++;
-			if( (mesht.region(gamma).is_in(i,f)) && (mesht.region(sigma).is_in(i)) 
-				&&!(mesht.region(face+0).is_in(i,f))&&!(mesht.region(face+1).is_in(i,f))
-				&&!(mesht.region(face+2).is_in(i,f))&&!(mesht.region(face+3).is_in(i,f))
-				&&!(mesht.region(face+4).is_in(i,f))&&!(mesht.region(face+5).is_in(i,f))) {				
-				cont_gamma_sigma_face++;
-//				cout<<"Element "<<i<<" is in Sigma with face "<<f<<" on gamma"<<endl;
-}
-			if( (mesht.region(gamma).is_in(i,f)) && (mesht.region(omega).is_in(i)) ) {
-				cont_gamma_omega_face++;
-//				cout<<"Element "<<i<<" is in Omega with face "<<f<<" on gamma"<<endl;
-}
-			if( (mesht.region(gamma+1).is_in(i,f)) && (mesht.region(omega).is_in(i)) ) {
-				cont_gamma2_omega_face_ext++;
-//				cout<<"Element "<<i<<" is in Omega2 with face "<<f<<" on gamma"<<endl;
-}	
-			if( (mesht.region(gamma+1).is_in(i,f)) && (mesht.region(omega).is_in(i))
-			 	&&!(mesht.region(face+0).is_in(i,f))&&!(mesht.region(face+1).is_in(i,f))
-				&&!(mesht.region(face+2).is_in(i,f))&&!(mesht.region(face+3).is_in(i,f))
-				&&!(mesht.region(face+4).is_in(i,f))&&!(mesht.region(face+5).is_in(i,f)) ) {
-				cont_gamma2_omega_face++;
-//				cout<<"Element "<<i<<" is in Omega2 with face "<<f<<" on gamma (no exterior)"<<endl;
-}	
-			if( (mesht.region(gamma).is_in(i,f)) && (mesht.region(gamma+1).is_in(i,f)) ) cont_gamma_gamma2++;
-		}
 	}
-	cout <<"Number of element in Sigma: "<<cont_sigma<<endl;
-	cout <<"Number of element in Omega: "<<cont_omega<<endl;
-	cout <<"Number of faces in Gamma: "<<cont_gamma<<endl;
-	cout <<"Number of faces in Gamma2 (including exterior faces): "<<cont_gamma2<<endl;
-	cout <<"Number of faces both in Gamma and Sigma: "<<cont_gamma_sigma<<endl;
-	cout <<"Number of faces both in Gamma and Omega: "<<cont_gamma_omega<<endl;
-	cout <<"Number of faces both in Omega and Sigma: "<<cont_sigma_omega<<endl;
-	cout <<"Number of faces both in Gamma and Gamma2: "<<cont_gamma_gamma2<<endl;
-	cout <<"Number of faces in Sigma: "<<cont_sigma_face<<endl;
-	cout <<"Number of faces in Omega: "<<cont_omega_face<<endl;
-	cout <<"Number of elements in Sigma with faces in Gamma: "<<cont_gamma_sigma_face<<endl;
-	cout <<"Number of elements in Omega with faces in Gamma2: "<<cont_gamma2_omega_face_ext<<endl;
-	cout <<"Number of elements in Omega with faces in Gamma2(no exterior): "<<cont_gamma2_omega_face<<endl;
-	cout <<"Number of elements in Omega with faces in Gamma: "<<cont_gamma_omega_face<<endl;
-
-	#endif
-*/
-
-}
-
-
-
-	}; //end of build_tissue_boundary_transp
+}; //end of build_tissue_boundary_transp
 
 	//Build boundary regions on network
 
 	void 
-	transport3d1d::build_vessel_boundary_transp(void)
+	oxygen_transport3d1d::build_vessel_boundary_oxy_transp(void)
 	{
 	#ifdef M3D1D_VERBOSE_
 	cout << "Building vessel boundary ..." << endl;
@@ -739,9 +664,9 @@ the integral on Gamma from the whole Omega domain.
 	} 
 	GMM_STANDARD_CATCH_ERROR; // catches standard errors
 
-	} /* end of build_vessel_boundary_transp */
+	} /* end of build_vessel_boundary_oxy_transp */
 
-
+	//////////////////////////// ASSEMBLAGGIO ////////////////////////////
   
 	  void transport3d1d::assembly_transp (void)
 	 {
@@ -753,7 +678,6 @@ the integral on Gamma from the whole Omega domain.
 	 update_transp();
 	 
 	 }; // end of assembly
- 
  
  
 
