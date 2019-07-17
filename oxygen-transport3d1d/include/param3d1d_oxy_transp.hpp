@@ -26,15 +26,13 @@ namespace getfem {
 /*!
 	\ingroup input
  */
-struct param3d1d_transp {
+struct param3d1d_oxy_transp {
 
 	// Dimensional physical parameters (microcirc applications)
 	//Diffusivity in the tissue [m^2/s]
 	scalar_type Dt_;
 	//Diffusivity in the vessels [m^2/s]
 	scalar_type Dv_;
-	//rate of metabolization [1/s]
-	scalar_type m_;
 	//Permeability of the vessel wall [m/s]
 	scalar_type Perm_;
 	//hydraulic conductivity of the lymphatic wall [s * m^2/kg]
@@ -42,7 +40,7 @@ struct param3d1d_transp {
 	// surface area of lymphatic vessels per unit volume of tissue [1/m]
 	scalar_type SV_;
 
-//MODIFICHE	
+	
 	//Max rate of oxygen metabolization [1/s]
 	scalar_type m0_;
 	//Tissue Concentration guess [kg/m^3]
@@ -64,8 +62,7 @@ struct param3d1d_transp {
 	//Partial Pressure of oxygen at half saturation [mmHg]
 	scalar_type Ps_50_; 
 
-	
-	
+
 	// Dimensionless physical parameters (test-cases)
 	//Inverse of Peclet number for tissue
 	vector_type At_;
@@ -131,9 +128,7 @@ struct param3d1d_transp {
 			 Dalpha_.assign(dof_datat,  Dalphaval);
 			 Y_.assign(dof_datav,  Yval);
 			 Q_pl_.assign(dof_datat,  Q_plval);
-
-			T_   = FILE_.real_value("T","Simulation time length [s]");
-			dt_   = FILE_.real_value("dt","Time step [s]");			
+	
 			C0t_   = FILE_.real_value("C0t","Initial concentration in tissue []");	
 			C0v_   = FILE_.real_value("C0v","Initial concentration in network []");			
 		} 
@@ -167,8 +162,6 @@ struct param3d1d_transp {
 			Lp_LF_ = FILE_.real_value("Lp_LF","hydraulic conductivity of the lymphatic wall [s * m^2/kg]");
 			SV_ = FILE_.real_value("SV","surface area of lymphatic vessels per unit volume of tissue [1/m]");
 
-			T_   = FILE_.real_value("T","Simulation time length [s]");
-			dt_   = FILE_.real_value("dt","Time step [s]");	
 			C0t_   = FILE_.real_value("C0t","Initial concentration in tissue []");	
 			C0v_   = FILE_.real_value("C0v","Initial concentration in network []");				
 			// Compute the dimentionless params
@@ -211,10 +204,6 @@ struct param3d1d_transp {
 	inline scalar_type Dalpha  (size_type i) { return Dalpha_[i];  } const
 	//! Get the leakage of the capillary bed at a given dof
 	inline scalar_type Y  (size_type i) { return Y_[i];  } const
-	//! Get the simulation time length
-	inline scalar_type T  () { return T_;  } const
-	//! Get the time step
-	inline scalar_type dt  () { return dt_;  } const
 	//! Get the sinitial concentration in tissue
 	inline scalar_type C0t  () { return C0t_;  } const
 	//! Get the sinitial concentration in network
@@ -251,7 +240,7 @@ struct param3d1d_transp {
 	//! Get the vessel wall permeabilities
 	vector_type & Q_pl (void) { return Q_pl_; }
 	//! Get the Dahmkholer number 
-	vector_type & Dalpha (void) { return Dalpha_; }
+	//vector_type & Dalpha (void) { return Dalpha_; }
 	//! Get the tissue diffusivity 
 	vector_type & At (void) { return At_; }
 	//! Get the vessel diffusivity 
@@ -268,17 +257,14 @@ struct param3d1d_transp {
 		out << "  Av : "                << param.Av_[0] << endl; 
 		out << "  Y      : "                << param.Y_[0] << endl; 
 		out << "  Q_pl : "                << param.Q_pl_[0] << endl; 
-		out << "  D_alpha : "                << param.Dalpha_[0] << endl; 
-		out << "  T : "                << param.T_ << endl; 
-		out << "  dt : "                << param.dt_ << endl; 
-		out << "  m0 : "                << param.m0_ << endl;
-		out << "  Pm_50 : "                << param.Pm_50_ << endl;
-		out << "  Alpha_t : "                << param.alpha_t_ << endl;
-		out << "  N : "                << param.N_ << endl;
-		out << "  MCHC : "                << param.MCHC_ << endl;
-		out << "  Hill Constant : "                << param.delta_ << endl;
-		out << "  Ps_50 : "                << param.Ps_50_ << endl;
-		out << "  Alpha_pl : "                << param.alpha_pl_ << endl;
+		out << "  m0 : "                << param_oxy_transp.m0_ << endl;
+		out << "  Pm_50 : "                << param_oxy_transp.Pm_50_ << endl;
+		out << "  Alpha_t : "                << param_oxy_transp.alpha_t_ << endl;
+		out << "  Hufner factor : "                << param_oxy_transp.N_ << endl;
+		out << "  MCHC : "                << param_oxy_transp.MCHC_ << endl;
+		out << "  Hill Constant : "                << param_oxy_transp.delta_ << endl;
+		out << "  Ps_50 : "                << param_oxy_transp.Ps_50_ << endl;
+		out << "  Alpha_pl : "                << param_oxy_transp.alpha_pl_ << endl;
 		out << "--------------------------" << endl;
 
 		return out;            
