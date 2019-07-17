@@ -140,21 +140,21 @@ asm_advection_network
 
 //RR: sto assemblando i due vettori ottenuti da pi*R*R*d(uv*psi)/dS
 
-template<typename MAT, typename VEC>
+template<typename VEC>
 void 
 asm_hemoadvection_rhs_network
 	(VEC & Ov,
-			const mesh_im & mim,
-			const mesh_fem & mf_c,
-			const mesh_fem & mf_data,
-			const mesh_fem & mf_u,
-			const mesh_fem & mf_R,
-			const mesh_fem & mf_H,
-			const VEC & U,
-			const VEC & lambdax, const VEC & lambday, const VEC & lambdaz,
-			const VEC & R,
-			const VEC & psi,
-			const mesh_region & rg = mesh_region::all_convexes())	
+	const mesh_im & mim,
+	const mesh_fem & mf_c,
+	const mesh_fem & mf_data,
+	const mesh_fem & mf_u,
+	const mesh_fem & mf_R,
+	const mesh_fem & mf_H,
+	const VEC & U,
+	const VEC & lambdax, const VEC & lambday, const VEC & lambdaz,
+	const VEC & R,
+	const VEC & psi,
+	const mesh_region & rg = mesh_region::all_convexes())	
 	 
 	{
 generic_assembly
