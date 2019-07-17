@@ -133,9 +133,6 @@ asm_exchange_aux_mat_transp
 } /* end of build_aux_matrices */
 
 
-
-
-
 //! Compute mass matrix with two parameters, that is:
 //! @f$ M = \int_{\Omega} (~p_1~+~p_2 )~u~v~dx @f$ and
 /*!
@@ -197,14 +194,13 @@ asm_exchange_mat_transp
 	 const getfem::mesh_fem & mf_c, 
 	 const getfem::mesh_fem & mf_coefv,
 	 const getfem::mesh_fem & mf_pv,
-	 const MAT & Mbar, const MAT & Mlin,
+	 const MAT & Mbar, 
+	 const MAT & Mlin,
 	 const VEC & ONCOTIC,
 	 const VEC & PERM,
-	 const bool ALT_FORM
-	 ) 
+	 const bool ALT_FORM) 
+	
 {
-
-
 	MAT Bvv_temp(mf_c.nb_dof(),mf_c.nb_dof()); gmm::clear(Bvv_temp);
 
 	#ifdef M3D1D_VERBOSE_
@@ -265,7 +261,6 @@ asm_exchange_mat_transp
 		gmm::mult3(gmm::transposed(Mlin),Bvv_temp,Mbar, Btt);
 		gmm::clear(Bvv_temp);
 	}
-	
 } /* end of build_exchange_matrices */
 
 
