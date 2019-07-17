@@ -39,7 +39,7 @@
 	//3. Set finite elements and integration methods
 	set_im_and_fem_oxy_transp();
  	//4. Build problem parameters
- 	build_param_oxy)transp();
+ 	build_param_oxy_transp();
 	//5. Build the list of tissue boundary data
 	build_tissue_boundary_oxy_transp();
 	//6. Build the list of tissue boundary (and junction) data
@@ -143,8 +143,6 @@
 
 	nb_branches = nb_vertices.size();
 	ifs.close();
-
-	
 	}; // end of build_mesh_geometry
 
 	// Set finite elements methods and integration methods 
@@ -276,102 +274,6 @@
 				
 		}
 
-
-
-	GMM_ASSERT1(!(PARAM.int_value("TEST_GEOMETRY") && descr_transp.CONFORMING), "Test 3D mesh cannot be conforming! Check the .param file!!!");
-	
-	if(descr_oxy_transp.CONFORMING){
-	#ifdef M3D1D_VERBOSE_
-	cout << "The mesh is conforming with respect to the vessel!" << endl;
-	cout << "Checking the regions..." << endl;
-	#endif
-
-	size_type sigma=descr_oxy_transp.SIGMA;
-	size_type omega=descr_oxy_transp.OMEGA;
-	size_type gamma=descr_oxy_transp.GAMMA;	
-
-	//check if there is a overlap in regions!
-	GMM_ASSERT1(sigma!=gamma, "SIGMA=GAMMA: check the .param file");
-	GMM_ASSERT1(omega!=sigma, "OMEGA=SIGMA: check the .param file");
-	GMM_ASSERT1(gamma!=omega, "GAMMA=OMEGA: check the .param file");
-	
-	for(int i=0; i<5; i++){
-	GMM_ASSERT1((face+i)!=gamma, "FACE=GAMMA: check the .param file");
-	GMM_ASSERT1((face+i)!=sigma, "FACE=SIGMA: check the .param file");
-	GMM_ASSERT1((face+i)!=omega, "FACE=OMEGA: check the .param file");
-	}
-
-	//Check if sigma and omega are defined in the msh file
-	GMM_ASSERT1(mesht.has_region(sigma), "File .msh does not contain region SIGMA! Check .msh and .param!!");
-	GMM_ASSERT1(mesht.has_region(omega), "File .msh does not contain region OMEGA! Check .msh and .param!!");
-
-	// GAMMA is the boundary of the vessel SIGMA:
-	
-	mesh_region gamma_region;
-	outer_faces_of_mesh(mesht, mesht.region(omega), gamma_region);
-
-	for (mr_visitor i(gamma_region); !i.finished(); ++i) {
-
-		assert(i.is_face());
-
-		     if (!(mesht.region(face+0).is_in(i.cv(),i.f()))&&!(mesht.region(face+1).is_in(i.cv(),i.f()))
-				&&!(mesht.region(face+2).is_in(i.cv(),i.f()))&&!(mesht.region(face+3).is_in(i.cv(),i.f()))
-				&&!(mesht.region(face+4).is_in(i.cv(),i.f()))&&!(mesht.region(face+5).is_in(i.cv(),i.f()))) 	// back
-			mesht.region(gamma).add(i.cv(), i.f());
-			mesht.region(gamma+1).add(i.cv(), i.f());
-				
-		} 
-
-	mesh_region gamma_region2;
-	outer_faces_of_mesh(mesht, mesht.region(sigma), gamma_region2);
-
-	for (mr_visitor i(gamma_region2); !i.finished(); ++i) {
-
-		assert(i.is_face());
-
-		     if (!(mesht.region(face+0).is_in(i.cv(),i.f()))&&!(mesht.region(face+1).is_in(i.cv(),i.f()))
-				&&!(mesht.region(face+2).is_in(i.cv(),i.f()))&&!(mesht.region(face+3).is_in(i.cv(),i.f()))
-				&&!(mesht.region(face+4).is_in(i.cv(),i.f()))&&!(mesht.region(face+5).is_in(i.cv(),i.f()))) 	// back
-			mesht.region(gamma).add(i.cv(), i.f());	
-			mesht.region(gamma+2).add(i.cv(), i.f());
-			//mesht.region(gamma+1).add(i.cv(), i.f());					
-		}
-
-	//outer_faces_of_mesh(mesht, mesht.region(sigma), mesht.region(gamma));
-	GMM_ASSERT1(mesht.has_region(gamma), "Something wrong happened: I couldn't build the region GAMMA");
-
-	outer_faces_of_mesh(mesht, mesht.region(omega), mesht.region(gamma+1));
-	GMM_ASSERT1(mesht.has_region(gamma), "Something wrong happened: I couldn't build the region GAMMA+1");
-
-
-	#ifdef M3D1D_VERBOSE_
-	cout << "...Check complete! All 3D regions are correctly defined!" << endl;
-	#endif		
-
-/*! \todo Check the elements of Gamma.
-Using gmesh, one can easily build the parallelepiped Omega, on which are defined two regions,
-Sigma and Omega_plus, that are the physical vessel and the tissue surrounding it. (use Physical_volume(rg))
-Nevertheless, GetFEM goes banana if you use a mesh composed of both thetrahedra AND triangles: 
-so you cannot use Physical_surface(rg) to build the surface Gamma, that is the vessel wall, made of the triangles
-(faces) in common between Sigma and Omega_plus.
-The problem is that in GetFEM the faces have not a general index, as a matter of fact only the elements (tetrahedra)
-has an index for storage. For example, a mesh of 1000 tetrahedra has an index going from 0 to 999. Every tetrahedron
-has his 4 faces numbered from 0 to three.
-If tetrahedron 15 has a face in common with tetrahedron 347, those are, maybe, faces 2 of element 15 and
-face 1 of element 347. GetFEM doesn't know they are the same face; furthermore, they do not share the same basises!!
-Integral on those two faces (for GetFEM are different faces!) they result in different values.
-For out interest, the "rightest" thing to do seemed to create a region Gamma disposing of both the version of each face (coming from the inner and the outer tetrahedron). This might be incorrect, though. The following code builds different integrals using different definitions of the surface Gamma; those results convinced us that it was better considering both inner and outer faces. (@s.brambilla93@gmail.com)
-EDIT: the phenomenon described before arises when integrating only on Sigma, only on Omega_plus, or on the whole Omega.
-If we define Gamma to be the faces of the elements of Sigma, the integrals on Sigma and on Omega coincides, but 
-all the integrals on Omega_plus are nulls.
-Viceversa, if we define Gamma to be the faces of the elements of Omega_plus, the integrals on Omega_plus and on Omega coincides, but all the integrals on Sigma are nulls.
-Finally, defining Gamma to be both the faces of elements in Sigma and Omega_t, give correct results on integrals on Sigma and Omega_t, but the integrals on the whole Omega are exactly* doubled. Therefore, as the following test validate, it is correct the definition of Gamma with both the surfaces, multiplying for 0.5 every matrix coming from
-the integral on Gamma from the whole Omega domain. 
-
-*Altough "exactly" seems a strong word, looking at F2b_ and F2c_ in check=2, we can be sure enough of this assumption.
-
-*/
-	}
 }; //end of build_tissue_boundary_transp
 
 	//Build boundary regions on network
@@ -679,12 +581,12 @@ the integral on Gamma from the whole Omega domain.
  
  
 	void  
-	transport3d1d::assembly_mat_oxy_transp(void)
+	oxygen_transport3d1d::assembly_mat_oxy_transp(void)
 	{
 	#ifdef M3D1D_VERBOSE_
 	cout << "Allocating AM_oxy, UM_oxy, FM_oxy ..." << endl;
 	#endif
-	gmm::resize(AM_oxy, dof_oyx_transp.tot(), dof_oxy_transp.tot());	gmm::clear(AM_oxy);
+	gmm::resize(AM_oxy, dof_oxy_transp.tot(), dof_oxy_transp.tot());	gmm::clear(AM_oxy);
 	gmm::resize(UM_oxy, dof_oxy_transp.tot()); 		gmm::clear(UM_oxy);
 	gmm::resize(FM_oxy, dof_oxy_transp.tot()); 		gmm::clear(FM_oxy);
 	
@@ -847,7 +749,7 @@ the integral on Gamma from the whole Omega domain.
 
 		vector_type Uvi (mf_Uvi[i].nb_dof()); gmm::clear(Uvi);
 		gmm::add(gmm::sub_vector(UM, 
-						gmm::sub_interval(dof.Ut()+dof.Pt()+shift, mf_Uvi[i].nb_dof())) ,  Uvi);
+				gmm::sub_interval(dof.Ut()+dof.Pt()+shift, mf_Uvi[i].nb_dof())) ,  Uvi);
 
 
 		asm_advection_network(Av, mimv, mf_oxy_Cv, mf_coefvi[i], mf_Uvi[i], mf_coefv, Uvi, param.lambdax(i), param.lambday(i), param.lambdaz(i),  param.R(), meshv.region(i) );
@@ -857,8 +759,8 @@ the integral on Gamma from the whole Omega domain.
 	// Copy Av: advection in network
 	gmm::add(Av,
 			  gmm::sub_matrix(AM_oxy, 
-					gmm::sub_interval(dof_transp.Ct(), dof_transp.Cv()), 
-					gmm::sub_interval(dof_transp.Ct(), dof_transp.Cv())));
+					gmm::sub_interval(dof_oyx_transp.Ct(), dof_oyx_transp.Cv()), 
+					gmm::sub_interval(dof_oyx_transp.Ct(), dof_oyx_transp.Cv())));
 	}/* end of advection assembly*/ 
 
 
@@ -1008,7 +910,7 @@ the integral on Gamma from the whole Omega domain.
 	}/* end of assembly_mat_transp */
 
 	void 
-	transport3d1d::assembly_rhs_oxy_transp(void)
+	oxygen_transport3d1d::assembly_rhs_oxy_transp(void)
 	{
  
 	#ifdef M3D1D_VERBOSE_
@@ -1050,7 +952,7 @@ the integral on Gamma from the whole Omega domain.
 	#endif
 		
 	//Right Hand Side for vessels
-	vector_type cv_guess (dof_transp.Cv(), param_transp.Cv_guess());
+	vector_type cv_guess (dof_oxy_transp.Cv(), param_oxy_transp.Cv_guess());
 
 	scalar_type beta_v  = PARAM.real_value("BETAvessel_transp", "Coefficient for mixed BC for transport problem in vessels");
 
@@ -1114,7 +1016,6 @@ the integral on Gamma from the whole Omega domain.
 	 
 	// Aux function for solver:
 	// contains the list of different methods for solving (SuperLU, SAMG,GMRES, etc)
-	// Always passes through the temporary matrixes AM_temp and FM_temp 
 	bool transport3d1d::solver (const size_type dof1, 
 					   const size_type dof2,
 					   const size_type dof3,
@@ -1246,7 +1147,6 @@ the integral on Gamma from the whole Omega domain.
 	} /* end of solver_transp */
 
 
-
 	 bool oxygen_transport3d1d::solve_oxy_transp (void)
  	{
   	#ifdef M3D1D_VERBOSE_
@@ -1289,7 +1189,7 @@ the integral on Gamma from the whole Omega domain.
 	
 
 	//Compute the residuals for mass balance at each junction 
-	void transport3d1d::mass_balance(void){
+	void oxygen_transport3d1d::mass_balance(void){
 
 	#ifdef M3D1D_VERBOSE_		
 	cout << " Compute MBD and MBA "   << endl;
@@ -1380,7 +1280,7 @@ the integral on Gamma from the whole Omega domain.
 				vector_type dof_enum_C,dof_enum_U;
 				int fine_C=0, fine_U=0;
 				for (mr_visitor mrv(rg_branch); !mrv.finished(); ++mrv){
-				for (auto b : mf_Cv.ind_basic_dof_of_element(mrv.cv()))
+				for (auto b : mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv()))
 					{dof_enum_C.emplace_back(b);
 					fine_C++;}			
 				for (auto b : mf_Uvi[i].ind_basic_dof_of_element(mrv.cv()))
@@ -1397,12 +1297,12 @@ the integral on Gamma from the whole Omega domain.
 	
 				//Compute the diffusive flux
 				 DIFF = pi* Ri * Ri*(
-						UM_transp[dof_transp.Ct()+first_C2]-UM_transp[dof_transp.Ct()+first_C] )
+						UM_oxy[dof_oxy_transp.Ct()+first_C2]-UM_oxy[dof_oxy_transp.Ct()+first_C] )
 						/estimate_h(meshv, ii.cv()) ;
 	
 	
 				//Compute the advective fluxes
-				ADV = pi* Ri * Ri*UM[dof.Ut()+dof.Pt()+shift+first_U]*UM_transp[dof_transp.Ct()+first_C];
+				ADV = pi* Ri * Ri*UM[dof.Ut()+dof.Pt()+shift+first_U]*UM_oxy[dof_oxy_transp.Ct()+first_C];
 	
 				#ifdef M3D1D_VERBOSE_		
 				cout << "------------------------------------------ "   << endl;
