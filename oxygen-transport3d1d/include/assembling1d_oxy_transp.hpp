@@ -40,15 +40,14 @@ namespace getfem {
 
 	@ingroup asm
  */ 
-template<typename MAT, typename VEC, typename VEC2>
+template<typename MAT, typename VEC>
 void 
 asm_network_transp
-	(MAT & M, MAT & D, 
+	(MAT & D, 
 	 const mesh_im & mim,
 	 const mesh_fem & mf_c,
 	 const mesh_fem & mf_data,
-	 const VEC & diff,
-	 const VEC2 & R,
+	 const VEC & R,
 	 const mesh_region & rg = mesh_region::all_convexes()
 	 ) 		
 {
@@ -59,7 +58,6 @@ asm_network_transp
 	gmm::add(R, param);
 	gmm::vscale(R, param);
 	gmm::scale(param, pi); //param = pi*R^2
-	getfem::asm_mass_matrix_param(M, mim, mf_c, mf_data, param, rg);
 	// Build the diffusion matrix Dv
 	gmm::vscale(diff, param); //param= pi*R^2*Av
 	getfem::asm_stiffness_matrix_for_laplacian(D,mim,mf_c,mf_data, param, rg);
@@ -89,7 +87,7 @@ asm_network_transp
 template<typename MAT, typename VEC>
 void 
 asm_advection_network
-	(MAT & B,
+	(MAT & A,
 	 const mesh_im & mim,
 	 const mesh_fem & mf_c,
 	 const mesh_fem & mf_data,
@@ -117,7 +115,7 @@ asm_advection_network
 	assem1.push_data(lambdaz);
 	assem1.push_data(U);
 	assem1.push_data(R);
-	assem1.push_mat(B);
+	assem1.push_mat(A);
 	assem1.assembly(rg);
 	
 		
@@ -136,7 +134,7 @@ asm_advection_network
 	assem2.push_data(lambdaz);
 	assem2.push_data(U);
 	assem2.push_data(R);
-	assem2.push_mat(B);
+	assem2.push_mat(A);
 	assem2.assembly(rg);
 } //end of asm_advection_network
 
