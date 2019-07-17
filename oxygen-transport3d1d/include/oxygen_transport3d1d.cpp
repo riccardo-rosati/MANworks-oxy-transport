@@ -909,6 +909,8 @@
 
 	}/* end of assembly_mat_transp */
 
+	 
+////////////////////////////////////////////////////////////////////////////////////rivedere
 	void 
 	oxygen_transport3d1d::assembly_rhs_oxy_transp(void)
 	{
@@ -920,7 +922,7 @@
 	#ifdef M3D1D_VERBOSE_
 	cout << "  Building coupling dirichlet boundary term ..." << endl;
 	#endif
-
+	
 	//Nel tessuto
 	//Vettore al rhs per le BC nel tessuto
 	vector_type Ft (dof_oxy_transp.Ct()); gmm::clear(Ft);
@@ -930,37 +932,35 @@
 	vector_type Fv (dof_oxy_transp.Cv()); gmm::clear(Fv);
 	//Vettore per il trasporto l'ossiemoglobina (termine non lineare)
 	vector_type Ov (dof_oxy_transp.Cv()); gmm::clear(Ov);
-		
-	//asm_coupled_bc_transp (AM_oxy, FM_oxy, mf_oxy_Ct, mf_oxy_Cv, BCt_transp, BCv_transp); //??
+
 		
 	#ifdef M3D1D_VERBOSE_
 	cout << "  Building tissue boundary term ..." << endl;
 	#endif
 	
-	//Right Hand Side for tissue			
+	//Right Hand Side for tissue
+	//Srtting the BC for tissue
 	scalar_type beta_t  = PARAM.real_value("BETAtissue_transp", "Coefficient for mixed BC for transport problem in tissue");
 		
-	asm_tissue_bc_transp(Ft, mimt, mf_oxy_Ct, mf_coeft, BCt_transp, beta_t);
+	asm_tissue_bc_transp(FM_oxy, AM_oxy, mimt, mf_oxy_Ct, mf_coeft, BCt_oxy_transp, beta_t);
+	
 		
-	gmm::add(Ft, gmm::sub_vector(FM_oxy,
-					gmm::sub_interval(0,dof_oxy_transp.Ct())));
-	// De-allocate memory
-	gmm::clear(Ft);
-
 	#ifdef M3D1D_VERBOSE_
 	cout << "  Building vessel boundary term ..." << endl;
 	#endif
 		
 	//Right Hand Side for vessels
-	vector_type cv_guess (dof_oxy_transp.Cv(), param_oxy_transp.Cv_guess());
-
+	//Setting the BC for vessel
 	scalar_type beta_v  = PARAM.real_value("BETAvessel_transp", "Coefficient for mixed BC for transport problem in vessels");
 
-	asm_network_bc_transp(Fv, mimv, mf_oxy_Cv, mf_coefv, BCv_transp, beta_v, param.R());
+	asm_network_bc_transp(FM_oxy, AM_oxy, mimv, mf_oxy_Cv, mf_coefv, BCv_oxy_transp, beta_v, param.R());
 	
 	gmm::add(Fv, gmm::sub_vector(FM_oxy,
 					gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())));
-							
+	
+	
+	//Assembling Ov: oxyhemoglobin advcetion vector
+	vector_type cv_guess (dof_oxy_transp.Cv(), param_oxy_transp.Cv_guess());					
 	size_type shift =0;
 	size_type shift_h=0;
 	
@@ -1000,7 +1000,7 @@
 		psi[i] = Hi[i]*k1*pow(cv_i[i], param_transp.delta_)/(pow(cv_i[i], param_transp.delta_)+k2);
 		}
 	
-	//asm_hemoadvection_rhs_network(Ov, mimv, mf_Cv, mf_coefvi[i], mf_Uvi[i], mf_coefv, mf_Hi[i], Uvi, param.lambdax(i), param.lambday(i), param.lambdaz(i),  param.R(), psi, meshv.region(i));	
+	asm_hemoadvection_rhs_network(Ov, mimv, mf_Cv, mf_coefvi[i], mf_Uvi[i], mf_coefv, mf_Hi[i], Uvi, param.lambdax(i), param.lambday(i), param.lambdaz(i),  param.R(), psi, meshv.region(i));	
 	}
 	
 	gmm::copy(Ov, gmm::sub_vector(FM_oxy, 
@@ -1012,7 +1012,7 @@
 	gmm::clear(Fv);
 	gmm::clear(Ov);
 	}/* end of assembly_rhs_transp */
-	 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	 
 	// Aux function for solver:
 	// contains the list of different methods for solving (SuperLU, SAMG,GMRES, etc)
