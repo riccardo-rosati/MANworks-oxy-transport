@@ -1,0 +1,387 @@
+%=========================================================================================================
+%          		 			"Coupled 3D/1D Fluid Problem for microvasculature"
+%                        		     Politecnico di Milano, 2019
+%                 	
+%              					Copyright (C) 2019 L. Possenti, R. Rosati 
+%=========================================================================================================
+%	FILE        :	input.param
+%  	DESCRIPTION :	List of parameters
+%	AUTHORS     :	
+%			V2 (Oxygen trasport):			Riccardo Rosati <riccardo1.rosati@mail.polimi.it>   (2019)
+%											Luca Possenti <luca.possenti@polimi.it>				(2019)
+%			V1 (Lymphatic and hematocrit):	Simone Di Gregorio <simone.digre@gmail.com>   		(2017)
+%											Luca Possenti <luca.possenti@polimi.it>				(2017)
+%			V0 (Fluid flow):				Domenico Notaro <domenico.not@gmail.com>    		(2015)
+%
+%	RELATED WORKS: 	3D/1D transport: 		Stefano Brambilla <s.brambilla93@gmail.com> 		(2018)
+%	DATE        :	July 2019
+%=========================================================================================================
+
+%=========================================================================================================
+%										GENERAL FLAGS	
+%=========================================================================================================
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%									 	Fluid flow 													%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Flag to enable the curve model
+CURVE_PROBLEM = 0;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%										Lymphatic flow 												%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Flag to choose Lymphatic Drainage Curve (0 = sigmoid; 1= linear)
+LINEAR_LYMPHATIC_DRAINAGE = 1;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%											RBC flow 												%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Flag to study the hematocrit distribution all over the network (0 = constant; 1= transport)
+HEMATOCRIT_TRANSPORT = 1;
+% Flag for Type of Viscosity (0 = Vivo - including glycocalyx effect - or 1 = vitro) based on Pries and Secomb works
+Visco_v=0;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%										Oxygen transport 											%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Flag to add advection terms
+ADVECTION=1;
+%Flag to add coupling terms
+COUPLING=0;
+%Flag to take the stationary problem
+STATIONARY=1;
+%Flag for the new formulation
+NEW_FORMULATION = 1;
+%Flag to study oxygen transport
+OXYGEN_TRANSPORT = 1;
+
+%=========================================================================================================
+%										IMPORT FLAGS	
+%=========================================================================================================
+% Flag to import dimensionless param
+TEST_PARAM      = 0;
+% Flag to import the dimensionless radius (to do that TEST_PARAM must be equal to 0 and parameters P U d k mu must be left)
+IMPORT_RADIUS   = 0;
+% Flag to import the file with curvature (Remember to ENABLE CURVE_PROBLEM) - If this flag is 0, the curvature is computed from the mesh
+IMPORT_CURVE = 0;
+
+%=========================================================================================================
+%										EXPORT FLAGS	
+%=========================================================================================================
+% Flag to export results
+VTK_EXPORT      = 1;
+% Flag to export radius and conductivity of network in vtk file
+EXPORT_PARAM    = 1;
+% Output directory
+OUTPUT          = 'vtk/';
+% Output directory where parameters (EXPORT_PARAM=1) are saved 
+OutputDir       = 'vtk/';
+OutputDirectory = 'vtk/';
+% Flag to export the absolute value of vessel fluid velocity
+ABS_VEL         = 1;
+% Flag to export the real value of vessel fluid velocity (taken only if ABS_VEL = 1, otherwise it is equal to 1)
+EXPORT_REAL_VELOCITY = 1;
+% Flag to print residuals of Fixed Point Method
+PRINT_RESIDUALS       = 1;
+
+%=========================================================================================================
+%										MESH AND MESH FILES	
+%=========================================================================================================
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%										Tissue mesh	(3D)	 										%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Flags to build a regular 3d mesh
+TEST_GEOMETRY = 1;
+GT_T       = 'GT_PK(3,1)';
+NSUBDIV_T  = '[11,11,11]';
+ORG_T      = '[0,0,0]';
+SIZES_T    = '[1,1,1]';
+NOISED_T   = '0';
+% Path to import the 3d mesh (TEST_GEOMETRY = 0)
+MESH_FILET = ' '; 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%									Network mesh (1D) 												%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Path to import the 1d list of points (fluid flow)
+MESH_FILEV = './segment.pts'
+% Path to import radius of the newtork (read if IMPORT_RADIUS=1)
+RFILE      = 'radius.pts'
+% Path to import the 1d list of points for Ht (as the 1d list of points but with H boundary conditions)
+MESH_FILEH = './HT_BCs.pts'
+% Path to import the curvature of the vessels (if IMPORT_CURVE = 1)
+CURVE_FILE = 'curve.pts'
+% Path to import the 1d list of points for transport
+MESH_FILEV_OXY_TRANSP = './segment_transp.pts';
+
+%=========================================================================================================
+%								GETFEM DESCRIPTORS (element types and couping)
+%=========================================================================================================
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%											Tissue (3D)	 											%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% GetFem type for the 3D mesh
+MESH_TYPET  = 'GT_PK(3,1)';
+% GetFem type for the 3D Finite Element Methods
+FEM_TYPET   = 'FEM_RT0(3)';
+FEM_TYPET_P = 'FEM_PK_DISCONTINUOUS(3,0)';
+FEM_TYPET_DATA = 'FEM_PK(3,0)';
+FEM_TYPET_OT = 'FEM_PK(3,1)';		%Oxygen tissue concentration
+% GetFem type for the 3D Integration Method
+IM_TYPET    = 'IM_TETRAHEDRON(8)'; 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%											Network (1D) 											%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% GetFem type for the 1D mesh
+MESH_TYPEV  = 'GT_PK(1,1)';   
+% GetFem type for the 1D Finite Element Methods
+FEM_TYPEV   = 'FEM_PK(1,2)'; 		%Velocity
+FEM_TYPEV_P = 'FEM_PK(1,1)'; 		%Pressure
+FEM_TYPEV_DATA = 'FEM_PK(1,0)'; 	%Data fluid flow
+FEM_TYPEH = 'FEM_PK(1,1)';  		%Hematrocrit
+FEM_TYPEH_DATA = 'FEM_PK(1,0)';		%Hematocrit data
+FEM_TYPEV_OV = 'FEM_PK(1,1)';		%Oxygen network concentration
+
+% GetFem type for the 1D Integration Method
+IM_TYPEV    = 'IM_GAUSS1D(6)'; 		%Fluid flow
+IM_TYPEH    = 'IM_GAUSS1D(6)'; 		%Hematrocrit
+IM_TYPEV_OXY_TRANSP = 'IM_GAUSS1D(6)';	%Oxygen transport
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%											Coupling (3D/1D) 										%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Nb of discretisation point for 3D-1D interpolation
+NInt = 50;
+
+
+
+%=========================================================================================================
+%									GETFEM DESCRIPTORS (solver)
+%=========================================================================================================
+% Solver for the monolithic 3D/1D linear system
+% direct:    'SuperLU'
+% iterative: 'CG','BiCGstab','GMRES','QMR','LSCG'
+SOLVE_METHOD = 'SuperLU';			%Fluid flow
+% Hematocrit always solve by SuperLU		%Hematrocrit 
+SOLVE_METHOD_OXY_TRANSP = 'SuperLU';		%Oxygen transport
+
+% Maximum number of iterations for iterative solvers
+MAXITER  = 100;
+% Residual for conjugate gradient
+RESIDUAL = 1E-16;    
+
+%=========================================================================================================
+%							SOLVING NON LINEARITIES (parameters for fix point methods) 
+%=========================================================================================================
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%										General		 												%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Maximum number of iterations for FPM
+Number_Iteration   = 30;
+% Number of iteration between saving progress (saving process overwrites files)
+Saving_Iteration   = 1;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%										Lymphatic flow 												%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Residual for fluid flow solution (FPM)
+Residual_Sol_FPM   = 1E-12;
+% Residual for mass conservation (FPM) - works fine only for "closed" domains, if not please set it to 1E3
+Residual_Mass_FPM  = 1E-10;
+% Under-relaxation coefficient (for fluid flow solutions)
+UNDER_RELAXATION_COEFFICIENT  = 1;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%											RBC flow 												%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Peclet Number for stabilization of hematocrit transport (add the appropriate artificial diffusion)
+THETA=1;
+%Initial guess for hematocrit separation phase computation
+H_START=0.45;
+% Residual for hematocritsolution (FPM)
+Residual_Hema_FPM  = 1E-10;
+% Under-relaxation coefficient for Hematocrit Solution
+UNDER_RELAXATION_COEFFICIENT_HEMA  = 0.4;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%										Oxygen transport											%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Max oxygen consumption rate [1/s]
+m0 =  3.7; 
+%Tissue concentration guess [kg/m^3]
+Ct_guess =  1;
+%Vessel concentration guess [kg/m^3]
+Cv_guess =  1;
+%Partial pressure at half max rate of metabolization [mmHg]
+Pm_50 = 4;
+%Solubility of oxygen in the tissue [kg/(m^3*mmHg]
+alpha_t = 2.8E-5;
+%Mean Corpuscolar Hematocrit Concentration [kg/m^3];
+MCHC = 0.34;
+%Hufner factor [-]
+N = 1.36;
+%Hill constant [-]
+delta = 2.7;
+%Partial pressure at half saturation [mmHg]
+Ps_50 = 26.8;
+%Oxygen solubility in the plasma [kg/(m^3*mmHg)]
+alpha_pl = 3.1E-5;
+%Residuo per il FPM
+Residual_OXY = 1E-10;
+%=========================================================================================================
+%						 	DIMENSIONAL MODEL PARAMETERS (if TEST_PARAM = 0)
+%=========================================================================================================
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%									 	Fluid flow 													%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Hydraulic conductivity of the interstitium [m^2]
+k  = 1.0E-18;
+% Average interstitial pressure [Pa]
+P  = 133.32;
+% Characteristic flow speed in the capillary bed [m/s]
+U  = 100E-06;
+% Characteristic l37ength of the problem [m]
+d  = 5.0E-4;
+% Hydraulic conductivity of the capillary walls [m^2 s/kg]
+Lp = 1E-12;
+% Average radius of the capillary vessels [m]
+RADIUS = 4.00E-6;
+% Blood Viscosity [kg/m/s]
+mu_v = 3E-3;
+% Interstial Fluid Viscosity [kg/m/s]
+mu_t = 1.2E-3;
+% Oncotic plasma pressure [Pa]
+Pi_v = 27*133.32;
+% Oncotic Interstitial pressure [Pa]
+Pi_t = 2*133.32;
+% Reflection Coefficient of Starling Equation [-]
+sigma = 0.95;
+% Order of velocity profile in the vessels [-]
+Gamma = 2;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%										Lymphatic flow 												%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%% LINEAR case
+% Hydraulic conductivity of the lymphatic wall [kg * m/s]
+Lp_LF = 1.04E-06*0;
+% Pressure inside lymphatic capillaries [-] %% This is dimensionless pressure as the ones specified for the network!
+PL = 0;
+%%%%%%%%%%%%%%% Coefficient of lymphatic flow modelled as a SIGMOID of equation QLF = A - B / ( 1 + exp ( ( Pt + D ) / C )
+% Coefficient A [s-1]
+A_LF = 1.7170E-7;
+% Coefficient B [s-1]
+B_LF = 1.6485E-7;
+% Coefficient C [Pa]
+C_LF = 0.6573*133.32;
+% Coefficient D [Pa]
+D_LF = -2*133.32;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%										Oxygen transport											%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Riccardo metti qui quelli che ti servono (questi sono di esempio)
+%Diffusivity in the tissue [m^2/s]  
+Dt = 1.35E-09;
+%Diffusivity in the vessels [m^2/s] 
+Dv = 5E-07;
+%rate of metabolization [1/s]
+m = 8  ; 
+%Permeability of the vessel wall [m/s]
+Perm = 3.5E-05*100;
+% surface area of lymphatic vessels per unit volume of tissue [1/m]
+SV = 1;
+
+%=========================================================================================================
+%							 DIMENSIONLESS MODEL PARAMETERS (if TEST_PARAM = 1)
+%=========================================================================================================
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%									 	Fluid flow 													%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Dimensionless conductivity of the tissue
+%Kt = 2E-5;
+% Dimensionless conductivity of the capillary wall
+%Q  = 9.6007E-7;
+% Dimensionless conductivity of the capillary bed
+%Kv = 2.6759;
+% Dimensionless average radius of the capillary vessels []
+%RADIUS = 1.53E-1;
+% Oncotic plasma pressure [-] 
+%pi_v_adim = 27;
+% Oncotic Interstitial pressure [-]
+%pi_t_adim = 2;
+% Reflection Coefficient of Starling Equation [-]
+%sigma = 0.95;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%										Lymphatic flow 												%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%% LINEAR case
+% Dimensionless conductivity of lymphatic wall
+%Q_LF = 1;
+% Pressure inside lymphatic capillaries [-] 
+% Already specified in PL! Use PL few lines above
+%%%%%%%%%%%%%%% Coefficient of lymphatic flow modelled as a SIGMOID of equation QLF = A - B / ( 1 + exp ( ( Pt + D ) / C )
+% Coefficient of lymphatic flow modelled as a SIGMOID of equation QLF = A - B / ( 1 + exp ( ( Pt + D ) / C )
+% Dimensionless Parameter A
+%QLF_A = 1.7170E-5;
+% Dimensionless Parameter B
+%QLF_B = 1.6485E-5;
+% Dimensionless Parameter C
+%QLF_C = 0.6573;
+% Dimensionless Parameter D
+%QLF_D = -2;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%										Oxygen transport											%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Riccardo metti qui quelli che ti servono (questi sono di esempio)
+%Dimensionless At[]
+At=1.0;
+%Dimensionless Av[]
+Av=1.0;
+%Dimensionless Dalpha[]
+D_alpha=0.0;
+%Dimensionless Y[]
+Y=0.0;
+%Dimensionless Qpl[]
+Q_pl=0.0;
+
+%=========================================================================================================
+%						 				BOUNDARY CONDITIONS
+%=========================================================================================================
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%				 	Fluid flow 	- tissue (network specified in the file)							%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Faces are ordered as follow:   x=0  x=L  y=0  y=L  z=0  z=L
+% BC labels (DIR / MIX) - DIR = Dirichlet considions, MIX = Robin mixed condition
+BClabel = 'MIX MIX  MIX  MIX  MIX  MIX'
+% BC values (Specify pressure for DIR, or far field pressure for MIX)
+BCvalue = '0.0 0.0  0.0  0.0  0.0  0.0'
+% Coefficient beta for MIX condition
+BCbeta = '2.22E-6 2.22E-6 2.22E-6 2.22E-6 2.22E-6 2.22E-6';
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%											RBC flow 												%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Coefficient for MIX condition of hematocrit transport
+BETA_H=0;
+% Temperature of the blood
+Temp=37
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%										Oxygen transport											%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Riccardo metti qui quelli che ti servono (questi sono di esempio)
+% Faces are ordered as follow:   x=0  x=L  y=0  y=L  z=0  z=L
+% BC labels (DIR / MIX)
+BClabel_transp = 'DIR  DIR  MIX  MIX  MIX  MIX'
+% BC values
+BCvalue_transp = '1.0  0.0  0.0  0.0  0.0  0.0'
+% Coefficient for MIX condition in tissue
+BETAtissue_transp = 1.0E-1
+% Coefficient for MIX condition in vessels
+BETAvessel_transp = 1.0E-1
+
+
+
