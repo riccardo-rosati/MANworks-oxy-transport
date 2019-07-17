@@ -668,67 +668,62 @@ the integral on Gamma from the whole Omega domain.
 
 	//////////////////////////// ASSEMBLAGGIO ////////////////////////////
   
-	  void transport3d1d::assembly_transp (void)
+	  void oxygen_transport3d1d::assembly_oxy_transp (void)
 	 {
-
  	 //1) Build the monolithic matrix AM
-	 assembly_mat_transp();
+	 assembly_mat_oxy_transp();
 
 	 //2) Build and update the monolithic rhs FM
-	 update_transp();
-	 
+	 assembly_rhs_oxy_transp();
 	 }; // end of assembly
  
  
-
 	void  
-	transport3d1d::assembly_mat_transp(void)
+	transport3d1d::assembly_mat_oxy_transp(void)
 	{
 	#ifdef M3D1D_VERBOSE_
-	cout << "Allocating AM_transp, UM_transp, FM_transp ..." << endl;
+	cout << "Allocating AM_oxy, UM_oxy, FM_oxy ..." << endl;
 	#endif
-	gmm::resize(AM_transp, dof_transp.tot(), dof_transp.tot());	gmm::clear(AM_transp);
-	gmm::resize(UM_transp, dof_transp.tot()); 			gmm::clear(UM_transp);
-	gmm::resize(FM_transp, dof_transp.tot()); 			gmm::clear(FM_transp);
+	gmm::resize(AM_oxy, dof_oyx_transp.tot(), dof_oxy_transp.tot());	gmm::clear(AM_oxy);
+	gmm::resize(UM_oxy, dof_oxy_transp.tot()); 		gmm::clear(UM_transp);
+	gmm::resize(FM_oxy, dof_oxy_transp.tot()); 		gmm::clear(FM_transp);
 	
 	
 	#ifdef M3D1D_VERBOSE_
-	cout << "Assembling the monolithic matrix AM_transp ..." << endl;
+	cout << "Assembling the monolithic matrix AM_oxy ..." << endl;
 	#endif
-	// Mass(time derivative)  matrix for the interstitial problem
-	sparse_matrix_type Mt(dof_transp.Ct(), dof_transp.Ct());gmm::clear(Mt);
-	// Diffusion matrix for the interstitial problem
-	sparse_matrix_type Dt(dof_transp.Ct(), dof_transp.Ct());gmm::clear(Dt);
-	//Advection matrix for interstitial problem
-	sparse_matrix_type Bt(dof_transp.Ct(), dof_transp.Ct());gmm::clear(Bt);
-	// Linfatic drainage matrix for the interstitial problem
-	sparse_matrix_type Lt(dof_transp.Ct(), dof_transp.Ct()); gmm::clear(Lt);
-	// Reaction matrix for the interstitial problem
-	sparse_matrix_type Rt(dof_transp.Ct(), dof_transp.Ct()); gmm::clear(Rt);
 
-	// Mass (time derivative)  matrix for the network problem
-	sparse_matrix_type Mv(dof_transp.Cv(), dof_transp.Cv());gmm::clear(Mv);		
-	// Diffusion matrix for the network problem
-	sparse_matrix_type Dv(dof_transp.Cv(), dof_transp.Cv());gmm::clear(Dv);
-	//Advection matrix for network problem
-	sparse_matrix_type Bv(dof_transp.Cv(), dof_transp.Cv());gmm::clear(Bv);
+	//Nel tessuto
+	//Matrice di diffusione
+	sparse_matrix_type Dt (dof_oxy_transp.Ct(), dof_oxy_transp.Ct()); gmm::clear(Dt);
+	//Matrice di convezione
+	sparse_matrix_type At (dof_oxy_transp.Ct(), dof_oxy_transp.Ct()); gmm::clear(At);
+	//Matrice di reazione
+	sparse_matrix_type Rt (dof_oxy_transp.Ct(), dof_oxy_transp.Ct()); gmm::clear(Rt);
+	//Matrice per il drenaggio linfatico
+	//sparse_matrix_type Lt (dof_oxy_transp.Ct(), dof_oxy_transp.Ct()); gmm::clear(Lt);
 
-	// Tissue-to-tissue exchange matrix
-	sparse_matrix_type Btt(dof_transp.Ct(), dof_transp.Ct());gmm::clear(Btt);
-	// Vessel-to-tissue exchange matrix
-	sparse_matrix_type Btv(dof_transp.Ct(), dof_transp.Cv());gmm::clear(Btv);
-	// Tissue-to-vessel exchange matrix
-	sparse_matrix_type Bvt(dof_transp.Cv(), dof_transp.Ct());gmm::clear(Bvt);
-	// Vessel-to-vessel exchange matrix
-	sparse_matrix_type Bvv(dof_transp.Cv(), dof_transp.Cv());gmm::clear(Bvv);
+	//Nel vaso
+	//Matrice di diffusione
+	sparse_matrix_type Dv (dof_oxy_transp.Cv(), dof_oxy_transp.Cv()); gmm::clear(Dv);
+	//Matrcei di convezione
+	sparse_matrix_type Av (dof_oxy_transp.Cv(), dof_oxy_transp.Cv()); gmm::clear(Av);
+
+	//Matrici di scambio
+	//Matrice di scambio tissue-to-tisse
+	sparse_matrix_type Btt (dof_oxy_transp.Ct(), dof_oxy_transp.Ct()); gmm::clear(Btt);
+	//Matrice di scambio tissue-to-vessel
+	sparse_matrix_type Btv (dof_oxy_transp.Ct(), dof_oxy_transp.Cv()); gmm::clear(Btv);
+	//Matrice di scambio vessel-to-tissue
+	sparse_matrix_type Bvt (dof_oxy_transp.Cv(), dof_oxy_transp.Ct()); gmm::clear(Bvt);
+	//Matrice di scambio vessel-to-vessel
+	sparse_matrix_type Btt (dof_oxy_transp.Cv(), dof_oxy_transp.Cv()); gmm::clear(Bvv);
+
 	// Aux tissue-to-vessel averaging matrix
-	sparse_matrix_type Mbar(dof.Pv(), dof.Pt());gmm::clear(Mbar);
+	sparse_matrix_type Mbar (dof_oxy_transp.Pv(), dof_oxy_transp.Pt()); gmm::clear(Mbar);
 	// Aux tissue-to-vessel interpolation matrix
-	sparse_matrix_type Mlin(dof.Pv(), dof.Pt());gmm::clear(Mlin);
-	
-	
-	//Descriptors for the problem solved
-
+	sparse_matrix_type Mlin (dof_oxy_transp.Pv(), dof_oxy_transp.Pt()); gmm::clear(Mlin);
+		
 	#ifdef M3D1D_VERBOSE_
 	cout<< "   Computing Peclet number..."<<endl;	
 	#endif	
@@ -750,14 +745,12 @@ the integral on Gamma from the whole Omega domain.
 	cout<< "Peclet in vessels:    "<< peclet_v<<endl;
 	cout<< "Peclet in tissue:    "<< peclet_t<<endl;
 	#endif	
-	
-//***************************************inizio ciclo iterativo
 
+		
 	#ifdef M3D1D_VERBOSE_
 	cout << "  Assembling Mt, Dt, Lt and Rt ..." << endl;
 	#endif
-
-
+/*
 	//Coefficient for mass term:
 	vector_type linf_coeff(dof.Pt()); gmm::clear(linf_coeff);
 	vector_type Pl(dof.Pt(),PARAM.real_value("PL"));
@@ -765,59 +758,51 @@ the integral on Gamma from the whole Omega domain.
 	gmm::add(gmm::sub_vector(UM, gmm::sub_interval(dof.Ut(), dof.Pt())) ,  linf_coeff);
 	gmm::add(Pl ,  linf_coeff);
 	gmm::scale (linf_coeff,param_transp.Q_pl(1));
+*/
 
 	//Coefficient for reaction term:
-	vector_type consump_coeff(dof_transp.Ct()); gmm::clear(consump_coeff);
+	vector_type consump_coeff(dof_oxy_transp.Ct()); gmm::clear(consump_coeff);
 
-	vector_type PRESS50(dof_transp.Ct(), PARAM.real_value("Pm_50")); //riempio il vettore con lo scalare Pm_50
-	gmm::scale(PRESS50, param_transp.alpha_t()); 
-	vector_type ct_guess(dof_transp.Ct(), param_transp.Ct_guess());
+	vector_type PRESS50(dof_oxy_transp.Ct(), PARAM.real_value("Pm_50"));
+	gmm::scale(PRESS50, param_oxy_transp.alpha_t()); 
+	vector_type ct_guess(dof_oxy_transp.Ct(), param_oxy_transp.Ct_guess());
 	gmm::add(PRESS50, ct_guess);
 	gmm::copy(ct_guess, consump_coeff);
-	//c'è un modo migliore?
-	for (size_type i=0; i<dof_transp.Ct(); i++)
+	
+	for (size_type i=0; i<dof_oxy_transp.Ct(); i++)
 	{
 	consump_coeff[i] = 1.0/consump_coeff[i];
 	}
-	gmm::scale(consump_coeff, param_transp.m0());
+
+	gmm::scale(consump_coeff, param_oxy_transp.m0());
 	 
 
-	//Build Mt, Dt, Lt and Rt 
-	asm_tissue_transp(Mt, Dt, Lt, Rt, mimt, mf_Ct, mf_coeft,  param_transp.At(), linf_coeff, consump_coeff );
-
-	// Copy Mt: Time Derivative in tissue
-	if(descr_transp.STATIONARY ==0)
-	{ 
-	gmm::scale(Mt, (1.0/param_transp.dt()));
-	gmm::add(Mt,  
-			gmm::sub_matrix(AM_transp, 
-					gmm::sub_interval(0, dof_transp.Ct()), 
-					gmm::sub_interval(0, dof_transp.Ct()))); 
-	}
-	
+	//Build Mt, Dt, and Rt 
+	asm_tissue_transp(Dt, Rt, mimt, mf_Ct, mf_coeft,  param_oxy_transp.At(), consump_coeff );	
 		
 	// Check peclet number for instability
-	if((descr_transp.ADVECTION==1) && (peclet_t>1))
+	if((descr_oxy_transp.ADVECTION==1) && (peclet_t>1))
 		{ cout<<"WARNING!! Peclet > 1 in tissue: applying artificial diffusion"<<std::endl;	
 	  	  gmm::scale(Dt, (1+peclet_t));}
 	
 	// Copy Dt: diffusion in tissue		  
 	gmm::add(Dt,
-			 gmm::sub_matrix(AM_transp, 
-					gmm::sub_interval(0, dof_transp.Ct()), 
-					gmm::sub_interval(0, dof_transp.Ct())));  
+			 gmm::sub_matrix(AM_oxy, 
+					gmm::sub_interval(0, dof_oxy_transp.Ct()), 
+					gmm::sub_interval(0, dof_oxy_transp.Ct())));  
 	
-		
 	// Copy Rt: reaction in tissue
  	gmm::add(Rt, 
-			  gmm::sub_matrix(AM_transp, 
-					gmm::sub_interval(0, dof_transp.Ct()), 
-				 	gmm::sub_interval(0, dof_transp.Ct()))); 
+			  gmm::sub_matrix(AM_oxy, 
+					gmm::sub_interval(0, dof_oxy_transp.Ct()), 
+				 	gmm::sub_interval(0, dof_oxy_transp.Ct()))); 
+/*		 	
 	// Copy Lt: linfatic drainage in tissue
 	 gmm::add(Lt, 
-			  gmm::sub_matrix(AM_transp, 
-					gmm::sub_interval(0, dof_transp.Ct()), 
-				 	gmm::sub_interval(0, dof_transp.Ct()))); 
+			  gmm::sub_matrix(AM_oxy, 
+					gmm::sub_interval(0, dof_oxy_transp.Ct()), 
+				 	gmm::sub_interval(0, dof_oxy_transp.Ct()))); 
+*/
 
 	
 	#ifdef M3D1D_VERBOSE_
@@ -825,9 +810,8 @@ the integral on Gamma from the whole Omega domain.
 	#endif	
 
 	
-
 	// Build Mv and Dv
-	asm_network_transp(Mv, Dv, mimv,mf_Cv, mf_coefv, param_transp.Av(), param.R());
+	asm_network_transp(Mv, Dv, mimv, mf_oxy_Cv, mf_coefv, param_oxy_transp.Av(), param.R());
 
 		
 	// Copy Mv: Time Derivative in network
@@ -835,9 +819,9 @@ the integral on Gamma from the whole Omega domain.
 	{
 	gmm::scale(Mv, (1.0/param_transp.dt()));
 	gmm::add(Mv, 
-			gmm::sub_matrix(AM_transp, 
-					gmm::sub_interval(dof_transp.Ct(), dof_transp.Cv()), 
-					gmm::sub_interval(dof_transp.Ct(), dof_transp.Cv()))); 
+			gmm::sub_matrix(AM_oxy, 
+					gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv()), 
+					gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv()))); 
 	}
 
 	// Check peclet number for instability
@@ -846,50 +830,52 @@ the integral on Gamma from the whole Omega domain.
    	 	  gmm::scale(Dv, (1+peclet_v)); }
 		
 	// Copy Dv: diffusion in network 	
-	gmm::add(Dv, 	gmm::sub_matrix(AM_transp, 
-					gmm::sub_interval(dof_transp.Ct(), dof_transp.Cv()), 
-					gmm::sub_interval(dof_transp.Ct(), dof_transp.Cv())));
+	gmm::add(Dv, 	gmm::sub_matrix(AM_oxy, 
+					gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv()), 
+					gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())));
 	
 	
-	 
-	
-	
+	 	
 	if(descr_transp.ADVECTION ==0)	{cout<<"No advection: only diffusion and reaction terms"<<endl;}
 	else{		
+
 	//ADVECTION	
 	#ifdef M3D1D_VERBOSE_
-	cout << "  Assembling Bt and Bv ..." << endl;
+	cout << "  Assembling At and Av ..." << endl;
 	#endif	
 	
 		
 	//ADVECTION IN TISSUE		
-	// Build Bt
-	asm_advection_tissue(Bt, mimt, mf_Ct, mf_Ut, gmm::sub_vector(UM, gmm::sub_interval(0, dof.Ut())));
-	// Copy Bt: advection in tissue
-	gmm::add(Bt,
-			  gmm::sub_matrix(AM_transp, 
-					gmm::sub_interval(0, dof_transp.Ct()), 
-					gmm::sub_interval(0, dof_transp.Ct()))); 	
+	// Build At
+	asm_advection_tissue(At, mimt, mf_oxy_Ct, mf_Ut, gmm::sub_vector(UM, gmm::sub_interval(0, dof.Ut())));
+
+	// Copy At: advection in tissue
+	gmm::add(At,
+			  gmm::sub_matrix(AM_oxy, 
+					gmm::sub_interval(0, dof_oxy_transp.Ct()), 
+					gmm::sub_interval(0, dof_oxy_transp.Ct()))); 	
 		
+	// build Av
 	size_type shift = 0;
-	// build Bv
 	for(size_type i=0; i<nb_branches; ++i){
 
 		if(i>0) shift += mf_Uvi[i-1].nb_dof();
-		vector_type Uvi( mf_Uvi[i].nb_dof()); gmm::clear(Uvi);
-		gmm::add(gmm::sub_vector(UM, gmm::sub_interval(dof.Ut()+dof.Pt()+shift, mf_Uvi[i].nb_dof())) ,  Uvi);
+
+		vector_type Uvi (mf_Uvi[i].nb_dof()); gmm::clear(Uvi);
+		gmm::add(gmm::sub_vector(UM, 
+						gmm::sub_interval(dof.Ut()+dof.Pt()+shift, mf_Uvi[i].nb_dof())) ,  Uvi);
 
 
-		asm_advection_network(Bv, mimv, mf_Cv, mf_coefvi[i], mf_Uvi[i], mf_coefv, Uvi, param.lambdax(i), param.lambday(i), param.lambdaz(i),  param.R(), meshv.region(i) );
+		asm_advection_network(Av, mimv, mf_oxy_Cv, mf_coefvi[i], mf_Uvi[i], mf_coefv, Uvi, param.lambdax(i), param.lambday(i), param.lambdaz(i),  param.R(), meshv.region(i) );
 	}
-	gmm::scale(Bv, pi);
+	gmm::scale(Av, pi);
 
-	// Copy Av and Bv: advection in network
-	gmm::add(Bv,
-			  gmm::sub_matrix(AM_transp, 
+	// Copy Av: advection in network
+	gmm::add(Av,
+			  gmm::sub_matrix(AM_oxy, 
 					gmm::sub_interval(dof_transp.Ct(), dof_transp.Cv()), 
 					gmm::sub_interval(dof_transp.Ct(), dof_transp.Cv())));
-		}/* end of advection assembly*/ 
+	}/* end of advection assembly*/ 
 
 
 	bool COUPLING = PARAM.int_value("COUPLING", "flag for coupling-exchange term ");
@@ -902,19 +888,18 @@ the integral on Gamma from the whole Omega domain.
 	if(PARAM.int_value("couple", "flag for coupling function (notaro 0, brambilla 1)")){
    		bool READ_ITERPOLATOR = PARAM.int_value("READ_ITERPOLATOR", "flag for read interpolator from file ");
     	if (!READ_ITERPOLATOR){
-		asm_exchange_aux_mat_transp(Mbar, Mlin, 
-			mimv, mf_Ct, mf_Cv, mf_coefv, param.R(), descr.NInt, nb_branches);
+		asm_exchange_aux_mat_transp(Mbar, Mlin, mimv, mf_oxy_Ct, mf_oxy_Cv, mf_coefv, param.R(), descr.NInt, nb_branches);
       	std::ostringstream mbar_name,mlin_name;
-      	mbar_name << descr_transp.OUTPUT+"Mbar_transp";
-      	mlin_name << descr_transp.OUTPUT+"Mlin_transp";
+      	mbar_name << descr_oxy_transp.OUTPUT+"Mbar_transp";
+      	mlin_name << descr_oxy_transp.OUTPUT+"Mlin_transp";
       	gmm::MatrixMarket_IO::write(mbar_name.str().c_str(), Mbar);
       	gmm::MatrixMarket_IO::write(mlin_name.str().c_str(), Mlin);
     	}
     	else
     	{
       	std::ostringstream mbar_name,mlin_name;
-      	mbar_name << descr_transp.OUTPUT+"Mbar_transp";
-      	mlin_name << descr_transp.OUTPUT+"Mlin_transp";
+      	mbar_name << descr_oxy_transp.OUTPUT+"Mbar_transp";
+      	mlin_name << descr_oxy_transp.OUTPUT+"Mlin_transp";
       	gmm::MatrixMarket_load(mbar_name.str().c_str(), Mbar);
       	gmm::MatrixMarket_load(mlin_name.str().c_str(), Mlin);
     	}
@@ -922,8 +907,7 @@ the integral on Gamma from the whole Omega domain.
 	if(!PARAM.int_value("couple", "flag for coupling function (notaro 0, brambilla 1)")){
    		bool READ_ITERPOLATOR = PARAM.int_value("READ_ITERPOLATOR", "flag for read interpolator from file ");
     	if (!READ_ITERPOLATOR){
-			asm_exchange_aux_mat(Mbar, Mlin, 
-				mimv, mf_Ct, mf_Cv, param.R(), descr.NInt);
+			asm_exchange_aux_mat(Mbar, Mlin, mimv, mf_oxy_Ct, mf_oxy_Cv, param.R(), descr.NInt);
       	std::ostringstream mbar_name,mlin_name;
       	mbar_name << "./vtk/Mbar";
       	mlin_name << "./vtk/Mlin";
@@ -979,83 +963,91 @@ the integral on Gamma from the whole Omega domain.
 	gmm::scale(PERM, 2*pi*param_transp.Y()[0]);
 
 
-
-
 	//build exchange matrixes for tissue
 	asm_exchange_mat_transp(Btt, Btv, Bvt, Bvv,
-			mimv, mf_Cv, mf_coefv, mf_Pv, Mbar, Mlin, 
+			mimv, mf_oxy_Cv, mf_coefv, mf_Pv, Mbar, Mlin, 
 			ONCOTIC, PERM, NEWFORM);
 
 
 	// Copying Btt
 	gmm::add(Btt,			 
-			gmm::sub_matrix(AM_transp, 
-					gmm::sub_interval(0, dof_transp.Ct()), 
-					gmm::sub_interval(0, dof_transp.Ct()))); 
+			gmm::sub_matrix(AM_oxy, 
+					gmm::sub_interval(0, dof_oxy_transp.Ct()), 
+					gmm::sub_interval(0, dof_oxy_transp.Ct()))); 
 	// Copying Btv
 
 	gmm::add(Btv,
-			gmm::sub_matrix(AM_transp, 
-					gmm::sub_interval(0, dof_transp.Ct()),
-					gmm::sub_interval(dof_transp.Ct(), dof_transp.Cv()))); 
+			gmm::sub_matrix(AM_oxy, 
+					gmm::sub_interval(0, dof_oxy_transp.Ct()),
+					gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv()))); 
 	
 	// Copying Bvt
 
 	gmm::add(Bvt,								
-			  gmm::sub_matrix(AM_transp, 
-			  		gmm::sub_interval(dof_transp.Ct(), dof_transp.Cv()),
-					gmm::sub_interval(0, dof_transp.Ct())));
+			  gmm::sub_matrix(AM_oxy, 
+			  		gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv()),
+					gmm::sub_interval(0, dof_oxy_transp.Ct())));
 	// Copying Bvv
 
 	gmm::add(Bvv,
-			  gmm::sub_matrix(AM_transp, 
-					gmm::sub_interval(dof_transp.Ct(), dof_transp.Cv()), 
-					gmm::sub_interval(dof_transp.Ct(), dof_transp.Cv()))); 
-	
-
+			  gmm::sub_matrix(AM_oxy, 
+					gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv()), 
+					gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv()))); 
 	}	
+
 
 	#ifdef M3D1D_VERBOSE_
 	cout << "  Setting initial condition for tissue and network concentration ..." << endl;
 	#endif
 
-	vector_type C0t_vect(dof_transp.Ct(), param_transp.C0t());
-	vector_type C0v_vect(dof_transp.Cv(), param_transp.C0v());
+	vector_type C0t_vect(dof_oxy_transp.Ct(), param_oxy_transp.C0t());
+	vector_type C0v_vect(dof_oxy_transp.Cv(), param_oxy_transp.C0v());
 
 	gmm::copy(C0t_vect,
-		  gmm::sub_vector(UM_transp, 
-			  	gmm::sub_interval(0, dof_transp.Ct()))	);
+		  gmm::sub_vector(UM_oxy, 
+			  	gmm::sub_interval(0, dof_oxy_transp.Ct())));
+
 	gmm::copy(C0v_vect,
-		  gmm::sub_vector(UM_transp, 
-			  	gmm::sub_interval(dof_transp.Ct(), dof_transp.Cv()))	);
+		  gmm::sub_vector(UM_oxy, 
+			  	gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())));
 
 	gmm::clear(C0t_vect);	gmm::clear(C0v_vect);
 
 	// De-allocate memory
 	gmm::clear(Mt);    gmm::clear(Mv); 
 	gmm::clear(Dt);    gmm::clear(Dv);
-	gmm::clear(Bt);    gmm::clear(Bv);
+	gmm::clear(At);    gmm::clear(Av);
+	gmm::clear(Rt);
 	gmm::clear(Mbar);  gmm::clear(Mlin);
 	gmm::clear(Btt);   gmm::clear(Btv);
 	gmm::clear(Bvt);   gmm::clear(Bvv);
 
-		
 	}/* end of assembly_mat_transp */
 
 	void 
-	transport3d1d::assembly_rhs_transp(void)
+	transport3d1d::assembly_rhs_oxy_transp(void)
 	{
  
 	#ifdef M3D1D_VERBOSE_
-	cout << "Assembling the monolithic rhs FM_transp ... " << endl;
+	cout << "Assembling the monolithic rhs FM_oxy ... " << endl;
 	#endif
 	
 	#ifdef M3D1D_VERBOSE_
 	cout << "  Building coupling dirichlet boundary term ..." << endl;
 	#endif
-	//! Re-write the cycle over the boundary conditions: now, the Dirichlet conditions are a.s. correct, but in case there is a Dirichlet point of the network in a Robin face of the tissue (or viceversa) te Dirichlet condition is not completely guaranteed. One easy solution: implement all the robin condition, then implement all the Dirichlet condition.
-	asm_coupled_bc_transp (AM_temp, FM_temp, mf_Ct, mf_Cv, BCt_transp, BCv_transp);
+
+	//Nel tessuto
+	//Vettore delle Bc
+	vector_type Ft (dof_oxy_transp.Ct()); gmm::clear(Ft);
+
+	//Nel vaso
+	//Vettore delle BC
+	vector_type Fv (dof_oxy_transp.Cv()); gmm::clear(Fv);
+	//Vettore per il trasporto l'ossiemoglobina (termine non lineare)
+	vector_type Ov (dof_oxy_transp.Cv()); gmm::clear(Ov);	asm_coupled_bc_transp (AM_temp, FM_temp, mf_Ct, mf_Cv, BCt_transp, BCv_transp);
 	
+	//asm_coupled_bc_transp (AM_oxy, FM_oxy, mf_oxy_Ct, mf_oxy_Cv, BCt_transp, BCv_transp); //??
+		
 	#ifdef M3D1D_VERBOSE_
 	cout << "  Building tissue boundary term ..." << endl;
 	#endif
@@ -1063,82 +1055,37 @@ the integral on Gamma from the whole Omega domain.
 	//Right Hand Side for tissue	
 	vector_type Ft(dof_transp.Ct());
 			
-	sparse_matrix_type Att(dof_transp.Ct(), dof_transp.Ct());
-
-	gmm::add(	gmm::sub_matrix(AM_temp,
-			gmm::sub_interval(0,dof_transp.Ct()),
-			gmm::sub_interval(0,dof_transp.Ct()))
-			, Att);
-	gmm::scale(	gmm::sub_matrix(AM_temp,
-			gmm::sub_interval(0,dof_transp.Ct()),
-			gmm::sub_interval(0,dof_transp.Ct()))
-			, 0.0);	
-			
-	gmm::add(	 gmm::sub_vector(FM_temp, gmm::sub_interval(0,dof_transp.Ct()))
-			,Ft);	 
-	gmm::scale(	 gmm::sub_vector(FM_temp, gmm::sub_interval(0,dof_transp.Ct()))
-			,0.0);
-	
 	scalar_type beta_t  = PARAM.real_value("BETAtissue_transp", "Coefficient for mixed BC for transport problem in tissue");
-	asm_tissue_bc_transp(Ft, Att, mimt, mf_Ct, mf_coeft, BCt_transp,beta_t);
-	gmm::add(Att, 
-			gmm::sub_matrix(AM_temp,
-					gmm::sub_interval(0,dof_transp.Ct()),
-					gmm::sub_interval(0,dof_transp.Ct())));
-	gmm::add(Ft, 
-			gmm::sub_vector(FM_temp,
-					gmm::sub_interval(0,dof_transp.Ct())));
+		
+	asm_tissue_bc_transp(Ft, mimt, mf_oxy_Ct, mf_coeft, BCt_transp, beta_t);
+		
+	gmm::add(Ft, gmm::sub_vector(FM_oxy,
+					gmm::sub_interval(0,dof_oxy_transp.Ct())));
 	// De-allocate memory
-	gmm::clear(Att);
 	gmm::clear(Ft);
-
 
 	#ifdef M3D1D_VERBOSE_
 	cout << "  Building vessel boundary term ..." << endl;
 	#endif
 		
 	//Right Hand Side for vessels
-//RR: non lavoro più con AM_temp e FM_temp ma direttamente con il vettore monolitico FM e la matrice monolitica AM --> non ho più bisogno di aggiornare il rhs nel tempo
 	vector_type cv_guess (dof_transp.Cv(), param_transp.Cv_guess());
-	
-	sparse_matrix_type Avv(dof_transp.Cv(), dof_transp.Cv());
-	vector_type Fv(dof_transp.Cv());
-	vector_type Ov(dof_transp.Cv());
-	
-	gmm::add(	gmm::sub_matrix(AM_temp,
-			gmm::sub_interval(dof_transp.Ct(),dof_transp.Cv()),
-			gmm::sub_interval(dof_transp.Ct(),dof_transp.Cv()))
-			, Avv);
-	gmm::scale(	gmm::sub_matrix(AM_temp,
-			gmm::sub_interval(dof_transp.Ct(),dof_transp.Cv()),
-			gmm::sub_interval(dof_transp.Ct(),dof_transp.Cv()))
-			, 0.0);	
-				
-	gmm::add(	 gmm::sub_vector(FM_temp, gmm::sub_interval(dof_transp.Ct(), dof_transp.Cv()))
-			,Fv);	
-	gmm::scale(	 gmm::sub_vector(FM_temp, gmm::sub_interval(dof_transp.Ct(), dof_transp.Cv()))
-			,0.0);
 
 	scalar_type beta_v  = PARAM.real_value("BETAvessel_transp", "Coefficient for mixed BC for transport problem in vessels");
-	asm_network_bc_transp(Fv, Avv, mimv, mf_Cv, mf_coefv, BCv_transp, beta_v, param.R());
-	//RR: c'è bisogno di utilizzare Fv_temp e Avv_temp? li copierei direttamente nella corretta posizione
-	gmm::add(Avv, 
-			gmm::sub_matrix(AM_transp,
-					gmm::sub_interval(dof_transp.Ct(),dof_transp.Cv()),
-					gmm::sub_interval(dof_transp.Ct(),dof_transp.Cv())));
-	gmm::add(Fv, 
-			gmm::sub_vector(FM_transp,
-					gmm::sub_interval(dof_transp.Ct(), dof_transp.Cv())));
-					
-					
-		size_type shift =0;
-		size_type shift_h=0;
-		
-		scalar_type k1;
-		k1= param_transp.N()*param_transp.MCHC();
-		
-		scalar_type k2;
-		k2 = pow((param_transp.Ps_50()*param_transp.alpha_t()),param_transp.delta());
+
+	asm_network_bc_transp(Fv, mimv, mf_oxy_Cv, mf_coefv, BCv_transp, beta_v, param.R());
+	
+	gmm::add(Fv, gmm::sub_vector(FM_oxy,
+					gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())));
+							
+	size_type shift =0;
+	size_type shift_h=0;
+	
+	scalar_type k1;
+	k1= param_transp.N()*param_transp.MCHC();
+	
+	scalar_type k2;
+	k2 = pow((param_transp.Ps_50()*param_transp.alpha_t()),param_transp.delta());
 		
 	for(size_type i=0; i<nb_branches; ++i){
 		
@@ -1149,8 +1096,8 @@ the integral on Gamma from the whole Omega domain.
 		vector_type psi(mf_Hi[i].nb_dof()); gmm::clear(psi);
 
 		size_type pos=0;
-		for (getfem::mr_visitor mrv(mf_Cv.linked_mesh().region(i)); !mrv.finished(); ++mrv)
-		for (auto b : mf_Cv.ind_basic_dof_of_element(mrv.cv()))
+		for (getfem::mr_visitor mrv(mf_oxy_Cv.linked_mesh().region(i)); !mrv.finished(); ++mrv)
+		for (auto b : mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv()))
 			{
 			cv_i[pos] = cv_guess[b]; //ottengo cv_i --> la concentrazione definita ramo per ramo
 			pos++;
@@ -1173,56 +1120,17 @@ the integral on Gamma from the whole Omega domain.
 	//asm_hemoadvection_rhs_network(Ov, mimv, mf_Cv, mf_coefvi[i], mf_Uvi[i], mf_coefv, mf_Hi[i], Uvi, param.lambdax(i), param.lambday(i), param.lambdaz(i),  param.R(), psi, meshv.region(i));	
 	}
 	
-	gmm::copy(Ov, gmm::sub_vector(FM_temp, 
-					gmm::sub_interval(dof_transp.Ct(),dof_transp.Cv())));
+	gmm::copy(Ov, gmm::sub_vector(FM_oxy, 
+					gmm::sub_interval(dof_oxy_transp.Ct(),dof_oxy_transp.Cv())));
 	
 	
 	
 	// De-allocate memory
-	gmm::clear(Avv);
 	gmm::clear(Fv);
 	gmm::clear(Ov);
 	}/* end of assembly_rhs_transp */
-	
-
- //IN CASO STAZIONARIO: NON SERVE PIÙ L'UPDATE DEL RHS
-	void transport3d1d::update_transp (void){
-
-	
-	/*At each time step, the right hand side is modified by the time derivative term.
-	Since we must ensure in a strong way the Dirichlet conditions, by modifying the monolithic matrix and the rhs vector, we save both AM_transp and FM_transp, where are assembled the stationary terms; 	then, we work on AM_temp and FM_temp, modifying them when necessary.*/
-	
-
-	#ifdef M3D1D_VERBOSE_
-	cout << "  Update monolithic matrix and rhs vector ..." << endl;
-	#endif
-
-	gmm::copy(AM_transp, AM_temp);
-	gmm::copy(FM_transp, FM_temp);
-
-
-	// update rhs (time step mass term)
-	vector_type TFt(dof_transp.Ct());
-	vector_type TFv(dof_transp.Cv());
-	asm_source_term(TFt,mimt, mf_Ct, mf_Ct,gmm::sub_vector(UM_transp, gmm::sub_interval(0, dof_transp.Ct()))); 
-	vector_type RR(dof.coefv()); gmm::clear(RR);
-	gmm::add(param.R(),RR); gmm::vscale(param.R(),RR); gmm:: scale (RR, pi);
-	asm_source_term(TFv,mimv, mf_Cv, mf_coefv, RR);
-	gmm::vscale(gmm::sub_vector(UM_transp, gmm::sub_interval(dof_transp.Ct(), dof_transp.Cv())), TFv);
-	gmm::scale(TFt, (1.0/param_transp.dt())); // dt time step
-	gmm::scale(TFv, (1.0/param_transp.dt())); // dt time step
-	gmm::add(TFt, gmm::sub_vector(FM_temp, gmm::sub_interval(0, dof_transp.Ct())));
-	gmm::add(TFv, gmm::sub_vector(FM_temp, gmm::sub_interval(dof_transp.Ct(), dof_transp.Cv())));
-	gmm::clear(UM_transp);
-	gmm::clear(TFt); gmm::clear(TFv);
-
-	//update rhs (bundary condition terms)
-	assembly_rhs_transp();
-
-
-	};  /*end of update_transp*/
-
-
+	 
+	 
 	// Aux function for solver:
 	// contains the list of different methods for solving (SuperLU, SAMG,GMRES, etc)
 	// Always passes through the temporary matrixes AM_temp and FM_temp 
@@ -1240,7 +1148,7 @@ the integral on Gamma from the whole Omega domain.
 	gmm::copy(FM_temp, F_transp);
 	
 		
-	if ( descr_transp.SOLVE_METHOD == "SuperLU" || descr_transp.SOLVE_METHOD == "SUPERLU" ) { // direct solver //
+	if ( descr_oxy_transp.SOLVE_METHOD == "SuperLU" || descr_oxy_transp.SOLVE_METHOD == "SUPERLU" ) { // direct solver //
 		#ifdef M3D1D_VERBOSE_
 		cout << "  Applying the SuperLU method ... " << endl;
 		#endif
@@ -1248,7 +1156,7 @@ the integral on Gamma from the whole Omega domain.
 		gmm::SuperLU_solve(A_transp, UM_transp, F_transp, cond);
 		cout << "  Condition number (transport problem): " << cond << endl;
 	}
-	else if(descr_transp.SOLVE_METHOD == "SAMG"){
+	else if(descr_oxy_transp.SOLVE_METHOD == "SAMG"){
 	#ifdef WITH_SAMG	
 	#ifdef M3D1D_VERBOSE_
 		cout << "Solving the monolithic system ... " << endl;
@@ -1305,12 +1213,6 @@ the integral on Gamma from the whole Omega domain.
 					U_2[i]=u_samg[i];UM_transp[i]=u_samg[i];}
 				gmm::copy(U_2,UM_transp);
 	#endif
-				
-	#ifdef CSR_INTERFACE
-				// for(int i = 0 ; i < nnu ; i++ ){
-				//	U_2[i]=u_samg[i];UM[i]=u_samg[i];}
-				 // gmm::copy(U_2,UM);
-	#endif
 	
 	#else // with_samg=0
 	std::cout<< "ERROR: you are trying to solve with samg, but WITH_SAMG=0"<<std::endl;
@@ -1321,9 +1223,9 @@ the integral on Gamma from the whole Omega domain.
 	else { // Iterative solver //
 
 		// Iterations
-		gmm::iteration iter(descr_transp.RES);  // iteration object with the max residu
+		gmm::iteration iter(descr_oxy_transp.RES);  // iteration object with the max residu
 		iter.set_noisy(1);               // output of iterations (2: sub-iteration)
-		iter.set_maxiter(descr_transp.MAXITER); // maximum number of iterations
+		iter.set_maxiter(descr_oxy_transp.MAXITER); // maximum number of iterations
 
 		// Preconditioners
 		//! \todo Add preconditioner choice to param file
@@ -1335,33 +1237,33 @@ the integral on Gamma from the whole Omega domain.
 		//gmm::clear(AM);
 		// See <http://download.gna.org/getfem/doc/gmmuser.pdf>, pag 15
 	
-		if ( descr_transp.SOLVE_METHOD == "CG" ) {
+		if ( descr_oxy_transp.SOLVE_METHOD == "CG" ) {
 			#ifdef M3D1D_VERBOSE_
 			cout << "  Applying the Conjugate Gradient method ... " << endl;
 			#endif
 			gmm::identity_matrix PS;  // optional scalar product
 			gmm::cg(AM_transp, UM_transp, F_transp, PS, PM, iter);
 		}
-		else if ( descr_transp.SOLVE_METHOD == "BiCGstab" ) {
+		else if ( descr_oxy_transp.SOLVE_METHOD == "BiCGstab" ) {
 			#ifdef M3D1D_VERBOSE_
 			cout << "  Applying the BiConjugate Gradient Stabilized method ... " << endl;
 			#endif
 			gmm::bicgstab(AM, UM, FM, PM, iter);
 		}
-		else if ( descr_transp.SOLVE_METHOD == "GMRES" ) {
+		else if ( descr_oxy_transp.SOLVE_METHOD == "GMRES" ) {
 			#ifdef M3D1D_VERBOSE_
 			cout << "  Applying the Generalized Minimum Residual method ... " << endl;
 			#endif
 			size_type restart = 50;
 			gmm::gmres(A_transp, UM, FM, PM, restart, iter);
 		}
-		else if ( descr_transp.SOLVE_METHOD == "QMR" ) {
+		else if ( descr_oxy_transp.SOLVE_METHOD == "QMR" ) {
 			#ifdef M3D1D_VERBOSE_
 			cout << "  Applying the Quasi-Minimal Residual method ... " << endl;
 			#endif
 			gmm::qmr(AM, UM, FM, PM, iter);
 		}
-		else if ( descr_transp.SOLVE_METHOD == "LSCG" ) {
+		else if ( descr_oxy_transp.SOLVE_METHOD == "LSCG" ) {
 			#ifdef M3D1D_VERBOSE_
 			cout << "  Applying the unpreconditionned Least Square CG method ... " << endl;
 			#endif
@@ -1370,11 +1272,11 @@ the integral on Gamma from the whole Omega domain.
 		// Check
 		if (iter.converged())
 			cout << "  ... converged in " << iter.get_iteration() << " iterations." << endl;
-		else if (iter.get_iteration() == descr_transp.MAXITER)
+		else if (iter.get_iteration() == descr_oxy_transp.MAXITER)
 			cerr << "  ... reached the maximum number of iterations!" << endl;
 
 	}
-
+		
 	return true;
 	} /* end of solver_transp */
 
@@ -1385,8 +1287,6 @@ the integral on Gamma from the whole Omega domain.
   	#ifdef M3D1D_VERBOSE_
 	cout << "Solving the monolithic system ... " << endl;
 	#endif
-	gmm::resize(AM_temp, dof_transp.tot(), dof_transp.tot()); gmm::clear(AM_temp);
-	gmm::resize(FM_temp, dof_transp.tot()); gmm::clear(FM_temp);
 	
 	double time = gmm::uclock_sec();
 	double time_partial = 0;
@@ -1406,15 +1306,11 @@ the integral on Gamma from the whole Omega domain.
 	std::cout<<"Iteration number: "<<time_count<<std::endl;
 	std::cout<<"time = "<<t<<" s"<<std::endl<<std::endl;	
 	}
-
-	//Update rhs and boundary condition
-	//update_transp();
 	
-	// Solve the system on AM_temp, UM_transp, FM_temp(???)
-	bool solved = solver(dof_transp.Ct(),dof_transp.Cv(),0,0);
+	// Solve the system on AM_oxy, UM_oxy, FM_oxy
+	bool solved = solver(dof_oxy_transp.Ct(),dof_oxy_transp.Cv(),0,0);
 	if (!solved) return false;
 	
-//***** decido di portarlo dentro a fixpoint_concentration
 	//export solution
 	#ifdef M3D1D_VERBOSE_
 	std::cout<<"solved! going to export..."<<std::endl;
@@ -1426,27 +1322,22 @@ the integral on Gamma from the whole Omega domain.
 	time_suff = convert.str();
 	export_vtk_transp(time_suff); 
 
-
-
 	#ifdef M3D1D_VERBOSE_		
 	std::cout<<"exported!"<<std::endl;
 	#endif	
 	
-	if(!descr_transp.STATIONARY)
+	if(!descr_oxy_transp.STATIONARY)
 	cout << "... time to solve : "	<< gmm::uclock_sec() - time_partial << " seconds\n";
 	
 	} //end of cycle over time 
-	if(!descr_transp.STATIONARY){
+	if(!descr_oxy_transp.STATIONARY){
 	cout << endl<<"... time to solve all the time steps: " << gmm::uclock_sec() - time << " seconds\n";				}
 	else{
 	cout << endl<<"... time to solve : " << gmm::uclock_sec() - time << " seconds\n";
 	}
-//********************************************************
 	return true;
  	}; // end of solve_transp
 	
-
-//***************************************fine ciclo iterativo
 
 	//Compute the residuals for mass balance at each junction 
 	void transport3d1d::mass_balance(void){
