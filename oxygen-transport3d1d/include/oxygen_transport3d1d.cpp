@@ -11,7 +11,7 @@
   @file   oxygen_transport3d1d.cpp
   @author Riccardo Rosati <riccardo1.rosati@mail.polimi.it>
   @date   September 2016 - September 2018.
-  @brief  Definition of the main class for the 3D/1D coupled transport problem.
+  @brief Definizione della classe principale per risolvere il problema del trasporto di ossigeno
  */
  
  #include <oxygen_transport3d1d.hpp>
@@ -24,8 +24,8 @@
  namespace getfem {
 
 
-	// Initialize the transport problem
- 	void ozygen_transport3d1d::init_transp (int argc, char *argv[]) 
+	// Inizializzo il problema
+ 	void oxygen_transport3d1d::init_oxy_transp (int argc, char *argv[]) 
  	{
  	#ifdef M3D1D_VERBOSE_
  	std::cout << "initialize transport problem..."<<std::endl<<std::endl;
@@ -51,7 +51,7 @@
  	// Aux methods for init
 	
 	// Import algorithm specifications
-	void transport3d1d::import_data_oxy_transp(void)
+	void oxygen_transport3d1d::import_data_oxy_transp(void)
 	{
 	#ifdef M3D1D_VERBOSE_
 	cout << "Importing descriptors for tissue and vessel problems ..." << endl;
@@ -61,7 +61,7 @@
 	descr_oxy_transp.import(PARAM);
 
 	#ifdef M3D1D_VERBOSE_
-	cout << descr_transp;
+	cout << descr_oxy_transp;
 	#endif
 	 
  
@@ -105,9 +105,10 @@
 	#ifdef M3D1D_VERBOSE_
 	cout << "Importing the 1D mesh for the vessel (transport problem)... "   << endl;
 	#endif
-	std::ifstream ifs(descr_transp.MESH_FILEV);
-	GMM_ASSERT1(ifs.good(), "impossible to read from file " << descr_transp.MESH_FILEV);
+	std::ifstream ifs(descr_oxy_transp.MESH_FILEV_OXY);
+	GMM_ASSERT1(ifs.good(), "impossible to read from file " << descr_oxy_transp.MESH_FILEV_OXY);
 	meshv.clear();
+		
 	bool Import=PARAM.int_value("IMPORT_CURVE");
 	bool Curve=PARAM.int_value("CURVE_PROBLEM");
 
