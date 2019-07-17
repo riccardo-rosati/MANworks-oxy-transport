@@ -42,27 +42,21 @@ namespace getfem {
 template<typename MAT, typename VEC>
 void 
 asm_tissue_transp
-	(MAT & M, MAT & D,MAT & L, MAT & R,
+	(MAT & D, MAT & R,
 	 const mesh_im & mim,
 	 const mesh_fem & mf_c,
 	 const mesh_fem & mf_coef,
 	 const VEC & diff_data,
-	 const VEC & linf_data,
 	 const VEC & reac_data,
 	 const mesh_region & rg = mesh_region::all_convexes()
 	 ) 		
 {
 	GMM_ASSERT1(mf_c.get_qdim() == 1, 
 		"invalid data mesh fem for pressure (Qdim=1 required)");
-	// Build the mass matrix Mt (consumption)
+	// Build the mass matrix Rt (consumption)
 	getfem::asm_mass_matrix_param(R, mim, mf_c, mf_coef, reac_data, rg);
-	// Build the mass matrix Tt for time derivative 
-	getfem::asm_mass_matrix(M, mim, mf_c, rg);
-	// Build the divergence matrix Dtt
-	getfem::asm_stiffness_matrix_for_laplacian(D,mim,mf_c, mf_coef, diff_data, rg); 
-	// Build the mass matrix Lt (linfatic drainage)
-	getfem::asm_mass_matrix_param(R, mim, mf_c, mf_coef, linf_data, rg);
-	
+	// Build the divergence matrix Dt
+	getfem::asm_stiffness_matrix_for_laplacian(D,mim,mf_c, mf_coef, diff_data, rg);	
 } /* end of asm_tissue_transp*/
 
 
@@ -79,31 +73,32 @@ asm_tissue_transp
 	@ingroup asm
  */  
   template<typename MAT, typename VECT>
-  void asm_advection_tissue(MAT &B, const getfem::mesh_im &mim,
-			    const getfem::mesh_fem &mf,
-                            const getfem::mesh_fem &mfvel,
-                            const VECT &vel,
-                            const mesh_region & rg = mesh_region::all_convexes()                           
-                            	 ) {
+  void asm_advection_tissue(MAT &A, 
+			    const getfem::mesh_im & mim,
+			    const getfem::mesh_fem & mf,
+                            const getfem::mesh_fem & mfvel,
+                            const VECT & vel,
+                            const mesh_region & rg = mesh_region::all_convexes())
+{
     getfem::generic_assembly
-      assem1("vel=data(#2);"
-            "M$1(#1,#1) += comp(Base(#1).Grad(#1).vBase(#2)) (:, :,i, k,i).vel(k);");
+    assem1("vel=data(#2);"
+            "M$1(#1,#1) += comp(Base(#1).Grad(#1).vBase(#2))(:, :,i, k,i).vel(k);");
     assem1.push_mi(mim);
     assem1.push_mf(mf);
     assem1.push_mf(mfvel);
     assem1.push_data(vel);
-    assem1.push_mat(B);
+    assem1.push_mat(A);
     assem1.assembly(rg);
     
     
     getfem::generic_assembly
       assem2("vel=data(#2);"
-            "M$1(#1,#1) += comp( Base(#1).Base(#1).vGrad(#2) )(:, :,k, p,p).vel(k);");
+            "M$1(#1,#1) += comp(Base(#1).Base(#1).vGrad(#2))(:, :,k, p,p).vel(k);");
     assem2.push_mi(mim);
     assem2.push_mf(mf);
     assem2.push_mf(mfvel);
     assem2.push_data(vel);
-    assem2.push_mat(B);
+    assem2.push_mat(A);
     assem2.assembly(rg);
   }  /* end of asm_advection_tissue*/
 
