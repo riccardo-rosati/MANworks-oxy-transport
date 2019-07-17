@@ -40,8 +40,7 @@ namespace getfem {
 	@ingroup asm
  */ 
 template<typename MAT, typename VEC>
-void 
-asm_tissue_transp
+void asm_tissue_transp
 	(MAT & D, MAT & R,
 	 const mesh_im & mim,
 	 const mesh_fem & mf_c,
@@ -73,12 +72,13 @@ asm_tissue_transp
 	@ingroup asm
  */  
   template<typename MAT, typename VECT>
-  void asm_advection_tissue(MAT &A, 
-			    const getfem::mesh_im & mim,
-			    const getfem::mesh_fem & mf,
-                            const getfem::mesh_fem & mfvel,
-                            const VECT & vel,
-                            const mesh_region & rg = mesh_region::all_convexes())
+  void asm_advection_tissue
+  	(MAT &A, 
+	const getfem::mesh_im & mim,
+	const getfem::mesh_fem & mf,
+        const getfem::mesh_fem & mfvel,
+        const VECT & vel,
+        const mesh_region & rg = mesh_region::all_convexes())
 {
     getfem::generic_assembly
     assem1("vel=data(#2);"
