@@ -42,12 +42,12 @@ struct dof3d1d_transp {
 	
 	//! Compute the number of dof of given FEM
 	void set (
-			const getfem::mesh_fem & mf_Ct,	const getfem::mesh_fem & mf_Cv,
+			const getfem::mesh_fem & mf_oxy_Ct,	const getfem::mesh_fem & mf_oxy_Cv,
 			const getfem::mesh_fem & mf_Ct_Omega, const getfem::mesh_fem & mf_Ct_Sigma
 			)
 	{
-		Ct_ = mf_Ct.nb_dof();
-		Cv_ = mf_Cv.nb_dof();
+		Ct_ = mf_oxy_Ct.nb_dof();
+		Cv_ = mf_oxy_Cv.nb_dof();
 
 		Ct_Omega_ = mf_Ct_Omega.nb_dof();
 		Ct_Sigma_ = mf_Ct_Sigma.nb_dof();
@@ -59,11 +59,11 @@ struct dof3d1d_transp {
 	}
 
 	void set (
-			const getfem::mesh_fem & mf_Ct,	const getfem::mesh_fem & mf_Cv
+			const getfem::mesh_fem & mf_oxy_Ct,	const getfem::mesh_fem & mf_oxy_Cv
 			)
 	{
-		Ct_ = mf_Ct.nb_dof();
-		Cv_ = mf_Cv.nb_dof();
+		Ct_ = mf_oxy_Ct.nb_dof();
+		Cv_ = mf_oxy_Cv.nb_dof();
 		
 		tissue_ = Ct_; 
 		vessel_ = Cv_ ;
