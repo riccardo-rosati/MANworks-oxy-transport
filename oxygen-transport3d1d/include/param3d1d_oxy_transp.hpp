@@ -75,16 +75,6 @@ struct param3d1d_oxy_transp {
 	//lymphatic drainage
 	vector_type Q_pl_;
 	
-	//time parameters 
-	// simulation time length
-	scalar_type T_;
-	// time step
-	scalar_type dt_;
-	// initial concentration in tissue
-	scalar_type C0t_;
-	// initial concentration in network
-	scalar_type C0v_;
-	
 	
 
 	// Utils
@@ -127,10 +117,7 @@ struct param3d1d_oxy_transp {
 			 Av_.assign(dof_datav,  Avval);
 			 Dalpha_.assign(dof_datat,  Dalphaval);
 			 Y_.assign(dof_datav,  Yval);
-			 Q_pl_.assign(dof_datat,  Q_plval);
-	
-			C0t_   = FILE_.real_value("C0t","Initial concentration in tissue []");	
-			C0v_   = FILE_.real_value("C0v","Initial concentration in network []");			
+			 Q_pl_.assign(dof_datat,  Q_plval);	
 		} 
 		else { 
 			// Import dimensional params from FILE_
@@ -161,13 +148,10 @@ struct param3d1d_oxy_transp {
 			Perm_ = FILE_.real_value("Perm","Permeability of the capillary walls [m/s]");
 			Lp_LF_ = FILE_.real_value("Lp_LF","hydraulic conductivity of the lymphatic wall [s * m^2/kg]");
 			SV_ = FILE_.real_value("SV","surface area of lymphatic vessels per unit volume of tissue [1/m]");
-
-			C0t_   = FILE_.real_value("C0t","Initial concentration in tissue []");	
-			C0v_   = FILE_.real_value("C0v","Initial concentration in network []");				
+			
 			// Compute the dimentionless params
 			At_.assign(dof_datat, Dt_/d_/U_);
 			Av_.assign(dof_datav, Dv_/d_/U_);
-
 		//modifica coefficiente di reazione
 			//Dalpha_.assign(dof_datat, (m0_/((C0_+(Pm_50_*alpha_T_)))*U_*d_);
 			Y_.assign(dof_datav, Perm_/U_);
@@ -204,10 +188,6 @@ struct param3d1d_oxy_transp {
 	inline scalar_type Dalpha  (size_type i) { return Dalpha_[i];  } const
 	//! Get the leakage of the capillary bed at a given dof
 	inline scalar_type Y  (size_type i) { return Y_[i];  } const
-	//! Get the sinitial concentration in tissue
-	inline scalar_type C0t  () { return C0t_;  } const
-	//! Get the sinitial concentration in network
-	inline scalar_type C0v  () { return C0v_;  } const
 		
 	//RR: 
 	//! Get the maximum consumption rate
