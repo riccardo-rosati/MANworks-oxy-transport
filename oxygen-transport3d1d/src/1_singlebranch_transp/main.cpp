@@ -24,11 +24,10 @@
     
 	See Section "Code verification: test-cases"
  */  
- 	 
- 	#define M3D1D_VERBOSE_ 
+ 
 #include <iostream>
 #include <problem3d1d.hpp>
-#include <transport3d1d.hpp> 
+#include <oxygen_transport3d1d.hpp> 
 #include <problemHT.hpp>
 
 //! main program
@@ -40,7 +39,7 @@ int main(int argc, char *argv[])
  
 	try {   
 		// Declare a new problem 
-		getfem::transport3d1d p; 
+		getfem::oxygen_transport3d1d p; 
 		
 		// Initialize the problem
                 p.problem3d1d::init(argc, argv);
@@ -56,18 +55,21 @@ int main(int argc, char *argv[])
                                 // Save results in .vtk format
                                 p.problemHT::export_vtk();
 				
-                                /*
-                                if(p.OXYGEN_TRANSPORT(argc, argv)) // da aggiungere in transport
+                                
+                       	if(p.OXYGEN_TRANSPORT(argc, argv))
                                 {
                                     //initialize the transport problem
-                                    p.init_transp(argc, argv);
+                                    p.init_oxy_transp(argc, argv);
+				std::cout<<"Ho inizializzato il trasporto di O2"<<std::endl;
+/*				
                                     //assemble
                                     p.assembly_transp();
                                     //solve
                                     if (!p.solve_transp()) GMM_ASSERT1(false, "solve procedure has failed");  // the export is in the solve at each time step
                                     // Save results in .vtk format
                                     p.export_vtk();
-                                }*/
+*/
+                                }
 
 				}
                         //aggiungere trasporto (con os enza flag)
@@ -105,8 +107,7 @@ int main(int argc, char *argv[])
 	   
     
 		    
-		   
-	return 0;    
+		  return 0;    
 	   
 } /* end of main program */   
     
