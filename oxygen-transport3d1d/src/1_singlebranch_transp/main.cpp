@@ -30,6 +30,8 @@
 #include <oxygen_transport3d1d.hpp> 
 #include <problemHT.hpp>
 
+using namespace getfem;
+
 //! main program
 int main(int argc, char *argv[])   
 {
@@ -39,7 +41,7 @@ int main(int argc, char *argv[])
  
 	try {   
 		// Declare a new problem 
-		getfem::oxygen_transport3d1d p; 
+		oxygen_transport3d1d p; 
 		
 		// Initialize the problem
                 p.problem3d1d::init(argc, argv);
@@ -61,14 +63,14 @@ int main(int argc, char *argv[])
                                     //initialize the transport problem
                                     p.init_oxy_transp(argc, argv);
 				std::cout<<"Ho inizializzato il trasporto di O2"<<std::endl;
-/*				
+				
                                     //assemble
-                                    p.assembly_transp();
+                                    p.assembly_oxy_transp();
                                     //solve
-                                    if (!p.solve_transp()) GMM_ASSERT1(false, "solve procedure has failed");  // the export is in the solve at each time step
+                                    if (!p.solve_oxy_transp()) GMM_ASSERT1(false, "solve procedure has failed");  // the export is in the solve at each time step
                                     // Save results in .vtk format
-                                    p.export_vtk();
-*/
+                                    p.export_vtk_oxy_transp();
+
                                 }
 
 				}

@@ -107,7 +107,7 @@ MESH_FILEV = './segment.pts'
 % Path to import radius of the newtork (read if IMPORT_RADIUS=1)
 RFILE      = 'radius.pts'
 % Path to import the 1d list of points for Ht (as the 1d list of points but with H boundary conditions)
-MESH_FILEH = './HT_BCs.pts'
+MESH_FILEH = './segment_Ht.pts'
 % Path to import the curvature of the vessels (if IMPORT_CURVE = 1)
 CURVE_FILE = 'curve.pts'
 % Path to import the 1d list of points for transport
@@ -145,7 +145,7 @@ FEM_TYPEV_OV = 'FEM_PK(1,1)';		%Oxygen network concentration
 % GetFem type for the 1D Integration Method
 IM_TYPEV    = 'IM_GAUSS1D(6)'; 		%Fluid flow
 IM_TYPEH    = 'IM_GAUSS1D(6)'; 		%Hematrocrit
-IM_TYPEV_OXY = 'IM_GAUSS1D(6)';	%Oxygen transport
+IM_TYPEV_OXY_TRANSP = 'IM_GAUSS1D(6)';	%Oxygen transport
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%											Coupling (3D/1D) 										%%%%%%
@@ -163,7 +163,7 @@ NInt = 50;
 % iterative: 'CG','BiCGstab','GMRES','QMR','LSCG'
 SOLVE_METHOD = 'SuperLU';			%Fluid flow
 % Hematocrit always solve by SuperLU		%Hematrocrit 
-SOLVE_METHOD_OXY = 'SuperLU';		%Oxygen transport
+SOLVE_METHOD_OXY_TRANSP = 'SuperLU';		%Oxygen transport
 
 % Maximum number of iterations for iterative solvers
 MAXITER  = 100;
