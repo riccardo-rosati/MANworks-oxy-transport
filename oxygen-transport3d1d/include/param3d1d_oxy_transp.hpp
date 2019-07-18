@@ -229,7 +229,7 @@ struct param3d1d_oxy_transp {
 	vector_type & Y  (void) { return Y_;  } const
 	//! Overloading of the output operator
 	friend std::ostream & operator << (
-		std::ostream & out, const param3d1d_transp & param
+		std::ostream & out, const param3d1d_oxy_transp & param
 		)
 	{ 
 		out << "--- PHYSICAL PARAMS ------" << endl;
@@ -237,14 +237,14 @@ struct param3d1d_oxy_transp {
 		out << "  Av : "                << param.Av_[0] << endl; 
 		out << "  Y      : "                << param.Y_[0] << endl; 
 		out << "  Q_pl : "                << param.Q_pl_[0] << endl; 
-		out << "  m0 : "                << param_oxy_transp.m0_ << endl;
-		out << "  Pm_50 : "                << param_oxy_transp.Pm_50_ << endl;
-		out << "  Alpha_t : "                << param_oxy_transp.alpha_t_ << endl;
-		out << "  Hufner factor : "                << param_oxy_transp.N_ << endl;
-		out << "  MCHC : "                << param_oxy_transp.MCHC_ << endl;
-		out << "  Hill Constant : "                << param_oxy_transp.delta_ << endl;
-		out << "  Ps_50 : "                << param_oxy_transp.Ps_50_ << endl;
-		out << "  Alpha_pl : "                << param_oxy_transp.alpha_pl_ << endl;
+		out << "  m0 : "                << param.m0_ << endl;
+		out << "  Pm_50 : "                << param.Pm_50_ << endl;
+		out << "  Alpha_t : "                << param.alpha_t_ << endl;
+		out << "  Hufner factor : "                << param.N_ << endl;
+		out << "  MCHC : "                << param.MCHC_ << endl;
+		out << "  Hill Constant : "                << param.delta_ << endl;
+		out << "  Ps_50 : "                << param.Ps_50_ << endl;
+		out << "  Alpha_pl : "                << param.alpha_pl_ << endl;
 		out << "--------------------------" << endl;
 
 		return out;            

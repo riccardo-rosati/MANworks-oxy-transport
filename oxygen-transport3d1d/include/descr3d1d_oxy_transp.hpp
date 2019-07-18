@@ -65,7 +65,7 @@ struct descr3d1d_oxy_transp {
 
 	// Solver information
 	//! Identifief of the monolithic solver for transport problem
-	std::string SOLVE_METHOD;
+	std::string SOLVE_METHOD_OXY;
 	//! Maximum number of iterations (iterative solvers)
 	size_type   MAXITER;
 	//! Mamimum residual (iterative solvers)
@@ -136,13 +136,13 @@ struct descr3d1d_oxy_transp {
 
 	//! Overloading of the output operator
 	friend std::ostream & operator << (
-		std::ostream & out, const descr3d1d_transp & descr
+		std::ostream & out, const descr3d1d_oxy_transp & descr
 		)
 	{ 
 		cout << "---- TRANSPORT PROBLEM DESCRIPTORS--------------------------" << endl;
 		
-		cout << " FEM TYPE  3D concentration     : " << descr.FEM_TYPET_C   << endl;
-		cout << " FEM TYPE  1D concentration     : " << descr.FEM_TYPEV_C   << endl;
+		cout << " FEM TYPE  3D concentration     : " << descr.FEM_TYPET_OT   << endl;
+		cout << " FEM TYPE  1D concentration     : " << descr.FEM_TYPEV_OV   << endl;
 		cout << "--------------------------------------------------" << endl;
 
 		return out;            

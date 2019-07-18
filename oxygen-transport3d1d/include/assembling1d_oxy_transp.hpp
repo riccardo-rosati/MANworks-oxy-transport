@@ -47,6 +47,7 @@ asm_network_transp
 	 const mesh_im & mim,
 	 const mesh_fem & mf_c,
 	 const mesh_fem & mf_data,
+	 const VEC & diff,
 	 const VEC & R,
 	 const mesh_region & rg = mesh_region::all_convexes()
 	 ) 		

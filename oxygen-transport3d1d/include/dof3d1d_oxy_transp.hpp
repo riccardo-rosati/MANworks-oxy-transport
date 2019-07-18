@@ -19,7 +19,7 @@
 namespace getfem {
 
 //! Class to store the number of degrees of freedom of used FEMs
-struct dof3d1d_transp {
+struct dof3d1d_oxy_transp {
 
 
 	//! Number of dof of the interstitial concentration FEM mf_Pt
@@ -91,7 +91,7 @@ struct dof3d1d_transp {
 
 	//! Overloading of the output operator
 	friend std::ostream & operator << (
-			std::ostream & out, const dof3d1d_transp & dof
+			std::ostream & out, const dof3d1d_oxy_transp & dof
 			)
 	{ 
 		out << "--- DEGREES OF FREEDOM --- " << endl;

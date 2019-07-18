@@ -47,7 +47,7 @@
  	}; // end of init
 	 
 	 
-	bool oxygen_transport3d1d::OXYGEN_TRANSPORT(argc, argv)
+	bool oxygen_transport3d1d::OXYGEN_TRANSPORT(int argc, char *argv[])
 	{
 	PARAM.read_command_line(argc, argv);
 	//1. Import data (algorithm specifications, boundary conditions, ...)	
@@ -122,7 +122,7 @@
 	bool Curve=PARAM.int_value("CURVE_PROBLEM");
 
 	if(Curve && !Import){
-		import_pts_file(ifs, meshv, BCv_transp, nb_vertices, descr.MESH_TYPEV, param);
+		import_pts_file(ifs, meshv, BCv_oxy_transp, nb_vertices, descr.MESH_TYPEV, param);
 	}
 	
 	else if(Import && !Curve){
@@ -132,12 +132,12 @@
 		std::ifstream ifc(PARAM.string_value("CURVE_FILE","curvature file location"));
 		GMM_ASSERT1(ifc.good(), "impossible to read from file " << PARAM.string_value("CURVE_FILE","curvature file location"));
 		
-		import_pts_file(ifs,ifc, meshv, BCv_transp, nb_vertices, descr.MESH_TYPEV, param);
+		import_pts_file(ifs,ifc, meshv, BCv_oxy_transp, nb_vertices, descr.MESH_TYPEV, param);
 
 		ifc.close();
 	} 
 	else{
-		import_pts_file(ifs, meshv, BCv_transp, nb_vertices, descr.MESH_TYPEV);
+		import_pts_file(ifs, meshv, BCv_oxy_transp, nb_vertices, descr.MESH_TYPEV);
 	}
 
 
@@ -225,8 +225,8 @@
 
 	size_type face=descr_oxy_transp.FACE;
 
-	BCt_transp.clear();
-	BCt_transp.reserve(2*DIMT);
+	BCt_oxy_transp.clear();
+	BCt_oxy_transp.reserve(2*DIMT);
 	// Parse BC data
 	string label_in = PARAM.string_value("BClabel_transp", "Array of tissue boundary labels");
 	string value_in = PARAM.string_value("BCvalue_transp", "Array of tissue boundary values");
@@ -236,9 +236,9 @@
 	GMM_ASSERT1(values.size()==2*DIMT, "wrong number of BC values");
 	for (unsigned f=0; f<2*DIMT; ++f) 
 		{
-			BCt_transp.emplace_back(labels[f], std::stof(values[f]), 0, face+f);
+			BCt_oxy_transp.emplace_back(labels[f], std::stof(values[f]), 0, face+f);
 			#ifdef M3D1D_VERBOSE_
-			cout << "  face " << f << " : " << BCt_transp.back() << endl;
+			cout << "  face " << f << " : " << BCt_oxy_transp.back() << endl;
 			#endif
 		} 
 	
@@ -289,7 +289,7 @@
 	dal::bit_vector junctions; // global idx of junctions vertices in meshv
 	dal::bit_vector extrema;   // global idx of extreme vertices in meshv
 
-	Jv_transp.clear();
+	Jv_oxy_transp.clear();
 	nb_extrema=0; 
 	nb_junctions=0;
 	
@@ -324,13 +324,13 @@
 			// Store the current index and then update it
 			size_type bc = 0; 
 			bool found = false;
-			while (!found && (bc<BCv_transp.size())) {
-				found = (i0 == BCv_transp[bc].idx);
+			while (!found && (bc<BCv_oxy_transp.size())) {
+				found = (i0 == BCv_oxy_transp[bc].idx);
 				if (!found) bc++;
 			}
 			GMM_ASSERT1(found=true, "Miss a boundary node in BCv list!");
 
-			BCv_transp[bc].rg = fer; 
+			BCv_oxy_transp[bc].rg = fer; 
 			fer++;
 			// Store the containing branch index
 			size_type branch = 0; 
@@ -341,7 +341,7 @@
 				if (!contained) branch++;
 			}
 			GMM_ASSERT1(contained=true, "No branch region contains node i0!");
-			BCv_transp[bc].branches.emplace_back(branch); 
+			BCv_oxy_transp[bc].branches.emplace_back(branch); 
 		}
 		else if (meshv.convex_to_point(i0).size()==2){ /* trivial inflow junction */
 			// DO NOTHING
@@ -363,7 +363,7 @@
 				// Build a new region with idx "first empty region"
 				meshv.region(fer).add(cv, 1); // single-face region
 				// Create a new junction node
-				Jv_transp.emplace_back("JUN", 0, i0, fer);
+				Jv_oxy_transp.emplace_back("JUN", 0, i0, fer);
 				fer++;
 			}
 			// Search for index of containing branch (\mathcal{P}^{in}_j)
@@ -378,12 +378,12 @@
 			size_type jj = 0;
 			bool found = false;
 			while (!found && jj < nb_junctions){
-				found = (i0 == Jv_transp[jj].idx);
+				found = (i0 == Jv_oxy_transp[jj].idx);
 				if (!found) jj++;
 			}
 			//cout << "Branch -" << branch << " added to junction " << jj << endl;
-			Jv_transp[jj].value += param.R(mimv, branch);
-			Jv_transp[jj].branches.emplace_back(-branch);
+			Jv_oxy_transp[jj].value += param.R(mimv, branch);
+			Jv_oxy_transp[jj].branches.emplace_back(-branch);
 			GMM_ASSERT1(branch>0, 
 				"Error in network labeling: -0 makes no sense");
 		}
@@ -391,8 +391,8 @@
 		if (meshv.convex_to_point(i1).size()==1){ 
 			size_type bc = 0; 
 			bool found = false;
-			while (!found && (bc<BCv_transp.size())) {
-				found = (i1 == BCv_transp[bc].idx);
+			while (!found && (bc<BCv_oxy_transp.size())) {
+				found = (i1 == BCv_oxy_transp[bc].idx);
 				if (!found) bc++;
 			}
 			if (found){ /* outlow extremum */
@@ -403,8 +403,8 @@
 					"Overload in meshv region assembling!");
 				meshv.region(fer).add(cv, 0);
 				// Store the current index and then update it
-				BCv_transp[bc].value *= +1.0;
-				BCv_transp[bc].rg = fer; 
+				BCv_oxy_transp[bc].value *= +1.0;
+				BCv_oxy_transp[bc].rg = fer; 
 				fer++;
 				// Store the containing branch index
 				size_type branch = 0; 
@@ -414,7 +414,7 @@
 					if (!contained) branch++;
 				}
 				GMM_ASSERT1(contained=true, "No branch region contains node i1!");
-				BCv_transp[bc].branches.emplace_back(branch); 
+				BCv_oxy_transp[bc].branches.emplace_back(branch); 
 			}
 
 			else { // interior -> Mixed point 
@@ -423,7 +423,7 @@
 				GMM_ASSERT1(meshv.has_region(fer)==0, 
 					"Overload in meshv region assembling!");
 				meshv.region(fer).add(cv, 0);
-				BCv_transp.emplace_back("MIX", 0.0, i1, fer);
+				BCv_oxy_transp.emplace_back("MIX", 0.0, i1, fer);
 				fer++;
 				// Store the containing branch index
 				size_type branch = 0; 
@@ -433,7 +433,7 @@
 					if (!contained) branch++;
 				}
 				GMM_ASSERT1(contained=true, "No branch region contains node i1!");
-				BCv_transp.back().branches.emplace_back(branch); 
+				BCv_oxy_transp.back().branches.emplace_back(branch); 
 			}
 
 		}
@@ -468,7 +468,7 @@
 					// Build a new region with idx "first empty region"
 					meshv.region(fer).add(cv, 0);
 					// Create a new junction node
-					Jv_transp.emplace_back("JUN", 0, i1, fer);
+					Jv_oxy_transp.emplace_back("JUN", 0, i1, fer);
 					fer++;
 				// Search for index of second containing branch (\mathcal{P}^{out}_j)
 				size_type secondbranch = 0; 
@@ -487,15 +487,15 @@
 				if (meshv.ind_points_of_convex(firstcv)[0]==i1) in=-1;
 				else if (meshv.ind_points_of_convex(firstcv)[1]==i1) in=+1;
 				GMM_ASSERT1(in!=0, "There's something wrong in firstbranch convex index");
-				Jv_transp.back().branches.emplace_back(in*firstbranch);
+				Jv_oxy_transp.back().branches.emplace_back(in*firstbranch);
 
 				in=0;
 				if (meshv.ind_points_of_convex(secondcv)[0]==i1) in=-1;
 				else if (meshv.ind_points_of_convex(secondcv)[1]==i1) in=+1;
 				GMM_ASSERT1(in!=0, "There's something wrong in secondbranch convex index");
-				Jv_transp.back().branches.emplace_back(in*secondbranch);
-				Jv_transp.back().value += param.R(mimv, firstbranch);
-				Jv_transp.back().value += param.R(mimv, secondbranch);
+				Jv_oxy_transp.back().branches.emplace_back(in*secondbranch);
+				Jv_oxy_transp.back().value += param.R(mimv, firstbranch);
+				Jv_oxy_transp.back().value += param.R(mimv, secondbranch);
 				}
 			}
 		}
@@ -522,10 +522,10 @@
 				// Build a new region with idx "first empty region"
 				meshv.region(fer).add(cv, 0);
 				// Create a new junction node
-				Jv_transp.emplace_back("JUN", 0, i1, fer);
+				Jv_oxy_transp.emplace_back("JUN", 0, i1, fer);
 				// Add the outflow branch
-				Jv_transp.back().branches.emplace_back(+branch);
-				Jv_transp.back().value += param.R(mimv, branch);
+				Jv_oxy_transp.back().branches.emplace_back(+branch);
+				Jv_oxy_transp.back().value += param.R(mimv, branch);
 				//cout << "Branch " << branch << " added to junction " << i1 << endl;
 				fer++;
 			}
@@ -534,11 +534,11 @@
 				size_type jj = 0;
 				bool found = false;
 				while (!found && jj < nb_junctions){
-					found = (i1 == Jv_transp[jj].idx);
+					found = (i1 == Jv_oxy_transp[jj].idx);
 					if (!found) jj++;
 				}
-				Jv_transp[jj].branches.emplace_back(+branch);
-				Jv_transp[jj].value += param.R(mimv, branch);
+				Jv_oxy_transp[jj].branches.emplace_back(+branch);
+				Jv_oxy_transp[jj].value += param.R(mimv, branch);
 				//cout << "Branch " << branch << " added to junction " << jj << endl;
 			}
 		}
@@ -551,16 +551,16 @@
 	cout << "  Branches:   " << nb_branches << endl
 		 << "  Vertices:   " << nn.size()+1 << endl;
 	cout << "  Extrema:    " << extrema << endl;	  
-	for (size_type i=0; i<BCv_transp.size(); ++i)
-		cout << "    -  label=" << BCv_transp[i].label 
-			 << ", value=" << BCv_transp[i].value << ", ind=" << BCv_transp[i].idx 
-			 << ", rg=" << BCv_transp[i].rg << ", branches=" << BCv_transp[i].branches << endl; 
+	for (size_type i=0; i<BCv_oxy_transp.size(); ++i)
+		cout << "    -  label=" << BCv_oxy_transp[i].label 
+			 << ", value=" << BCv_oxy_transp[i].value << ", ind=" << BCv_oxy_transp[i].idx 
+			 << ", rg=" << BCv_oxy_transp[i].rg << ", branches=" << BCv_oxy_transp[i].branches << endl; 
 	cout << "  Junctions: " << junctions << endl;
-	for (size_type i=0; i<Jv_transp.size(); ++i)
-		cout << "    -  label=" << Jv_transp[i].label 
-			 << ", value=" << Jv_transp[i].value << ", ind=" << Jv_transp[i].idx 
-			 << ", rg=" << Jv_transp[i].rg << ", branches=" << Jv_transp[i].branches << endl; 
-	cout << "---------------------------------------- "   << endl;
+	for (size_type i=0; i<Jv_oxy_transp.size(); ++i)
+		cout << "    -  label=" << Jv_oxy_transp[i].label 
+			 << ", value=" << Jv_oxy_transp[i].value << ", ind=" << Jv_oxy_transp[i].idx 
+			 << ", rg=" << Jv_oxy_transp[i].rg << ", branches=" << Jv_oxy_transp[i].branches << endl; 
+	cout << "Jv_oxy_transp "   << endl;
 	#endif
 
 	} 
@@ -619,12 +619,12 @@
 	//Matrice di scambio vessel-to-tissue
 	sparse_matrix_type Bvt (dof_oxy_transp.Cv(), dof_oxy_transp.Ct()); gmm::clear(Bvt);
 	//Matrice di scambio vessel-to-vessel
-	sparse_matrix_type Btt (dof_oxy_transp.Cv(), dof_oxy_transp.Cv()); gmm::clear(Bvv);
+	sparse_matrix_type Bvv (dof_oxy_transp.Cv(), dof_oxy_transp.Cv()); gmm::clear(Bvv);
 
 	// Aux tissue-to-vessel averaging matrix
-	sparse_matrix_type Mbar (dof_oxy_transp.Pv(), dof_oxy_transp.Pt()); gmm::clear(Mbar);
+	sparse_matrix_type Mbar (dof_oxy_transp.Cv(), dof_oxy_transp.Ct()); gmm::clear(Mbar);
 	// Aux tissue-to-vessel interpolation matrix
-	sparse_matrix_type Mlin (dof_oxy_transp.Pv(), dof_oxy_transp.Pt()); gmm::clear(Mlin);
+	sparse_matrix_type Mlin (dof_oxy_transp.Cv(), dof_oxy_transp.Ct()); gmm::clear(Mlin);
 		
 	#ifdef M3D1D_VERBOSE_
 	cout<< "   Computing Peclet number..."<<endl;	
@@ -640,8 +640,8 @@
 	vector_type Ut_(mf_U.nb_dof());
 	getfem::interpolation(mf_Ut, mf_U, Ut, Ut_);
 	//compute peclet
-	scalar_type peclet_v= peclet(meshv, Uv, param_transp.Av(1), 1);
-	scalar_type peclet_t= peclet(mesht, Ut_, param_transp.At(1), 3);
+	scalar_type peclet_v= peclet(meshv, Uv, param_oxy_transp.Av(1), 1);
+	scalar_type peclet_t= peclet(mesht, Ut_, param_oxy_transp.At(1), 3);
 	
 	#ifdef M3D1D_VERBOSE_
 	cout<< "Peclet in vessels:    "<< peclet_v<<endl;
@@ -680,7 +680,7 @@
 	 
 
 	//Build Mt, Dt, and Rt 
-	asm_tissue_transp(Dt, Rt, mimt, mf_Ct, mf_coeft,  param_oxy_transp.At(), consump_coeff );	
+	asm_tissue_transp(Dt, Rt, mimt, mf_oxy_Ct, mf_coeft,  param_oxy_transp.At(), consump_coeff );	
 
 	// Copy Dt: diffusion in tissue		  
 	gmm::add(Dt,
@@ -706,11 +706,11 @@
 	cout << "  Assembling Mv and Dv ..." << endl;
 	#endif	
 	
-	// Build Mv and Dv
+	// Build Dv
 	asm_network_transp(Dv, mimv, mf_oxy_Cv, mf_coefv, param_oxy_transp.Av(), param.R());
 
 	// Check peclet number for instability
-	 if((descr_transp.ADVECTION==1) && (peclet_v>1))
+	 if((descr_oxy_transp.ADVECTION==1) && (peclet_v>1))
 		{ cout<<"WARNING!! Peclet > 1 in network: applying artificial diffusion"<<endl;
    	 	  gmm::scale(Dv, (1+peclet_v)); }
 		
@@ -759,8 +759,8 @@
 	// Copy Av: advection in network
 	gmm::add(Av,
 			  gmm::sub_matrix(AM_oxy, 
-					gmm::sub_interval(dof_oyx_transp.Ct(), dof_oyx_transp.Cv()), 
-					gmm::sub_interval(dof_oyx_transp.Ct(), dof_oyx_transp.Cv())));
+					gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv()), 
+					gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())));
 	}/* end of advection assembly*/ 
 
 
@@ -771,6 +771,7 @@
 	cout << "  Assembling aux exchange matrices Mbar and Mlin ..." << endl;
 	#endif
 
+/*
 	if(PARAM.int_value("couple", "flag for coupling function (notaro 0, brambilla 1)")){
    		bool READ_ITERPOLATOR = PARAM.int_value("READ_ITERPOLATOR", "flag for read interpolator from file ");
     	if (!READ_ITERPOLATOR){
@@ -809,6 +810,7 @@
       	gmm::MatrixMarket_load(mlin_name.str().c_str(), Mlin);
     	}
 	}
+*/
 	
 	#ifdef M3D1D_VERBOSE_
 	cout << "  Assembling exchange matrices ..." << endl;
@@ -881,25 +883,7 @@
 	}	
 
 
-	#ifdef M3D1D_VERBOSE_
-	cout << "  Setting initial condition for tissue and network concentration ..." << endl;
-	#endif
-
-	vector_type C0t_vect(dof_oxy_transp.Ct(), param_oxy_transp.C0t());
-	vector_type C0v_vect(dof_oxy_transp.Cv(), param_oxy_transp.C0v());
-
-	gmm::copy(C0t_vect,
-		  gmm::sub_vector(UM_oxy, 
-			  	gmm::sub_interval(0, dof_oxy_transp.Ct())));
-
-	gmm::copy(C0v_vect,
-		  gmm::sub_vector(UM_oxy, 
-			  	gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())));
-
-	gmm::clear(C0t_vect);	gmm::clear(C0v_vect);
-
 	// De-allocate memory
-	gmm::clear(Mt);    gmm::clear(Mv); 
 	gmm::clear(Dt);    gmm::clear(Dv);
 	gmm::clear(At);    gmm::clear(Av);
 	gmm::clear(Rt);
@@ -965,10 +949,10 @@
 	size_type shift_h=0;
 	
 	scalar_type k1;
-	k1= param_transp.N()*param_transp.MCHC();
+	k1= param_oxy_transp.N()*param_oxy_transp.MCHC();
 	
 	scalar_type k2;
-	k2 = pow((param_transp.Ps_50()*param_transp.alpha_t()),param_transp.delta());
+	k2 = pow((param_oxy_transp.Ps_50()*param_oxy_transp.alpha_t()),param_oxy_transp.delta());
 		
 	for(size_type i=0; i<nb_branches; ++i){
 		
@@ -997,10 +981,10 @@
 			
 		for (size_type i=0; i<mf_Hi[i].nb_dof(); i++)
 		{
-		psi[i] = Hi[i]*k1*pow(cv_i[i], param_transp.delta_)/(pow(cv_i[i], param_transp.delta_)+k2);
+		psi[i] = Hi[i]*k1*pow(cv_i[i], param_oxy_transp.delta_)/(pow(cv_i[i], param_oxy_transp.delta_)+k2);
 		}
 	
-	asm_hemoadvection_rhs_network(Ov, mimv, mf_Cv, mf_coefvi[i], mf_Uvi[i], mf_coefv, mf_Hi[i], Uvi, param.lambdax(i), param.lambday(i), param.lambdaz(i),  param.R(), psi, meshv.region(i));	
+	asm_hemoadvection_rhs_network(Ov, mimv, mf_oxy_Cv, mf_coefvi[i], mf_Uvi[i], mf_coefv, mf_Hi[i], Uvi, param.lambdax(i), param.lambday(i), param.lambdaz(i),  param.R(), psi, meshv.region(i));	
 	}
 	
 	gmm::copy(Ov, gmm::sub_vector(FM_oxy, 
@@ -1016,20 +1000,27 @@
 	 
 	// Aux function for solver:
 	// contains the list of different methods for solving (SuperLU, SAMG,GMRES, etc)
-	bool transport3d1d::solver (const size_type dof1, 
+	bool oxygen_transport3d1d::solver (const size_type dof1, 
 					   const size_type dof2,
 					   const size_type dof3,
 					   const size_type dof4){
 
-	if ( descr_oxy_transp.SOLVE_METHOD == "SuperLU" || descr_oxy_transp.SOLVE_METHOD == "SUPERLU" ) { // direct solver //
+	gmm::csc_matrix<scalar_type> A_transp;
+	gmm::copy(AM_oxy, A_transp);
+	
+	vector_type F_transp(gmm::vect_size(FM_oxy));
+	gmm::copy(FM_oxy, F_transp);
+
+
+	if ( descr_oxy_transp.SOLVE_METHOD_OXY == "SuperLU" || descr_oxy_transp.SOLVE_METHOD_OXY == "SUPERLU" ) { // direct solver //
 		#ifdef M3D1D_VERBOSE_
 		cout << "  Applying the SuperLU method ... " << endl;
 		#endif
 		scalar_type cond;
-		gmm::SuperLU_solve(AM_oxy, UM_oxy, FM_oxy, cond);
+		gmm::SuperLU_solve(A_transp, UM_oxy, F_transp, cond);
 		cout << "  Condition number (transport problem): " << cond << endl;
 	}
-	else if(descr_oxy_transp.SOLVE_METHOD == "SAMG"){
+	else if(descr_oxy_transp.SOLVE_METHOD_OXY == "SAMG"){
 	#ifdef WITH_SAMG	
 	#ifdef M3D1D_VERBOSE_
 		cout << "Solving the monolithic system ... " << endl;
@@ -1087,7 +1078,7 @@
 	#endif
 	}
 	else { // Iterative solver //
-
+/*
 		// Iterations
 		gmm::iteration iter(descr_oxy_transp.RES);  // iteration object with the max residu
 		iter.set_noisy(1);               // output of iterations (2: sub-iteration)
@@ -1139,7 +1130,7 @@
 		if (iter.converged())
 			cout << "  ... converged in " << iter.get_iteration() << " iterations." << endl;
 		else if (iter.get_iteration() == descr_oxy_transp.MAXITER)
-			cerr << "  ... reached the maximum number of iterations!" << endl;
+			cerr << "  ... reached the maximum number of iterations!" << endl;	*/
 
 	}
 		
@@ -1170,7 +1161,7 @@
 	std::ostringstream convert;
 	convert << time_count;
 	time_suff = convert.str();
-	export_vtk_transp(time_suff); 
+	export_vtk_oxy_transp(time_suff); 
 
 	#ifdef M3D1D_VERBOSE_		
 	std::cout<<"exported!"<<std::endl;
@@ -1196,9 +1187,9 @@
 	#endif	
 
 	// initialize the MBD and MBA to zero (clear at eac time step)
-	for (size_type i=0; i<Jv_transp.size(); ++i){
-		Jv_transp[i].MBD=0;
-		Jv_transp[i].MBA=0;
+	for (size_type i=0; i<Jv_oxy_transp.size(); ++i){
+		Jv_oxy_transp[i].MBD=0;
+		Jv_oxy_transp[i].MBA=0;
 	}	
 
 	size_type shift = 0; //counter for branches
@@ -1207,11 +1198,11 @@
 		if(i>0) shift += mf_Uvi[i-1].nb_dof(); 
 		mesh_region &rg_branch = meshv.region(i); // branch region
 
-		for (size_type j=0; j<Jv_transp.size(); ++j){ //junction loop
-			mesh_region &rg_junction = meshv.region(Jv_transp[j].rg);  // junction region
+		for (size_type j=0; j<Jv_oxy_transp.size(); ++j){ //junction loop
+			mesh_region &rg_junction = meshv.region(Jv_oxy_transp[j].rg);  // junction region
 			// Iterators for all the branches which flow in the junction j
-			std::vector<long signed int>::const_iterator bb = Jv_transp[j].branches.begin();
-			std::vector<long signed int>::const_iterator be = Jv_transp[j].branches.end();
+			std::vector<long signed int>::const_iterator bb = Jv_oxy_transp[j].branches.begin();
+			std::vector<long signed int>::const_iterator be = Jv_oxy_transp[j].branches.end();
 		
 			//Check if outflow of branch i is in junction j			
 			if ((std::find(bb, be, +i) != be)){
@@ -1231,7 +1222,7 @@
 				vector_type dof_enum_C,dof_enum_U;
 				int fine_C=0, fine_U=0;
 				for (mr_visitor mrv(rg_branch); !mrv.finished(); ++mrv){
-				for (auto b : mf_Cv.ind_basic_dof_of_element(mrv.cv()))
+				for (auto b : mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv()))
 					{dof_enum_C.emplace_back(b);
 					fine_C++;}			
 				for (auto b : mf_Uvi[i].ind_basic_dof_of_element(mrv.cv()))
@@ -1249,20 +1240,20 @@
 
 				//Compute the diffusive flux
 				DIFF = pi* Ri * Ri*(
-						UM_transp[dof_transp.Ct()+last_C]-UM_transp[dof_transp.Ct()+last_C2] )
+						UM_oxy[dof_oxy_transp.Ct()+last_C]-UM_oxy[dof_oxy_transp.Ct()+last_C2] )
 						/estimate_h(meshv, ii.cv()) ;
 				//Compute the advective fluxes
-				ADV = pi* Ri * Ri*UM[dof.Ut()+dof.Pt()+shift+last_U]*UM_transp[dof_transp.Ct()+last_C];
+				ADV = pi* Ri * Ri*UM[dof.Ut()+dof.Pt()+shift+last_U]*UM_oxy[dof_oxy_transp.Ct()+last_C];
 	
 				#ifdef M3D1D_VERBOSE_		
 				cout << "------------------------------------------ "   << endl;
-				cout <<"in branch "<< i << " and junction "<< j <<" (region number :  "<< Jv_transp[j].rg<<" )"<<endl;
+				cout <<"in branch "<< i << " and junction "<< j <<" (region number :  "<< Jv_oxy_transp[j].rg<<" )"<<endl;
 				cout<<"MBD_partial = "<< DIFF<< endl;
 				cout<<"MBA_partial = "<< ADV<<  endl;
 				#endif	
 		
-				Jv_transp[j].MBD -= DIFF;
-				Jv_transp[j].MBA -= ADV;
+				Jv_oxy_transp[j].MBD -= DIFF;
+				Jv_oxy_transp[j].MBA -= ADV;
 					
 			}// end of check for outflow branch
 	
@@ -1306,13 +1297,13 @@
 	
 				#ifdef M3D1D_VERBOSE_		
 				cout << "------------------------------------------ "   << endl;
-				cout <<"in branch "<< i << " and junction "<< j <<" (region number :  "<< Jv_transp[j].rg<<" )"<<endl;
+				cout <<"in branch "<< i << " and junction "<< j <<" (region number :  "<< Jv_oxy_transp[j].rg<<" )"<<endl;
 				cout<<"MBD_partial = "<< DIFF<< endl;
 				cout<<"MBA_partial = "<< ADV<<  endl;
 				#endif	
 		
-				Jv_transp[j].MBD += DIFF;
-				Jv_transp[j].MBA += ADV;
+				Jv_oxy_transp[j].MBD += DIFF;
+				Jv_oxy_transp[j].MBA += ADV;
 					
 			}// end of check for outflow branch
 
@@ -1324,12 +1315,12 @@
 
 
 	cout << "  Junctions: " << endl;
-	for (size_type i=0; i<Jv_transp.size(); ++i){
-		cout << "    -  label=" << Jv_transp[i].label 
-			 << ", value=" << Jv_transp[i].value << ", ind=" << Jv_transp[i].idx 
-			 << ", rg=" << Jv_transp[i].rg << ", branches=" << Jv_transp[i].branches << endl; 
-		cout << " Mass balance of diffusive fluxes = " << Jv_transp[i].MBD << endl; 
-		cout << " Mass balance of advective fluxes = " << Jv_transp[i].MBA << endl;
+	for (size_type i=0; i<Jv_oxy_transp.size(); ++i){
+		cout << "    -  label=" << Jv_oxy_transp[i].label 
+			 << ", value=" << Jv_oxy_transp[i].value << ", ind=" << Jv_oxy_transp[i].idx 
+			 << ", rg=" << Jv_oxy_transp[i].rg << ", branches=" << Jv_oxy_transp[i].branches << endl; 
+		cout << " Mass balance of diffusive fluxes = " << Jv_oxy_transp[i].MBD << endl; 
+		cout << " Mass balance of advective fluxes = " << Jv_oxy_transp[i].MBA << endl;
 		cout << "             ------------------- "   << endl;
 	} 	
 		cout << "----------------------------------------------- "   << endl;
@@ -1371,9 +1362,9 @@
 	cout << "  Exporting Ct ..." << endl;
 	#endif
 	vtk_export exp_Ct(descr_oxy_transp.OUTPUT+"Ct"+suff+"_t"+time_suff+".vtk");
-	exp_Ct.exporting(mf_Ct);
+	exp_Ct.exporting(mf_oxy_Ct);
 	exp_Ct.write_mesh();
-	exp_Ct.write_point_data(mf_Ct, Ct, "Ct");
+	exp_Ct.write_point_data(mf_oxy_Ct, Ct, "Ct");
 
 
 
@@ -1381,9 +1372,9 @@
 	cout << "  Exporting Cv ..." << endl;
 	#endif
 	vtk_export exp_Cv(descr_oxy_transp.OUTPUT+"Cv"+suff+"_t"+time_suff+".vtk");
-	exp_Cv.exporting(mf_Cv);
+	exp_Cv.exporting(mf_oxy_Cv);
 	exp_Cv.write_mesh();
-	exp_Cv.write_point_data(mf_Cv, Cv, "Cv");
+	exp_Cv.write_point_data(mf_oxy_Cv, Cv, "Cv");
 
 	#ifdef M3D1D_VERBOSE_
 	cout << "... export done, visualize the data file with (for example) Paraview" << endl; 
@@ -1393,7 +1384,7 @@
  
   
   
-
+/*
   // Interface with problem3d1d class
   	//! Initialize the problem
 	void transport3d1d::init_fluid (int argc, char *argv[])
@@ -1416,5 +1407,5 @@
 	{ 
 	problem3d1d::export_vtk(suff);
 	};
-	 
+*/
  } // end of namespace

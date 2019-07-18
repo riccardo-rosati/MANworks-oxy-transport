@@ -27,7 +27,7 @@
 #include <problemHT.hpp>
 
 #include <assembling1d_oxy_transp.hpp>          
-#include <assembling3d_oxytransp.hpp> 
+#include <assembling3d_oxy_transp.hpp> 
 #include <assembling3d1d_oxy_transp.hpp>        
 #include <dof3d1d_oxy_transp.hpp>
 #include <descr3d1d_oxy_transp.hpp>
@@ -44,7 +44,7 @@ class oxygen_transport3d1d: public problemHT {
 
 public:
 	oxygen_transport3d1d(void) : 
-		mf_oxy_Ct(mesht), mf_oxy_Cv(meshv){} //,mf_Ct_Omega(mesht),mf_Ct_Sigma(mesht){} 
+		mf_oxy_Ct(mesht), mf_oxy_Cv(meshv), mf_Ct_Omega(mesht),mf_Ct_Sigma(mesht){} 
 	
 	// Main methods of class: implement standard and complete transport problem
 	//! Initialize the transport problem
@@ -57,9 +57,11 @@ public:
 	const void export_vtk_oxy_transp (const string & time_suff = "",const string & suff = "");
 	//! Compute residuals for mass balance at each junction
 	void mass_balance (void);	
+	//! Compute the OXYGEN TRANSPORT flag
+	bool OXYGEN_TRANSPORT (int argc, char *argv[]);
 
 	//! Getter for solution
-	inline vector_type get_UM(void) {return UM_oxy_transp;};
+	inline vector_type get_UM(void) {return UM_oxy;};
 
 	//Aux methods for interface with problem3d1d class
 	//! Initialize the fluid problem
@@ -100,11 +102,11 @@ protected:
 
 		
 	//! Monolithic matrix for the coupled problem
-	sparse_matrix_type AM_oxy_transp;
+	sparse_matrix_type AM_oxy;
 	//! Monolithic array of unknowns for the coupled problem
-	vector_type        UM_oxy_transp;
+	vector_type        UM_oxy;
 	//! Monolithic right hand side for the coupled problem
-	vector_type        FM_oxy_transp;
+	vector_type        FM_oxy;
 
 	// Aux tissue-to-vessel interpolation matrix
 	sparse_matrix_type MLIN;
