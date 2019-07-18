@@ -16,7 +16,7 @@
 
 include ../../config.mk
 
-CPPFLAGS=-I../../include -I$(mkGetfemInc) -I$(mkBoostInc) -DGMM_USES_LAPACK -DGMM_USES_BLAS
+CPPFLAGS=-I../../include -I$(mkGetfemInc) -I$(mkBoostInc) -DGMM_USES_LAPACK -DGMM_USES_BLAS -I$(PROBLEM_FLUID_PREFIX)/include
 CXXFLAGS=-std=c++14 -D=M3D1D_VERBOSE_
 
 ifeq ($(DEBUG),yes)
