@@ -33,23 +33,23 @@ struct descr3d1d_oxy_transp {
 
 	//General Flags
 	//Flag to enable the curve model
-	size_type CURVE_PROBLEM;
+	bool CURVE_PROBLEM;
 	//Flag to choose Lymphatic Drainage Curve (0 = sigmoid; 1= linear)
-	size_type LINEAR_LYMPHATIC_DRAINAGE;
+	bool LINEAR_LYMPHATIC_DRAINAGE;
 	//Flag to study the hematocrit distribution all over the network (0 = constant; 1= transport)
-	size_type HEMATOCRIT_TRANSPORT;
+	bool HEMATOCRIT_TRANSPORT;
 	//Flag to add advection terms
-	size_type ADVECTION;
+	bool ADVECTION;
 	//Flag for Type of Viscosity (0 = Vivo - including glycocalyx effect - or 1 = vitro) based on Pries and Secomb works
 	size_type Visco_v;
 	//Flag to add coupling terms
-	size_type COUPLING;
+	bool COUPLING;
 	//Flag to take the stationary problem
-	size_type STATIONARY;
+	bool STATIONARY;
 	//Flag for the new formulation
-	size_type NEW_FORMULATION;
+	bool NEW_FORMULATION;
 	//Flag to study oxygen transport
-	size_type OXYGEN_TRANSPORT;
+	bool OXYGEN_TRANSPORT;
 
 	//! Absolute path to the vessel mesh file
 	std::string MESH_FILEV_OXY;
@@ -72,19 +72,8 @@ struct descr3d1d_oxy_transp {
 	scalar_type RES; 
 	//! Number of target points for the tissue-to-vessel boundary average
 	size_type   NInt;
-	//! Number of target points for the tissue-to-vessel section average
-	size_type   NIntA;
-
-	//! Flag for conforming mesh
-	size_type CONFORMING;
-	//! Number of 3D region of physical vessel
-	size_type SIGMA;
-	//! Number of 3D region of tissue outside physical vessel
-	size_type OMEGA;
-	//! Number of 2D region of physical vessel wall
-	size_type GAMMA;
-	//! Number of region of the first face of the boundary of the 3d domain
-	size_type FACE;
+	//!Number of region of the first face of the boundary of the 3d domain
+	size_type   FACE;
 	
 	// Utils
 	//! File .param
@@ -108,8 +97,7 @@ struct descr3d1d_oxy_transp {
 			RES = FILE_.real_value("RES"); if (RES == 0.) RES = 2.0e-10;
 		}
 
-		NInt = size_type(FILE_.int_value("NInt", "Node numbers on the circle for the nonlocal term"));  
-		NIntA = size_type(FILE_.int_value("NIntA", "Node numbers on the radius for the nonlocal term"));  
+		NInt = size_type(FILE_.int_value("NInt", "Node numbers on the circle for the nonlocal term"));    
 		OUTPUT = FILE_.string_value("OUTPUT","Output Directory");
 
 		//General Flags
@@ -123,15 +111,7 @@ struct descr3d1d_oxy_transp {
 		NEW_FORMULATION = size_type(FILE_.int_value("NEW_FORMULATION","Flag for the new formulation"));
 		OXYGEN_TRANSPORT = size_type(FILE_.int_value("OXYGEN_TRANSPORT","Flag to study oxygen transport"));
 
-		CONFORMING = size_type(FILE_.int_value("CONFORMING", "Flag for conforming imported mesh by gmsh")); 
-		FACE = size_type(FILE_.int_value("FACE", "NNumber of region of the first face of the boundary of the 3d domain"));
-		if(CONFORMING)
-		{
-		SIGMA = size_type(FILE_.int_value("SIGMA", "Number of 3D region of physical vessel"));
-		OMEGA = size_type(FILE_.int_value("OMEGA", "Number of 3D region of tissue outside physical vessel"));
-		GAMMA = size_type(FILE_.int_value("GAMMA", "Number of 2D region of physical vessel wall"));
-		
-		}
+		FACE = size_type(FILE_.int_value("FACE", "Number of region of the first face of the boundary of the 3d domain"));
 	}
 
 	//! Overloading of the output operator

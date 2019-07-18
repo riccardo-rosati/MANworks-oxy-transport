@@ -29,7 +29,7 @@ ifeq ($(VERBOSE),yes)
 endif
 
 LIBDIR=../lib
-LIBNAME=transport3d1d
+LIBNAME=oxygen_transport3d1d
 LIBFILE=lib$(LIBNAME).so
 LIBSTATIC=lib$(LIBNAME).a
 

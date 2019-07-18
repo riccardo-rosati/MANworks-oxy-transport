@@ -54,7 +54,7 @@
 	import_data_oxy_transp();
 		 
 	return descr_oxy_transp.OXYGEN_TRANSPORT; 
-	}
+	}; //end of oxygen transport
 
 
  	// Aux methods for init
@@ -88,15 +88,15 @@
 		mesht.clear();
 			bool test = 0;
 		test = PARAM.int_value("TEST_GEOMETRY");
-		if(test==0){
+		/*if(test==0){
 			#ifdef M3D1D_VERBOSE_
 			cout << "Importing the 3D mesh for the tissue ...  "   << endl;
 			#endif
 			string st("gmsh:"+descr.MESH_FILET);
 			getfem::import_mesh(st,mesht);
 				 //import_msh_file(descr.MESH_FILET, mesht);
-			}
-		else{
+			}*/
+		//else{
 			#ifdef M3D1D_VERBOSE_
 			cout << "Building the regular 3D mesh for the tissue ...  "   << endl;
 			#endif
@@ -109,7 +109,7 @@
 			cout << "mesht description: " << st << endl;
 			#endif
 			regular_mesh(problem3d1d::mesht, st);
-			}
+			//}
 	
 	#ifdef M3D1D_VERBOSE_
 	cout << "Importing the 1D mesh for the vessel (transport problem)... "   << endl;

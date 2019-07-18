@@ -33,7 +33,7 @@
 #include <descr3d1d_oxy_transp.hpp>
 #include <param3d1d_oxy_transp.hpp>
 #include <utilities_transp.hpp>
-#include <node_transp.hpp> //? node_oxy_transp.hpp
+#include <node_transp.hpp>
 #include "../utilities/muparser/include/muParser.h"
 
 
@@ -49,6 +49,8 @@ public:
 	// Main methods of class: implement standard and complete transport problem
 	//! Initialize the transport problem
 	void init_oxy_transp (int argc, char *argv[]);	
+	//! Compute the OXYGEN TRANSPORT flag
+	bool OXYGEN_TRANSPORT (int argc, char *argv[]);
 	//! Assemble the transport problem
 	void assembly_oxy_transp (void);
 	//! Solve the transport problem
@@ -57,8 +59,7 @@ public:
 	const void export_vtk_oxy_transp (const string & time_suff = "",const string & suff = "");
 	//! Compute residuals for mass balance at each junction
 	void mass_balance (void);	
-	//! Compute the OXYGEN TRANSPORT flag
-	bool OXYGEN_TRANSPORT (int argc, char *argv[]);
+	
 
 	//! Getter for solution
 	inline vector_type get_UM(void) {return UM_oxy;};
@@ -144,8 +145,6 @@ protected:
 	//! Build the monolithic rhs FM_transp by blocks
 	void assembly_rhs_oxy_transp(void);
 	
-	//Aux method for solve 
-	//! Aux function for update of rhs at each time step
 	//void update_transp(void);
 	//! Aux function for solver: contains the different solving methods and actually solve the system
 	bool solver (	const size_type dof1=0, 
