@@ -26,6 +26,7 @@
  */  
  
 #include <iostream>
+#include <AMG_interface.hpp>  //l'ho aggiunto: sul MOX mi dava errore, non trovando i metodi per AMG
 #include <problem3d1d.hpp>
 #include <oxygen_transport3d1d.hpp> 
 #include <problemHT.hpp>
