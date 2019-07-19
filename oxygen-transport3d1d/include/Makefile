@@ -4,12 +4,12 @@
 #                     Politecnico di Milano
 #                         A.Y. 2016-2017
 #
-#                    Copyright D. Brambilla 2016
+#                    Copyright D. Rosati 2019
 # ====================================================================
 #   FILE        : Makefile
 #   DESCRIPTION : makefile for library installation
-#   AUTHOR      : Stefano Brambilla <s.brambilla93@gmail.com>
-#   DATE        : September 2016
+#   AUTHOR      : Riccardo Rosati <riccardo1.rosait@gmail.com>
+#   DATE        : July 2019
 # ====================================================================
 include ../config.mk
 

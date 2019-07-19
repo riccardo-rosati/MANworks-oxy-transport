@@ -110,7 +110,6 @@ struct descr3d1d_oxy_transp {
 		STATIONARY = size_type(FILE_.int_value("STATIONARY","Flag to take the stationary problem"));
 		NEW_FORMULATION = size_type(FILE_.int_value("NEW_FORMULATION","Flag for the new formulation"));
 		OXYGEN_TRANSPORT = size_type(FILE_.int_value("OXYGEN_TRANSPORT","Flag to study oxygen transport"));
-
 		FACE = size_type(FILE_.int_value("FACE", "Number of region of the first face of the boundary of the 3d domain"));
 	}
 
