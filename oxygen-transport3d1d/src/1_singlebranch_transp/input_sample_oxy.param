@@ -46,7 +46,7 @@ Visco_v=0;
 %Flag to add advection terms
 ADVECTION=1;
 %Flag to add coupling terms
-COUPLING=0;
+COUPLING=1;
 %Flag to take the stationary problem
 STATIONARY=1;
 %Flag for the new formulation
@@ -168,7 +168,9 @@ SOLVE_METHOD_OXY_TRANSP = 'SuperLU';		%Oxygen transport
 % Maximum number of iterations for iterative solvers
 MAXITER  = 100;
 % Residual for conjugate gradient
-RESIDUAL = 1E-16;    
+RESIDUAL = 1E-16;  
+% Number of region of the first face of the boundary of the 3d domain
+FACE = 0;  
 
 %=========================================================================================================
 %							SOLVING NON LINEARITIES (parameters for fix point methods) 
@@ -177,7 +179,7 @@ RESIDUAL = 1E-16;
 %%%										General		 												%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Maximum number of iterations for FPM
-Number_Iteration   = 30;
+Number_Iteration   = 5; %30 itaration for results
 % Number of iteration between saving progress (saving process overwrites files)
 Saving_Iteration   = 1;
 
@@ -285,8 +287,6 @@ D_LF = -2*133.32;
 Dt = 1.35E-09;
 %Diffusivity in the vessels [m^2/s] 
 Dv = 5E-07;
-%rate of metabolization [1/s]
-m = 8  ; 
 %Permeability of the vessel wall [m/s]
 Perm = 3.5E-05*100;
 % surface area of lymphatic vessels per unit volume of tissue [1/m]
@@ -359,6 +359,7 @@ BClabel = 'MIX MIX  MIX  MIX  MIX  MIX'
 % BC values (Specify pressure for DIR, or far field pressure for MIX)
 BCvalue = '0.0 0.0  0.0  0.0  0.0  0.0'
 % Coefficient beta for MIX condition
+BETA = 1.10E-1;
 BCbeta = '2.22E-6 2.22E-6 2.22E-6 2.22E-6 2.22E-6 2.22E-6';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
