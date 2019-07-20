@@ -1301,7 +1301,71 @@
 	cout << endl<<"... time to solve : " << gmm::uclock_sec() - time << " seconds\n";
 	}
 	return true;
- 	}; // end of solve_transp
+ 	}; // end of solve_oxy_transp
+	 
+	 
+bool oxygen_transport3d1d::solve_oxygen_fixpoint (void){
+		
+// 1 - risolvo il sistema una volta; per trovare il valore di Ct iniziale
+	bool RK;
+	RK = solve_oxy_transp(); //come output ho UM_transp iniziale 
+
+// 2 - declaration of variables
+
+	//vettori per la concentrazione
+	vector_type Ct_new(dof_oxy_transp.Ct()); gmm::clear(Ct_new);	//Ct(k)
+	vector_type Ct_old(dof_oxy_transp.Ct()); gmm::clear(Ct_old);	//Ct(k-1)
+
+	vector_type Cv_new(dof_oxy_transp.Cv()); gmm::clear(Cv_new);	//Cv(k)
+	vector_type Cv_old(dof_oxy_transp.Cv()); gmm::clear(Cv_old);	//Cv(k-1)
+
+	
+	sparse_matrix_type AM_temp (dof_oxy_transp.tot0(), dof_oxy_transp.tot()); gmm::clear(AM_temp); //matrice temporanea per calcolare le matrici per il tessuto
+	sparse_matrix_type Rt_temp (dof_oxy_transp.Ct(), dof_oxy_transp.ct()); gmm::clear(Rt_temp); //matrice temporanea per il termine di reazione
+	vector_type Ov_temp (dof_oxy_transp.Cv()); gmm::clear(Ov_temp);
+
+	
+	//Impongo un residuo e un massimo di iterazioni
+	size_type oxyres = descr_oxy_transp.Residual_OXY;
+	int max_iter = descr_oxy_transp.Max_iteration_OXY;
+
+	//Inizializzo un counter per le iterazioni e un valore di errore che deve essere minore del residuo
+	int iter=0;
+	int err = 1; 
+
+	//salvo la soluzione iniziale in Ct_old e in Cv_old
+	gmm::copy(gmm::sub_vector(UM_oxy,
+				gmm::sub_interval(0, dof_oxy_transp.Ct()), Ct_old);
+	gmm::copy(gmm::sub_vector(UM_oxy,
+				gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv()), Cv_old);
+
+	// \todo aggiungere variabili per salvare i residui
+		 	
+	while (RK && iter<max_iter && err> oxyres)
+		  {
+		// \ todo prendere Rt e aggionrarlo con Ct_old
+		// \ todo prendere Ov e aggiornarlo con Cv_old
+		// \ todo risolvere il nuovo sistema
+		// \ todo calcolare l'errore tra il passo k e quello k-1
+		
+		  }; //esco dal while
+		  
+	if(!RK || err>oxyres || iter=max_iter)
+		  {cout<<"FPM non ha raggiungo convergenza"<<endl;
+		   break;}
+	else {
+		cout<<"FPM ha raggiunto convergenza!"<<endl;
+	gmm::copy(Ct_old, gmm::sub_vector(UM_oxy, 
+					 gmm::sub_interval(0,dof_oxy_transp.Ct())));
+	
+	gmm::copy(Cv_old, gmm::sub_vector(UM_oxy,
+					 gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())));
+	}
+	
+
+		
+		
+	}; //end of oxygen fixpoint
 	
 
 	//Compute the residuals for mass balance at each junction 
