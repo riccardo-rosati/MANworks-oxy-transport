@@ -54,6 +54,12 @@ NEW_FORMULATION = 1;
 %Flag to study oxygen transport
 OXYGEN_TRANSPORT = 1;
 
+%Fissi! si posso anche togliere
+%Couple
+couple = 0;
+%READ_INTERPOLATOR
+READ_INTERPOLATOR = 0;
+
 %=========================================================================================================
 %										IMPORT FLAGS	
 %=========================================================================================================
@@ -126,6 +132,7 @@ FEM_TYPET   = 'FEM_RT0(3)';
 FEM_TYPET_P = 'FEM_PK_DISCONTINUOUS(3,0)';
 FEM_TYPET_DATA = 'FEM_PK(3,0)';
 FEM_TYPET_OT = 'FEM_PK(3,1)';		%Oxygen tissue concentration
+%FEM_TYPET_ODATA = 'FEM_PK(3,0)';	%Oxygen coeff mesh 	//RR
 % GetFem type for the 3D Integration Method
 IM_TYPET    = 'IM_TETRAHEDRON(8)'; 
 
@@ -228,8 +235,11 @@ delta = 2.7;
 Ps_50 = 26.8;
 %Oxygen solubility in the plasma [kg/(m^3*mmHg)]
 alpha_pl = 3.1E-5;
-%Residuo per il FPM
+
+%Maximum residual for FPM
 Residual_OXY = 1E-10;
+%Maximum number of iterations for FPM
+Max_iterations_OXY = 100;
 %=========================================================================================================
 %						 	DIMENSIONAL MODEL PARAMETERS (if TEST_PARAM = 0)
 %=========================================================================================================
