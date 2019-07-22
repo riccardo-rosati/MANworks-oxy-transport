@@ -158,6 +158,7 @@ struct param3d1d_oxy_transp {
 			Q_pl_.assign(dof_datat,Lp_LF_*SV_*P_*d_/U_);
 						
 		}
+
 		// Check values
 		GMM_ASSERT1(At_[0] != 0, "wrong tissue diffusivity (At>0 required)"); 
 		GMM_ASSERT1(Av_[0] != 0, "wrong vessel bed diffusivity (Av>0 required)");

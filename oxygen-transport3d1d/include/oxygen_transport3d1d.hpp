@@ -55,6 +55,8 @@ public:
 	void assembly_oxy_transp (void);
 	//! Solve the transport problem
 	bool solve_oxy_transp (void);
+	//! Solve the FPM for oxygen transport
+	bool solve_fixpoint_oxygen_transp (void);
 	//! Export the transport solution
 	const void export_vtk_oxy_transp (const string & time_suff = "",const string & suff = "");
 	//! Compute residuals for mass balance at each junction
@@ -80,6 +82,10 @@ protected:
 	mesh_fem mf_oxy_Ct; 
 	//! Finite Element Method for the vessel oxygen concentration @f$c_v@f$
 	mesh_fem mf_oxy_Cv; 
+	
+	//RR
+	//! Finite element method for the tissue oxygen coefficients
+	//mesh_fem mf_coeft_oxy;
 
 	//! Finite Element Method for the tissue oxygen concentration @f$c_t@f$
 	mesh_fem mf_Ct_Omega; 

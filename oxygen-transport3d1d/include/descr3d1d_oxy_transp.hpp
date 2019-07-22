@@ -55,6 +55,11 @@ struct descr3d1d_oxy_transp {
 	std::string MESH_FILEV_OXY;
 	//! Identifier of tissue concentration's FEM type
 	std::string FEM_TYPET_OT;
+
+	//RR
+	//! Identifier of tissue oxygen coefficients
+	//std::string FEM_TYPET_ODATA;	
+	
 	//! Identifier of vessel concentration's FEM type
 	std::string FEM_TYPEV_OV;
 	//! Identifier of vessel integration method type
@@ -74,6 +79,17 @@ struct descr3d1d_oxy_transp {
 	size_type   NInt;
 	//!Number of region of the first face of the boundary of the 3d domain
 	size_type   FACE;
+
+	//For FixPOint Method
+	//! Maximum residual for FPM
+	size_type Residual_OXY;
+	//! Maximum number of iterations for FPM
+	size_type Max_iterations_OXY;
+
+	//! Couple
+	size_type couple;
+	//! READ_INERPOLATOR
+	size_type READ_INTERPOLATOR;
 	
 	// Utils
 	//! File .param
@@ -88,6 +104,9 @@ struct descr3d1d_oxy_transp {
 		FEM_TYPET_OT   = FILE_.string_value("FEM_TYPET_OT","FEM 3D tissue - concentration");
 		FEM_TYPEV_OV   = FILE_.string_value("FEM_TYPEV_OV","FEM 1D vessel - concentration");
 
+		//RR
+		//FEM_TYPET_ODATA = FILE_.string_value("FEM_TYPET_ODATA","FEM 3D tissue - coefficients");
+
 		IM_TYPEV_OXY 	= FILE_.string_value("IM_TYPEV_OXY_TRANSP","Name of integration method");
 
 		SOLVE_METHOD_OXY = FILE_.string_value("SOLVE_METHOD_OXY_TRANSP", "Monolithic Solver"); 
@@ -100,6 +119,9 @@ struct descr3d1d_oxy_transp {
 		NInt = size_type(FILE_.int_value("NInt", "Node numbers on the circle for the nonlocal term"));    
 		OUTPUT = FILE_.string_value("OUTPUT","Output Directory");
 
+		Residual_OXY = size_type(FILE_.int_value("Residual_OXY","Maximum residual for FPM"));
+		Max_iterations_OXY = size_type(FILE_.int_value("Max_iterations_OXY","Maximum number of iterations for FPM"));
+
 		//General Flags
 		CURVE_PROBLEM = size_type(FILE_.int_value("CURVE_PROBLEM","Flag to enable the curve model"));
 		LINEAR_LYMPHATIC_DRAINAGE = size_type(FILE_.int_value("LINEAR_LYMPHATIC_DRAINAGE","Flag to choose Lymphatic Drainage Curve (0 = sigmoid; 1= linear)"));
@@ -111,6 +133,12 @@ struct descr3d1d_oxy_transp {
 		NEW_FORMULATION = size_type(FILE_.int_value("NEW_FORMULATION","Flag for the new formulation"));
 		OXYGEN_TRANSPORT = size_type(FILE_.int_value("OXYGEN_TRANSPORT","Flag to study oxygen transport"));
 		FACE = size_type(FILE_.int_value("FACE", "Number of region of the first face of the boundary of the 3d domain"));
+
+		couple = size_type(FILE_.int_value("couple","Couple"));
+		READ_INTERPOLATOR = size_type(FILE_.int_value("READ_INTERPOALTOR","READ_INTERPOLATOR"));
+		
+		
+		
 	}
 
 	//! Overloading of the output operator
