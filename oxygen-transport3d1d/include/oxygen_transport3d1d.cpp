@@ -1055,6 +1055,7 @@
 	gmm::clear(Fv);	
 	
 
+/*
 
 
 
@@ -1092,7 +1093,7 @@
 	cout<<"b= "<<b<<endl;
 			cv_i[pos] = cv_guess[b]; //ottengo cv_i --> la concentrazione definita ramo per ramo
 			pos++;
-			}*/
+			}
 
 	size_type pos=0;
 	for (getfem::mr_visitor mrv(mf_oxy_Cv.linked_mesh().region(i)); !mrv.finished(); ++mrv){
@@ -1141,8 +1142,9 @@
 					gmm::sub_interval(dof_oxy_transp.Ct(),dof_oxy_transp.Cv())));
 
 	
-	
-	
+	*/
+
+
 	// De-allocate memory
 	gmm::clear(AM_temp);
 	gmm::clear(FM_temp);
@@ -1303,6 +1305,7 @@
 	bool solved = solver(dof_oxy_transp.Ct(),dof_oxy_transp.Cv(),0,0);
 	if (!solved) return false;
 	
+	/*
 	//export solution
 	#ifdef M3D1D_VERBOSE_
 	std::cout<<"solved! going to export..."<<std::endl;
@@ -1325,7 +1328,7 @@
 	cout << endl<<"... time to solve all the time steps: " << gmm::uclock_sec() - time << " seconds\n";}
 	else{
 	cout << endl<<"... time to solve : " << gmm::uclock_sec() - time << " seconds\n";
-	}
+	}*/
 	return true;
  	}; // end of solve_oxy_transp
 
@@ -1335,18 +1338,18 @@ computing_residual (vector_type Ct_new, vector_type Ct_old, vector_type Cv_new, 
 {
 	scalar_type norm2_Tnew = gmm::vect_norm2(Ct_new);
 	scalar_type norm2_Told = gmm::vect_norm2(Ct_old);
-	scalar_type error_T = (norm2_Tnew - norm2_Told);
+	scalar_type error_T = fabs((norm2_Tnew - norm2_Told));
 
 	scalar_type norm2_Vnew = gmm::vect_norm2(Cv_new);
 	scalar_type norm2_Vold = gmm::vect_norm2(Cv_old);
-	scalar_type error_V = (norm2_Vnew - norm2_Vold);
+	scalar_type error_V = fabs((norm2_Vnew - norm2_Vold));
 
 	scalar_type error = error_T/norm2_Told + error_V/norm2_Vold;
 
 	return error;
 }
 
-/*
+
 bool oxygen_transport3d1d::solve_oxygen_fixpoint (void)
 {
 	#ifdef  M3D1D_VERBOSE_
@@ -1516,6 +1519,8 @@ bool oxygen_transport3d1d::solve_oxygen_fixpoint (void)
 
 	int iteration=0;
 	int err = 1; 
+
+	vector_type RES_SOL(max_iter);
 	
 
 	//salvo la soluzione iniziale in Ct_old e in Cv_old
@@ -1602,21 +1607,21 @@ while (RK && iteration<max_iter && err>oxyres)
 	cout<<"b= "<<b<<endl;
 			cv_i[pos] = cv_guess[b]; //ottengo cv_i --> la concentrazione definita ramo per ramo
 			pos++;
-			}
+			}*/
 
 	size_type pos=0;
 	for (getfem::mr_visitor mrv(mf_oxy_Cv.linked_mesh().region(i)); !mrv.finished(); ++mrv){
 		if(pos == 0){
 			cv_i[pos] = cv_guess[mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[0]];
-			cout << " cv_i [" << pos << "] = cv_guess [" << mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[0] << "]" << endl;
+			//cout << " cv_i [" << pos << "] = cv_guess [" << mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[0] << "]" << endl;
 			pos ++;
 			cv_i[pos] = cv_guess[mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1]];
-			cout << " cv_i [" << pos << "] = cv_guess [" << mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1] << "]" << endl;
+			//cout << " cv_i [" << pos << "] = cv_guess [" << mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1] << "]" << endl;
 			pos ++;
 			}
 		else{
 			cv_i[pos] = cv_guess[mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1]];
-			cout << " cv_i [" << pos << "] = cv_guess [" << mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1] << "]" << endl;
+			//cout << " cv_i [" << pos << "] = cv_guess [" << mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1] << "]" << endl;
 			pos ++;
 
 			}
@@ -1624,53 +1629,39 @@ while (RK && iteration<max_iter && err>oxyres)
 	}
 
 		if(i>0) shift_h += mf_Hi[i-1].nb_dof();
-		cout<<"1"<<endl;
 		if(i>0) shift += mf_Uvi[i-1].nb_dof();
-		cout<<"2"<<endl;
 		
 		gmm::add(gmm::sub_vector(UM_HT, 
 			gmm::sub_interval(shift_h, mf_Hi[i].nb_dof())), Hi);
-		cout<<"3"<<endl;
 		gmm::add(gmm::sub_vector(UM,
 			gmm::sub_interval(dof.Ut()+dof.Pt()+shift, mf_Uvi[i].nb_dof())) ,  Uvi);
-		cout<<"4"<<endl;
 
 
 		for (size_type j=0; j<mf_Hi[i].nb_dof(); ++j)
 		{
 			cout<<"cv_i["<<j<<"]="<<cv_i[j]<<endl;
-			cout<<"In the cicle for psi"<<endl;
-			power[j] = pow(cv_i[j], param_oxy_transp.delta());
-				cout<<"power["<<j<<"]="<<power[j]<<endl;
-			psi[j] = Hi[j]*k1*power[j]/(power[j]+k2);	
-				cout<<"post psi"<<endl;
+			//power[j] = pow(cv_i[j], param_oxy_transp.delta());
+			psi[j] = Hi[j]*k1*pow(cv_i[j], param_oxy_transp.delta())/(pow(cv_i[j], param_oxy_transp.delta())+k2);	
 		}
-		cout<<"5"<<endl;
 	asm_hemoadvection_rhs_network(Ov, mimv, mf_oxy_Cv, mf_coefvi[i], mf_Uvi[i], mf_coefv, mf_Hi[i], Uvi, param.lambdax(i), param.lambday(i), param.lambdaz(i),  param.R(), psi, meshv.region(i));	
-	cout<<"6"<<endl;
 	}
 	
 	gmm::add(Ov, gmm::sub_vector(FM_oxy, 
 					gmm::sub_interval(dof_oxy_transp.Ct(),dof_oxy_transp.Cv())));
-	cout<<"7"<<endl;
 	
 
 		// \ todo risolvere il nuovo sistema
 		cout<<"Risolvo il sistema nuovamente"<<endl;
 			RK = solve_oxy_transp();
-cout<<"8"<<endl;
 			gmm::copy(gmm::sub_vector(UM_oxy,
 							gmm::sub_interval(0, dof_oxy_transp.Ct())), Ct_new);
-			cout<<"9"<<endl;
 
 			gmm::copy(gmm::sub_vector(UM_oxy,
 							gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())), Cv_new);
-			cout<<"10"<<endl;
 
 		// \ todo calcolare l'errore tra il passo k e quello k-1
 			err = computing_residual (Ct_new, Ct_old, Cv_new, Cv_old);
 			iteration++;
-cout<<"11"<<endl;
 
 	#ifdef M3D1D_VERBOSE_
 	cout<<"Updating the solution"<<endl;
@@ -1683,6 +1674,8 @@ cout<<"11"<<endl;
 	cout << "Checking Residuals at iteration: "<< iteration << "..." << endl;
 	#endif
 
+	RES_SOL[iteration] = err;
+
 
 	//Saving residual values in an output file
 	/*SaveResidual << iteration << "\t" << resSol << "\t" << resCM << "\t" << resH << endl;
@@ -1691,7 +1684,7 @@ cout<<"11"<<endl;
 			cout << "\nStep n°:" << iteration << "\nSolution Residual = " << err <<endl;
 			cout << "\t\t\t\tTime: " <<  ((float)t)/CLOCKS_PER_SEC << " s "<< endl;
 					}
-			cout << "********************************************************" << endl;
+			cout << "********************************************************" << endl;*/
 }; //esco dal while
 
 	gmm::copy(Ct_old, gmm::sub_vector(UM_oxy, 
@@ -1700,13 +1693,21 @@ cout<<"11"<<endl;
 	gmm::copy(Cv_old, gmm::sub_vector(UM_oxy,
 					 gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())));	
 
-	/*ime_G=clock()-time_G;
+	for(size_type p; p<RES_SOL.size(); ++p)
+	{
+		if(RES_SOL[p]== 0) {continue;}
+		else
+		cout<<"Residui: "<<"\nRES_SOL["<<p<<"]= "<<RES_SOL[p]<<endl;	
+	}
+	
+
+	/*time_G=clock()-time_G;
 	cout<< "Iterative Process Time = " << ((float)time_G)/CLOCKS_PER_SEC << " s"<< endl;
-	SaveResidual.close();
+	SaveResidual.close();*/
 
 	return true;	
 }; //end of oxygen fixpoint
-	*/
+	
 
 	//Compute the residuals for mass balance at each junction 
 	void oxygen_transport3d1d::mass_balance(void){

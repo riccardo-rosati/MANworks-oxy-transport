@@ -135,7 +135,7 @@ struct descr3d1d_oxy_transp {
 		FACE = size_type(FILE_.int_value("FACE", "Number of region of the first face of the boundary of the 3d domain"));
 
 		couple = size_type(FILE_.int_value("couple"));
-		READ_INTERPOLATOR = size_type(FILE_.int_value("READ_INTERPOALTOR","READ_INTERPOLATOR"));
+		READ_INTERPOLATOR = size_type(FILE_.int_value("READ_INTERPOLATOR"));
 		
 		
 		
