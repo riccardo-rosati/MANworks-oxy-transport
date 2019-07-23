@@ -223,17 +223,17 @@ Ct_guess =  1;
 Cv_guess =  1;
 %Partial pressure at half max rate of metabolization [mmHg]
 Pm_50 = 4;
-%Solubility of oxygen in the tissue [kg/(m^3*mmHg]
+%Solubility of oxygen in the tissue [ml_O2/(ml_Blood*mmHg)]
 alpha_t = 2.8E-5;
-%Mean Corpuscolar Hematocrit Concentration [kg/m^3];
+%Mean Corpuscolar Hematocrit Concentration [g_Hb/ml_RBC];
 MCHC = 0.34;
-%Hufner factor [-]
+%Hufner factor [ml_O2/g_Hb]
 N = 1.36;
 %Hill constant [-]
 delta = 2.0; %2.7
 %Partial pressure at half saturation [mmHg]
 Ps_50 = 26.8;
-%Oxygen solubility in the plasma [kg/(m^3*mmHg)]
+%Oxygen solubility in the plasma [ml_O2/(ml_Blood*mmHg)]
 alpha_pl = 3.1E-5;
 
 %Maximum residual for FPM
