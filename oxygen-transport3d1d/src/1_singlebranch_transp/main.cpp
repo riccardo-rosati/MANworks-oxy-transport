@@ -75,8 +75,8 @@ int main(int argc, char *argv[])
                                     p.assembly_oxy_transp();
 				std::cout<<"***** Assemblato il trasporto di ossigeno *****"<<std::endl;
                                     //solve
-                                    //if (!p.solve_oxygen_fixpoint()) GMM_ASSERT1(false, "solve procedure has failed");  // the export is in the solve at each time step
-									if (!p.solve_oxy_transp()) GMM_ASSERT1(false, "solve procedure has failed");  // the export is in the solve at each time step
+                                    if (!p.solve_oxygen_fixpoint()) GMM_ASSERT1(false, "solve procedure has failed");  // the export is in the solve at each time step
+									//if (!p.solve_oxy_transp()) GMM_ASSERT1(false, "solve procedure has failed");  // the export is in the solve at each time step
 					cout<<"***** Risolto il trasporto di ossigeno *****"<<endl;
                                     // Save results in .vtk format
                                     p.export_vtk_oxy_transp();

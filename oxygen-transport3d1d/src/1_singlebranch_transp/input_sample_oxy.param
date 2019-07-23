@@ -98,7 +98,7 @@ PRINT_RESIDUALS       = 1;
 % Flags to build a regular 3d mesh
 TEST_GEOMETRY = 1;
 GT_T       = 'GT_PK(3,1)';
-NSUBDIV_T  = '[11,11,11]';
+NSUBDIV_T  = '[3,3,3]'; %[11,11,11]
 ORG_T      = '[0,0,0]';
 SIZES_T    = '[1,1,1]';
 NOISED_T   = '0';
@@ -230,7 +230,7 @@ MCHC = 0.34;
 %Hufner factor [-]
 N = 1.36;
 %Hill constant [-]
-delta = 2.7;
+delta = 2.0; %2.7
 %Partial pressure at half saturation [mmHg]
 Ps_50 = 26.8;
 %Oxygen solubility in the plasma [kg/(m^3*mmHg)]
