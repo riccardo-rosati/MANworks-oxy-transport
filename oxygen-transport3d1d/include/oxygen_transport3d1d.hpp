@@ -44,7 +44,7 @@ class oxygen_transport3d1d: public problemHT {
 
 public:
 	oxygen_transport3d1d(void) : 
-		mf_oxy_Ct(mesht), mf_oxy_Cv(meshv), mf_Ct_Omega(mesht),mf_Ct_Sigma(mesht){} 
+		mf_oxy_Ct(mesht), mf_oxy_Cv(meshv), mf_Ct_Omega(mesht),mf_Ct_Sigma(mesht){}//,mf_coeft_oxy(mesht){} 
 	
 	// Main methods of class: implement standard and complete transport problem
 	//! Initialize the transport problem
@@ -56,7 +56,7 @@ public:
 	//! Solve the transport problem
 	bool solve_oxy_transp (void);
 	//! Solve the FPM for oxygen transport
-	bool solve_fixpoint_oxygen_transp (void);
+	bool solve_oxygen_fixpoint (void);
 	//! Export the transport solution
 	const void export_vtk_oxy_transp (const string & time_suff = "",const string & suff = "");
 	//! Compute residuals for mass balance at each junction

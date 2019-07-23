@@ -105,7 +105,7 @@ struct descr3d1d_oxy_transp {
 		FEM_TYPEV_OV   = FILE_.string_value("FEM_TYPEV_OV","FEM 1D vessel - concentration");
 
 		//RR
-		//FEM_TYPET_ODATA = FILE_.string_value("FEM_TYPET_ODATA","FEM 3D tissue - coefficients");
+		//FEM_TYPET_ODATA = FILE_.string_value("FEM_TYPET_ODATA");
 
 		IM_TYPEV_OXY 	= FILE_.string_value("IM_TYPEV_OXY_TRANSP","Name of integration method");
 
@@ -134,7 +134,7 @@ struct descr3d1d_oxy_transp {
 		OXYGEN_TRANSPORT = size_type(FILE_.int_value("OXYGEN_TRANSPORT","Flag to study oxygen transport"));
 		FACE = size_type(FILE_.int_value("FACE", "Number of region of the first face of the boundary of the 3d domain"));
 
-		couple = size_type(FILE_.int_value("couple","Couple"));
+		couple = size_type(FILE_.int_value("couple"));
 		READ_INTERPOLATOR = size_type(FILE_.int_value("READ_INTERPOALTOR","READ_INTERPOLATOR"));
 		
 		

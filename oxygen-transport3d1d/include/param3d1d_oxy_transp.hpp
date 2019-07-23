@@ -74,6 +74,9 @@ struct param3d1d_oxy_transp {
 	vector_type Y_;
 	//lymphatic drainage
 	vector_type Q_pl_;
+
+	//RR: vettore per il coefficiente di reazione adimensionalizzato
+	vector_type press50;
 	
 	
 
@@ -109,13 +112,13 @@ struct param3d1d_oxy_transp {
 			// Import dimensionless params from FILE_
 			scalar_type Atval = FILE_.real_value("At"); 
 			scalar_type Avval = FILE_.real_value("Av"); 
-			scalar_type Dalphaval = FILE_.real_value("D_alpha"); 
+			//scalar_type Dalphaval = FILE_.real_value("D_alpha"); 
 			scalar_type Yval = FILE_.real_value("Y"); 
 			scalar_type Q_plval  = FILE_.real_value("Q_pl"); 
 			// Fill the data arrays
 			 At_.assign(dof_datat,  Atval);
 			 Av_.assign(dof_datav,  Avval);
-			 Dalpha_.assign(dof_datat,  Dalphaval);
+			 //Dalpha_.assign(dof_datat,  Dalphaval);
 			 Y_.assign(dof_datav,  Yval);
 			 Q_pl_.assign(dof_datat,  Q_plval);	
 		} 
@@ -129,15 +132,16 @@ struct param3d1d_oxy_transp {
 			
 			Dt_   = FILE_.real_value("Dt","Diffusivity in the tissue [m^2/s]");
 			Dv_   = FILE_.real_value("Dv","Diffusivity in the vessels [m^2/s]");
-
-		//RR: MICHEALIS-MENTEN: modifica termine di reazione: da m_ a m0_ (consumo massimo):
+			
+			//Importo i coefficienti dimensionali per l'ossigeno
+//RR: MICHEALIS-MENTEN:
 			m0_    = FILE_.real_value("m0","Max rate of oxygen metabolization [1/s]");
 			Ct_guess_	= FILE_.real_value("Ct_guess","Tissue Concentration guess [kg/m^3]");
 			Cv_guess_	= FILE_.real_value("Cv_guess","Vessel Concentration guess [kg/m^3]");
 			Pm_50_	= FILE_.real_value("Pm_50","Partial pressure at half max rate of metabolization [mmHg]");
 			alpha_t_ = FILE_.real_value("alpha_t","Solubility of oxygen in the tissue [kg/(m^3*mmHg]");
 	
-		//RR: Parametri OSSIEMOGLOBINA
+//RR: Parametri OSSIEMOGLOBINA
 			MCHC_	= FILE_.real_value("MCHC","Mean Corpuscolar Hematocrit Concentration [-]");
 			N_ = FILE_.real_value("N","Hufner factor [-]");
 			delta_ = FILE_.real_value("delta","Hill constant [-]");
@@ -153,11 +157,13 @@ struct param3d1d_oxy_transp {
 			At_.assign(dof_datat, Dt_/d_/U_);
 			Av_.assign(dof_datav, Dv_/d_/U_);
 		//modifica coefficiente di reazione
-			//Dalpha_.assign(dof_datat, (m0_/((C0_+(Pm_50_*alpha_T_)))*U_*d_);
+			//Dalpha_.assign(dof_datat, (m0_/((C0_+(Pm_50_*alpha_T_)))/U_/d_);
 			Y_.assign(dof_datav, Perm_/U_);
 			Q_pl_.assign(dof_datat,Lp_LF_*SV_*P_*d_/U_);
 						
 		}
+	
+
 
 		// Check values
 		GMM_ASSERT1(At_[0] != 0, "wrong tissue diffusivity (At>0 required)"); 
@@ -177,6 +183,38 @@ struct param3d1d_oxy_transp {
 		}
 
 	}
+
+/*
+//! Build the arrays of dimensionless oxygen parameters
+void build_oxy(ftool::md_param & fname,
+			const getfem::mesh_fem & mf_datat
+			) 
+{
+	FILE_ = fname;
+		mf_datat_ = mf_datat;
+		size_type dof_datat = mf_datat_.nb_dof();
+
+	//Importo i coefficienti dimensionali per l'ossigeno
+//RR: MICHEALIS-MENTEN:
+			m0_    = FILE_.real_value("m0","Max rate of oxygen metabolization [1/s]");
+			Ct_guess_	= FILE_.real_value("Ct_guess","Tissue Concentration guess [kg/m^3]");
+			Cv_guess_	= FILE_.real_value("Cv_guess","Vessel Concentration guess [kg/m^3]");
+			Pm_50_	= FILE_.real_value("Pm_50","Partial pressure at half max rate of metabolization [mmHg]");
+			alpha_t_ = FILE_.real_value("alpha_t","Solubility of oxygen in the tissue [kg/(m^3*mmHg]");
+	
+//RR: Parametri OSSIEMOGLOBINA
+			MCHC_	= FILE_.real_value("MCHC","Mean Corpuscolar Hematocrit Concentration [-]");
+			N_ = FILE_.real_value("N","Hufner factor [-]");
+			delta_ = FILE_.real_value("delta","Hill constant [-]");
+			Ps_50_ = FILE_.real_value("Ps_50","Partial pressure at half saturation [mmHg]");
+			alpha_pl_ = FILE_.real_value("alpha_pl","oxygen solubility in the plasma [kg/(m^3*mmHg)]");
+
+
+			//calcolo il coefficienti di reazione adimensionalizzato
+			press50.assign(dof_datat, Pm_50_*alpha_t_);
+}
+*/
+
 	//! Get the radius at a given dof
 	//inline scalar_type R  (size_type i) { return R_[i];  } const
 	//! Get the tissue diffusivity at a given dof
