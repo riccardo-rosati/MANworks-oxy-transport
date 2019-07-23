@@ -26,7 +26,7 @@
  */  
  
 #include <iostream>
-#include <AMG_Interface.hpp> //per il MOX ,non mi prendeva i file AMG
+//#include <AMG_Interface.hpp> //per il MOX ,non mi prendeva i file AMG
 #include <problem3d1d.hpp>
 #include <oxygen_transport3d1d.hpp> 
 #include <problemHT.hpp>
@@ -46,18 +46,19 @@ int main(int argc, char *argv[])
 		
 		// Initialize the problem
                 p.problem3d1d::init(argc, argv);
-		cout<<"Iniziliazzato il problema fluido"<<endl;
+		cout<<"***** Iniziliazzato il problema fluido! *****"<<endl;
 		// Build the monolithic system		
 		p.problem3d1d::assembly();
-		cout<<"ASsemblato problema fluido!"<<endl;
+		cout<<"***** Assemblato problema fluido! *****"<<endl;
 			// Solve the problem
 			if(p.problemHT::HEMATOCRIT_TRANSPORT(argc, argv))
 				{
-				  cout<<"c'è trasporto di Ht"<<endl;
+				  cout<<"!!C'è trasporto di Ht!!"<<endl;
 				if (!p.problem3d1d::solve()) GMM_ASSERT1(false, "solve procedure has failed");
                                 p.problemHT::init(argc, argv);
-				cout<<"Inizializzato l'Ht"<<endl;
+				cout<<"***** Inizializzato l'Ht *****"<<endl;
                                 if (!p.problemHT::solve_fixpoint()) GMM_ASSERT1(false, "solve procedure has failed");
+				cout<<"***** Risolto il trasporto di Ht *****"<<endl;
 
                                 // Save results in .vtk format
                                 p.problemHT::export_vtk();
@@ -65,16 +66,18 @@ int main(int argc, char *argv[])
                                 
                        	if(p.OXYGEN_TRANSPORT(argc, argv))
                                 {
-				  cout<<"C'è trasporto di ossigeno"<<endl;
+				  cout<<"!!C'è trasporto di ossigeno!!"<<endl;
                                     //initialize the transport problem
                                     p.init_oxy_transp(argc, argv);
-				std::cout<<"TRASPORTO DI O2 INIZIALIZZATO"<<std::endl;
+				std::cout<<"***** Inizializzato il trasporto di ossigeno *****"<<std::endl;
 				
                                     //assemble
                                     p.assembly_oxy_transp();
-				std::cout<<"TRASPORTO DI O2 ASSEMBLATO"<<std::endl;
+				std::cout<<"***** Assemblato il trasporto di ossigeno *****"<<std::endl;
                                     //solve
-                                    if (!p.solve_oxy_transp()) GMM_ASSERT1(false, "solve procedure has failed");  // the export is in the solve at each time step
+                                    //if (!p.solve_oxygen_fixpoint()) GMM_ASSERT1(false, "solve procedure has failed");  // the export is in the solve at each time step
+									if (!p.solve_oxy_transp()) GMM_ASSERT1(false, "solve procedure has failed");  // the export is in the solve at each time step
+					cout<<"***** Risolto il trasporto di ossigeno *****"<<endl;
                                     // Save results in .vtk format
                                     p.export_vtk_oxy_transp();
 
