@@ -601,7 +601,7 @@
  	 //1) Build the monolithic matrix AM
 	 assembly_mat_oxy_transp();
 
-	 //2) Build and update the monolithic rhs FM
+	 //2) Build the monolithic rhs FM
 	 assembly_rhs_oxy_transp();
 	 }; // end of assembly
  
@@ -692,10 +692,9 @@
 	vector_type reac_data(dof.Pt()); gmm::clear(reac_data);
 
 	vector_type consump_coeff(dof_oxy_transp.Ct()); gmm::clear(consump_coeff); 
-	//il coefficiente per il trasporto di O2, è costruito sulla stessa mesh del problema fluido, hanno diversa dimensione: conviene creare una mesh con i coeffcienti per l'O2?
 
-	vector_type PRESS50(dof_oxy_transp.Ct(), PARAM.real_value("Pm_50")); 
-	gmm::scale(PRESS50, param_oxy_transp.alpha_t()); 
+	vector_type PRESS50(dof_oxy_transp.Ct(), PARAM.real_value("Pm_50"));
+	gmm::scale(PRESS50, param_oxy_transp.alpha_t());
 	vector_type ct_guess(dof_oxy_transp.Ct(), param_oxy_transp.Ct_guess());
 	gmm::add(PRESS50, ct_guess);
 	gmm::copy(ct_guess, consump_coeff);
@@ -704,7 +703,6 @@
 	{
 	consump_coeff[i] = 1.0/consump_coeff[i];
 	}
-
 	gmm::scale(consump_coeff, param_oxy_transp.m0());
 
 
@@ -713,7 +711,7 @@
 	//Prtché? cosi da avere la dimensione di cv_guess, consump_coeff e press50 identica a quella di UM_oxy(0, Ct) --> utile per il FPM, e 
 	//dare come input a asm_tissue_transp il vettore di coefficienti (da costruire su mf_coeft) con le dimensioni corrette
 	
-	cout<<"Dof di mf_xocy_ct: "<<mf_oxy_Ct.nb_dof()<<endl;
+	cout<<"Dof di mf_oxy_ct: "<<mf_oxy_Ct.nb_dof()<<endl;
 	cout<<"Dof di mf_coeft: "<<mf_coeft.nb_dof()<<endl;
 	cout<<"Size di consump_coeff: "<<consump_coeff.size()<<endl;
 	cout<<"Size di reac_data: "<<reac_data.size()<<endl;
@@ -759,6 +757,7 @@
 					gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv()), 
 					gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())));
 	
+
 
 	if(descr_oxy_transp.ADVECTION ==0)
 	{cout<<"No advection: only diffusion and reaction terms"<<endl;}
@@ -812,7 +811,7 @@
 	#endif
 
 	if(PARAM.int_value("couple", "flag for coupling function (notaro 0, brambilla 1)")){
-   		bool READ_ITERPOLATOR = PARAM.int_value("READ_ITERPOLATOR", "flag for read interpolator from file ");
+   		bool READ_ITERPOLATOR = PARAM.int_value("READ_ITERPOLATOR"); //flag for read interpolator from file 
     	if (!READ_ITERPOLATOR){
 		asm_exchange_aux_mat_transp(Mbar, Mlin, mimv, mf_oxy_Ct, mf_oxy_Cv, mf_coefv, param.R(), descr.NInt, nb_branches);
       	std::ostringstream mbar_name,mlin_name;
@@ -831,7 +830,7 @@
     	}
 	}
 	if(!PARAM.int_value("couple", "flag for coupling function (notaro 0, brambilla 1)")){
-   		bool READ_ITERPOLATOR = PARAM.int_value("READ_ITERPOLATOR", "flag for read interpolator from file ");
+   		bool READ_ITERPOLATOR = PARAM.int_value("READ_ITERPOLATOR"); //flag for read interpolator from file 
     	if (!READ_ITERPOLATOR){
 			asm_exchange_aux_mat(Mbar, Mlin, mimv, mf_oxy_Ct, mf_oxy_Cv, param.R(), descr.NInt);
       	std::ostringstream mbar_name,mlin_name;
@@ -908,7 +907,7 @@
 	gmm::add(Bvv,
 			  gmm::sub_matrix(AM_oxy, 
 					gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv()), 
-					gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv()))); 
+					gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())));	
 	}	
 
 
@@ -959,16 +958,16 @@
 	gmm::copy(FM_oxy, FM_temp);
 
 
-	gmm::add(	gmm::sub_matrix(AM_temp,
+	gmm::add (gmm::sub_matrix(AM_temp,
 			gmm::sub_interval(0,dof_oxy_transp.Ct()),
 			gmm::sub_interval(0,dof_oxy_transp.Ct()))
-			, Att);
+			,Att);
 	gmm::scale(	gmm::sub_matrix(AM_temp,
 			gmm::sub_interval(0,dof_oxy_transp.Ct()),
 			gmm::sub_interval(0,dof_oxy_transp.Ct()))
-			, 0.0);	
+			,0.0);	
 			
-	gmm::add(	 gmm::sub_vector(FM_temp, gmm::sub_interval(0,dof_oxy_transp.Ct()))
+	gmm::add (gmm::sub_vector(FM_temp, gmm::sub_interval(0,dof_oxy_transp.Ct()))
 			,Ft);	
 	gmm::scale(	 gmm::sub_vector(FM_temp, gmm::sub_interval(0,dof_oxy_transp.Ct()))
 			,0.0);
@@ -977,9 +976,6 @@
 	#ifdef M3D1D_VERBOSE_
 	cout << "  Building tissue boundary term ..." << endl;
 	#endif
-
-	cout<<"FM_temp size: "<<FM_temp.size()<<endl;
-	cout<<"AM_temp rows: "<<gmm::mat_nrows(AM_temp)<<" e AM_oxy cols: "<<gmm::mat_ncols(AM_temp)<<endl;
 	
 	//Right Hand Side for tissue
 	//Srtting the BC for tissue
@@ -996,10 +992,8 @@
 			gmm::sub_vector(FM_oxy,
 					gmm::sub_interval(0,dof_oxy_transp.Ct())));
 	// De-allocate memory
-	gmm::clear(Att);	gmm::clear(AM_temp);	
-	gmm::clear(Ft);		gmm::clear(FM_temp);
-	
-		
+	gmm::clear(Att);		
+	gmm::clear(Ft);		
 
 
 	//Impongo le BC per il vaso
@@ -1009,33 +1003,23 @@
 	vector_type Fv (dof_oxy_transp.Cv()); gmm::clear(Fv);
 	sparse_matrix_type Avv(dof_oxy_transp.Cv(), dof_oxy_transp.Cv());
 
-	//vector_type FM_temp(dof_oxy_transp.Cv());
-	//sparse_matrix_type AM_temp(dof_oxy_transp.Cv(), dof_oxy_transp.Cv());
-
-	gmm::copy(AM_oxy, AM_temp);
-	gmm::copy(FM_oxy, FM_temp);
-
-
 	gmm::add(	gmm::sub_matrix(AM_temp,
 			gmm::sub_interval(dof_oxy_transp.Ct(),dof_oxy_transp.Cv()),
 			gmm::sub_interval(dof_oxy_transp.Ct(),dof_oxy_transp.Cv()))
-			, Att);
+			, Avv);
 	gmm::scale(	gmm::sub_matrix(AM_temp,
 			gmm::sub_interval(dof_oxy_transp.Ct(),dof_oxy_transp.Cv()),
 			gmm::sub_interval(dof_oxy_transp.Ct(),dof_oxy_transp.Cv()))
 			, 0.0);	
 			
 	gmm::add(	 gmm::sub_vector(FM_temp, gmm::sub_interval(dof_oxy_transp.Ct(),dof_oxy_transp.Cv()))
-			,Ft);	 
+			,Fv);	 
 	gmm::scale(	 gmm::sub_vector(FM_temp, gmm::sub_interval(dof_oxy_transp.Ct(),dof_oxy_transp.Cv()))
 			,0.0);
 
 	#ifdef M3D1D_VERBOSE_
 	cout << "  Building vessel boundary term ..." << endl;
 	#endif
-
-	cout<<"FM_temp size: "<<FM_temp.size()<<endl;
-	cout<<"AM_temp rows: "<<gmm::mat_nrows(AM_temp)<<" e AM_oxy cols: "<<gmm::mat_ncols(AM_temp)<<endl;
 		
 	//Right Hand Side for vessels
 	//Setting the BC for vessel
@@ -1055,7 +1039,8 @@
 	gmm::clear(Fv);	
 	
 
-/*
+
+	/*
 
 
 
@@ -1142,6 +1127,15 @@
 					gmm::sub_interval(dof_oxy_transp.Ct(),dof_oxy_transp.Cv())));
 
 	
+int count=0;
+	for(size_type q;q<dof_oxy_transp.Cv();q++){
+			if(Ov[q]<0.0 ) count++;
+	}
+	cout<<"Numero di elementi <0 in Ov: "<<count<<endl;
+	count=0;
+	
+
+
 	*/
 
 
@@ -1305,7 +1299,7 @@
 	bool solved = solver(dof_oxy_transp.Ct(),dof_oxy_transp.Cv(),0,0);
 	if (!solved) return false;
 	
-	/*
+/*
 	//export solution
 	#ifdef M3D1D_VERBOSE_
 	std::cout<<"solved! going to export..."<<std::endl;
@@ -1336,15 +1330,22 @@
 scalar_type 
 computing_residual (vector_type Ct_new, vector_type Ct_old, vector_type Cv_new, vector_type Cv_old)
 {
-	scalar_type norm2_Tnew = gmm::vect_norm2(Ct_new);
-	scalar_type norm2_Told = gmm::vect_norm2(Ct_old);
-	scalar_type error_T = fabs((norm2_Tnew - norm2_Told));
+	
+	gmm::scale(Ct_old, -1.0);
+	gmm::add(Ct_old, Ct_new);
 
-	scalar_type norm2_Vnew = gmm::vect_norm2(Cv_new);
-	scalar_type norm2_Vold = gmm::vect_norm2(Cv_old);
-	scalar_type error_V = fabs((norm2_Vnew - norm2_Vold));
+	gmm::scale(Cv_old, -1.0);
+	gmm::add(Cv_old, Cv_new);
 
-	scalar_type error = error_T/norm2_Told + error_V/norm2_Vold;
+	scalar_type Tnew = gmm::vect_norm2(Ct_new);
+	scalar_type Told = gmm::vect_norm2(Ct_old);
+
+	scalar_type Vnew = gmm::vect_norm2(Cv_new);
+	scalar_type Vold = gmm::vect_norm2(Cv_old);
+	
+	scalar_type error;
+
+	error = Tnew/Told + Vnew/Vold;
 
 	return error;
 }
@@ -1359,6 +1360,26 @@ bool oxygen_transport3d1d::solve_oxygen_fixpoint (void)
 	cout<<"Risolvo il sistema"<<endl;
 	bool RK;
 	RK = solve_oxy_transp(); //come output ho UM_transp iniziale 
+
+
+	vector_type Ct(dof_oxy_transp.Ct()); 
+
+	// Array of unknown dof of the network velocity
+	vector_type Cv(dof_oxy_transp.Cv()); 
+
+	//Copy solution
+	gmm::copy(gmm::sub_vector(UM_oxy, 
+		gmm::sub_interval(0, dof_oxy_transp.Ct())),  Ct);
+	gmm::copy(gmm::sub_vector(UM_oxy, 
+		gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())), Cv);
+	cout<<"VALORI DI Cv e Ct SENZA FPM"<<endl;
+	for(size_type a; a<dof_oxy_transp.Ct();a++)
+		cout<<"Ct["<<a<<"]= "<<Ct[a]<<endl;
+
+	for(size_type b; b<dof_oxy_transp.Cv();b++)
+		cout<<"Cv["<<b<<"]= "<<Cv[b]<<endl;
+
+
 
 // 2 - declaration of variables
 
@@ -1399,13 +1420,13 @@ bool oxygen_transport3d1d::solve_oxygen_fixpoint (void)
 	getfem::asm_stiffness_matrix_for_laplacian(Dt ,mimt,mf_oxy_Ct, mf_coeft, param_oxy_transp.At(), mesh_region::all_convexes());
 	gmm::add(Dt,gmm::sub_matrix(AM_oxy,
 						gmm::sub_interval(0,dof_oxy_transp.Ct()),
-						gmm::sub_interval(0, dof_oxy_transp.Ct())));
+						gmm::sub_interval(0,dof_oxy_transp.Ct())));
 
 	//Assemblo At
 	asm_advection_tissue(At, mimt, mf_oxy_Ct, mf_Ut, gmm::sub_vector(UM, gmm::sub_interval(0, dof.Ut())));
 	gmm::add(At,gmm::sub_matrix(AM_oxy,
 						gmm::sub_interval(0,dof_oxy_transp.Ct()),
-						gmm::sub_interval(0, dof_oxy_transp.Ct())));
+						gmm::sub_interval(0,dof_oxy_transp.Ct())));
 
 	//Assemblo le matrici di scambio Btt, Btv, Bvt e Bvv (sarebbe meglio solo Btt)
 	bool COUPLING = PARAM.int_value("COUPLING", "flag for coupling-exchange term ");
@@ -1517,8 +1538,8 @@ bool oxygen_transport3d1d::solve_oxygen_fixpoint (void)
 	//clock_t time_G;
 	//time_G=clock();
 
-	int iteration=0;
-	int err = 1; 
+	int iteration=1;
+	scalar_type err = 1.0; 
 
 	vector_type RES_SOL(max_iter);
 	
@@ -1591,27 +1612,19 @@ while (RK && iteration<max_iter && err>oxyres)
 	k2 = pow((param_oxy_transp.Ps_50()*param_oxy_transp.alpha_t()),param_oxy_transp.delta());	
 	cout<<"k2= "<<k2<<endl;	
 
-	for(size_type i=0; i<nb_branches; ++i){
+	for(size_type i=0; i<nb_branches; ++i)
+	{
 
 		vector_type cv_i(mf_Hi[i].nb_dof()); gmm::clear(cv_i);
 		vector_type Hi(mf_Hi[i].nb_dof()); gmm::clear(Hi);
 		vector_type Uvi(mf_Uvi[i].nb_dof()); gmm::clear(Uvi);
 		vector_type psi(mf_Hi[i].nb_dof()); gmm::clear(psi);
-		vector_type power(mf_Hi[i].nb_dof()); gmm::clear(power);
-		cout<<"Dof di mf_Hi["<<i<<"]="<<mf_Hi[i].nb_dof()<<endl;
-		/*size_type pos=0;
-		for (getfem::mr_visitor mrv(mf_oxy_Cv.linked_mesh().region(i)); !mrv.finished(); ++mrv)
-		for (auto b : mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv()))
-			{
-	cout<<"Sono con ind_basic_dof_of_element!!!!!"<<endl;
-	cout<<"b= "<<b<<endl;
-			cv_i[pos] = cv_guess[b]; //ottengo cv_i --> la concentrazione definita ramo per ramo
-			pos++;
-			}*/
 
 	size_type pos=0;
-	for (getfem::mr_visitor mrv(mf_oxy_Cv.linked_mesh().region(i)); !mrv.finished(); ++mrv){
-		if(pos == 0){
+	for (getfem::mr_visitor mrv(mf_oxy_Cv.linked_mesh().region(i)); !mrv.finished(); ++mrv)
+		{
+		if(pos == 0)
+			{
 			cv_i[pos] = cv_guess[mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[0]];
 			//cout << " cv_i [" << pos << "] = cv_guess [" << mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[0] << "]" << endl;
 			pos ++;
@@ -1623,10 +1636,9 @@ while (RK && iteration<max_iter && err>oxyres)
 			cv_i[pos] = cv_guess[mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1]];
 			//cout << " cv_i [" << pos << "] = cv_guess [" << mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1] << "]" << endl;
 			pos ++;
-
 			}
 	//ho fatto questo tipo di ciclo perché sul singolo elemento mi prendeva due volte il nodo iniziale: ora prendo entrambi nodi per il primo ciclo e poi per il secondo prendo solo il secondo valore del nodo
-	}
+		}
 
 		if(i>0) shift_h += mf_Hi[i-1].nb_dof();
 		if(i>0) shift += mf_Uvi[i-1].nb_dof();
@@ -1639,8 +1651,6 @@ while (RK && iteration<max_iter && err>oxyres)
 
 		for (size_type j=0; j<mf_Hi[i].nb_dof(); ++j)
 		{
-			cout<<"cv_i["<<j<<"]="<<cv_i[j]<<endl;
-			//power[j] = pow(cv_i[j], param_oxy_transp.delta());
 			psi[j] = Hi[j]*k1*pow(cv_i[j], param_oxy_transp.delta())/(pow(cv_i[j], param_oxy_transp.delta())+k2);	
 		}
 	asm_hemoadvection_rhs_network(Ov, mimv, mf_oxy_Cv, mf_coefvi[i], mf_Uvi[i], mf_coefv, mf_Hi[i], Uvi, param.lambdax(i), param.lambday(i), param.lambdaz(i),  param.R(), psi, meshv.region(i));	
@@ -1653,15 +1663,14 @@ while (RK && iteration<max_iter && err>oxyres)
 		// \ todo risolvere il nuovo sistema
 		cout<<"Risolvo il sistema nuovamente"<<endl;
 			RK = solve_oxy_transp();
+
 			gmm::copy(gmm::sub_vector(UM_oxy,
 							gmm::sub_interval(0, dof_oxy_transp.Ct())), Ct_new);
 
 			gmm::copy(gmm::sub_vector(UM_oxy,
 							gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())), Cv_new);
-
 		// \ todo calcolare l'errore tra il passo k e quello k-1
 			err = computing_residual (Ct_new, Ct_old, Cv_new, Cv_old);
-			iteration++;
 
 	#ifdef M3D1D_VERBOSE_
 	cout<<"Updating the solution"<<endl;
@@ -1669,22 +1678,20 @@ while (RK && iteration<max_iter && err>oxyres)
 	gmm::copy(Ct_new, Ct_old);
 	gmm::copy(Cv_new, Cv_old);
 
-
 	#ifdef M3D1D_VERBOSE_
 	cout << "Checking Residuals at iteration: "<< iteration << "..." << endl;
 	#endif
 
-	RES_SOL[iteration] = err;
-
 
 	//Saving residual values in an output file
-	/*SaveResidual << iteration << "\t" << resSol << "\t" << resCM << "\t" << resH << endl;
+	//SaveResidual << iteration << "\t" << resSol << "\t" << resCM << "\t" << resH << endl;
 
-			if(print_res)  {
+			if(descr_oxy_transp.PRINT_RESIDUALS)  {
 			cout << "\nStep n°:" << iteration << "\nSolution Residual = " << err <<endl;
-			cout << "\t\t\t\tTime: " <<  ((float)t)/CLOCKS_PER_SEC << " s "<< endl;
+			//cout << "\t\t\t\tTime: " <<  ((float)t)/CLOCKS_PER_SEC << " s "<< endl;
 					}
-			cout << "********************************************************" << endl;*/
+			cout << "********************************************************" << endl;
+	iteration++;
 }; //esco dal while
 
 	gmm::copy(Ct_old, gmm::sub_vector(UM_oxy, 
@@ -1692,14 +1699,6 @@ while (RK && iteration<max_iter && err>oxyres)
 	
 	gmm::copy(Cv_old, gmm::sub_vector(UM_oxy,
 					 gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())));	
-
-	for(size_type p; p<RES_SOL.size(); ++p)
-	{
-		if(RES_SOL[p]== 0) {continue;}
-		else
-		cout<<"Residui: "<<"\nRES_SOL["<<p<<"]= "<<RES_SOL[p]<<endl;	
-	}
-	
 
 	/*time_G=clock()-time_G;
 	cout<< "Iterative Process Time = " << ((float)time_G)/CLOCKS_PER_SEC << " s"<< endl;
@@ -1885,6 +1884,12 @@ while (RK && iteration<max_iter && err>oxyres)
 		gmm::sub_interval(0, dof_oxy_transp.Ct())),  Ct);
 	gmm::copy(gmm::sub_vector(UM_oxy, 
 		gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())), Cv);
+
+	for(size_type a; a<dof_oxy_transp.Ct();a++)
+		cout<<"Ct["<<a<<"]= "<<Ct[a]<<endl;
+
+	for(size_type b; b<dof_oxy_transp.Cv();b++)
+		cout<<"Cv["<<b<<"]= "<<Cv[b]<<endl;
 
 	
 

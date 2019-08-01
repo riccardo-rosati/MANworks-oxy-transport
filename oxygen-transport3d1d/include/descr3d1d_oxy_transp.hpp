@@ -79,6 +79,7 @@ struct descr3d1d_oxy_transp {
 	size_type   NInt;
 	//!Number of region of the first face of the boundary of the 3d domain
 	size_type   FACE;
+	size_type PRINT_RESIDUALS;
 
 	//For FixPOint Method
 	//! Maximum residual for FPM
@@ -133,9 +134,10 @@ struct descr3d1d_oxy_transp {
 		NEW_FORMULATION = size_type(FILE_.int_value("NEW_FORMULATION","Flag for the new formulation"));
 		OXYGEN_TRANSPORT = size_type(FILE_.int_value("OXYGEN_TRANSPORT","Flag to study oxygen transport"));
 		FACE = size_type(FILE_.int_value("FACE", "Number of region of the first face of the boundary of the 3d domain"));
+		PRINT_RESIDUALS = size_type(FILE_.int_value("PRINT_RESIDUALS"));
 
 		couple = size_type(FILE_.int_value("couple"));
-		READ_INTERPOLATOR = size_type(FILE_.int_value("READ_INTERPOLATOR"));
+		READ_INTERPOLATOR = size_type(FILE_.int_value("READ_ITERPOLATOR","flag for read interpolator from file"));
 		
 		
 		
