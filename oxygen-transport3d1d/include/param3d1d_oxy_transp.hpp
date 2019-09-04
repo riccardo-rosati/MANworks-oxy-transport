@@ -64,12 +64,15 @@ struct param3d1d_oxy_transp {
 
 
 	// Dimensionless physical parameters (test-cases)
+	//Oxygen consumption rate
+	scalar_type M0_;
+
 	//Inverse of Peclet number for tissue
 	vector_type At_;
 	//Inverse of Peclet number for vessel
 	vector_type Av_;
 	//Damkohler number (metabolism VS diffusion)
-	vector_type Dalpha_;
+	//vector_type Dalpha_;
 	//Magnitude of leakage from the capillary bed
 	vector_type Y_;
 	//lymphatic drainage
@@ -160,6 +163,8 @@ struct param3d1d_oxy_transp {
 			//Dalpha_.assign(dof_datat, (m0_/((C0_+(Pm_50_*alpha_T_)))/U_/d_);
 			Y_.assign(dof_datav, Perm_/U_);
 			Q_pl_.assign(dof_datat,Lp_LF_*SV_*P_*d_/U_);
+			M0_=m0_*d_/U_;
+			cout<<"M0_ = "<<M0_<<endl;
 						
 		}
 	
@@ -224,13 +229,13 @@ void build_oxy(ftool::md_param & fname,
 	//! Get the linphatic drainage at a given dof
 	inline scalar_type Q_pl  (size_type i) { return Q_pl_[i];  } const
 	//! Get the Dahmkholer number at a given dof
-	inline scalar_type Dalpha  (size_type i) { return Dalpha_[i];  } const
+	//inline scalar_type Dalpha  (size_type i) { return Dalpha_[i];  } const
 	//! Get the leakage of the capillary bed at a given dof
 	inline scalar_type Y  (size_type i) { return Y_[i];  } const
 		
 	//RR: 
 	//! Get the maximum consumption rate
-	inline scalar_type m0  () { return m0_;  } const
+	inline scalar_type M0  () { return M0_;  } const
 	//! Get the tissue concentration guess
 	inline scalar_type Ct_guess  () { return Ct_guess_;  } const
 	//! Get vessel concentration guess
@@ -271,12 +276,12 @@ void build_oxy(ftool::md_param & fname,
 		std::ostream & out, const param3d1d_oxy_transp & param
 		)
 	{ 
-		out << "--- PHYSICAL PARAMS ------" << endl;
+		out << "---  DIMENSIONLESS PHYSICAL PARAMS ------" << endl;
 		out << "  At     : "                << param.At_[0] << endl; 
 		out << "  Av : "                << param.Av_[0] << endl; 
 		out << "  Y      : "                << param.Y_[0] << endl; 
 		out << "  Q_pl : "                << param.Q_pl_[0] << endl; 
-		out << "  m0 : "                << param.m0_ << endl;
+		out << "  m0 : "                << param.M0_ << endl;
 		out << "  Pm_50 : "                << param.Pm_50_ << endl;
 		out << "  Alpha_t : "                << param.alpha_t_ << endl;
 		out << "  Hufner factor : "                << param.N_ << endl;

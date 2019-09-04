@@ -325,6 +325,7 @@
 
 	// List all the convexes
 	dal::bit_vector nn = meshv.convex_index();
+
 	bgeot::size_type cv;
 	for (cv << nn; cv != bgeot::size_type(-1); cv << nn) {
 
@@ -586,7 +587,7 @@
 		cout << "    -  label=" << Jv_oxy_transp[i].label 
 			 << ", value=" << Jv_oxy_transp[i].value << ", ind=" << Jv_oxy_transp[i].idx 
 			 << ", rg=" << Jv_oxy_transp[i].rg << ", branches=" << Jv_oxy_transp[i].branches << endl; 
-	cout << "Jv_oxy_transp "   << endl;
+	cout<< "---------------------------------------- "<<endl;
 	#endif
 
 	} 
@@ -703,7 +704,7 @@
 	{
 	consump_coeff[i] = 1.0/consump_coeff[i];
 	}
-	gmm::scale(consump_coeff, param_oxy_transp.m0());
+	gmm::scale(consump_coeff, param_oxy_transp.M0());
 
 
 	//RR
@@ -811,8 +812,8 @@
 	#endif
 
 	if(PARAM.int_value("couple", "flag for coupling function (notaro 0, brambilla 1)")){
-   		bool READ_ITERPOLATOR = PARAM.int_value("READ_ITERPOLATOR"); //flag for read interpolator from file 
-    	if (!READ_ITERPOLATOR){
+   		bool READ_INTERPOLATOR = PARAM.int_value("READ_INTERPOLATOR","flag for read interpolator from file"); //flag for read interpolator from file 
+    	if (!READ_INTERPOLATOR){
 		asm_exchange_aux_mat_transp(Mbar, Mlin, mimv, mf_oxy_Ct, mf_oxy_Cv, mf_coefv, param.R(), descr.NInt, nb_branches);
       	std::ostringstream mbar_name,mlin_name;
       	mbar_name << descr_oxy_transp.OUTPUT+"Mbar_transp";
@@ -830,8 +831,8 @@
     	}
 	}
 	if(!PARAM.int_value("couple", "flag for coupling function (notaro 0, brambilla 1)")){
-   		bool READ_ITERPOLATOR = PARAM.int_value("READ_ITERPOLATOR"); //flag for read interpolator from file 
-    	if (!READ_ITERPOLATOR){
+   		bool READ_INTERPOLATOR = PARAM.int_value("READ_INTERPOLATOR","flag for read interpolator from file");//flag for read interpolator from file 
+    	if (!READ_INTERPOLATOR){
 			asm_exchange_aux_mat(Mbar, Mlin, mimv, mf_oxy_Ct, mf_oxy_Cv, param.R(), descr.NInt);
       	std::ostringstream mbar_name,mlin_name;
       	mbar_name << "./vtk/Mbar";
@@ -941,7 +942,7 @@
 	cout<<"Dof di mf_oxy_Cv: "<<mf_oxy_Cv.nb_dof()<<endl;
 
 	asm_coupled_bc_transp (AM_oxy, FM_oxy, mf_oxy_Ct, mf_oxy_Cv, BCt_oxy_transp, BCv_oxy_transp);
-	cout<<"Ho costruito le BC di Drichlet!"<<endl;
+	cout<<"Ho costruito le BC nel caso accoppiato!"<<endl;
 	
 	
 	//Impongo le BC per il tessuto	
@@ -983,6 +984,8 @@
 
 	asm_tissue_bc_transp(Ft, Att, mimt, mf_oxy_Ct, mf_coeft, BCt_oxy_transp, beta_t);
 	cout<<"Ho impostato le BC (DIR e MIX) per il tessuto"<<endl;
+	//Att --> dall'integrazione per parti del termine diffusivo
+	//Ft --> condizioni al contorno;
 
 	gmm::add(Att, 
 			gmm::sub_matrix(AM_oxy,
@@ -1026,7 +1029,10 @@
 	scalar_type beta_v  = PARAM.real_value("BETAvessel_transp", "Coefficient for mixed BC for transport problem in vessels");
 	asm_network_bc_transp(Fv, Avv, mimv, mf_oxy_Cv, mf_coefv, BCv_oxy_transp, beta_v, param.R());
 	cout<<"Ho impostato le BC (DIR e MIX) per il vaso"<<endl;
-	
+	//Avv --> dall'integrazione per parti del termine diffusivo
+	//Fv --> condizioni al contorno;
+
+
 	gmm::add(Avv, 
 			gmm::sub_matrix(AM_oxy,
 					gmm::sub_interval(dof_oxy_transp.Ct(),dof_oxy_transp.Cv()),
@@ -1363,9 +1369,8 @@ bool oxygen_transport3d1d::solve_oxygen_fixpoint (void)
 
 
 	vector_type Ct(dof_oxy_transp.Ct()); 
-
-	// Array of unknown dof of the network velocity
 	vector_type Cv(dof_oxy_transp.Cv()); 
+
 
 	//Copy solution
 	gmm::copy(gmm::sub_vector(UM_oxy, 
@@ -1392,9 +1397,6 @@ bool oxygen_transport3d1d::solve_oxygen_fixpoint (void)
 	vector_type Cv_old(dof_oxy_transp.Cv()); gmm::clear(Cv_old);	//Cv(k-1)
 
 	//Definisco le matrici che non cambiano durante il while
-	#ifdef M3D1D_VERBOSE_
-	cout<<"Initializing the matrixes which don't change in FPM..."<<endl;
-	#endif
 	sparse_matrix_type Dt; gmm::resize(Dt, dof_oxy_transp.Ct(), dof_oxy_transp.Ct());
 	sparse_matrix_type At; gmm::resize(At, dof_oxy_transp.Ct(), dof_oxy_transp.Ct());
 
@@ -1432,13 +1434,10 @@ bool oxygen_transport3d1d::solve_oxygen_fixpoint (void)
 	bool COUPLING = PARAM.int_value("COUPLING", "flag for coupling-exchange term ");
 	if(COUPLING==0)  { cout<< "Uncoupled problem: no exchange between tissue and vessels"<<endl; }
 	else{
-	#ifdef M3D1D_VERBOSE_
-	cout << "  Assembling aux exchange matrices Mbar and Mlin ..." << endl;
-	#endif
 
 	if(PARAM.int_value("couple", "flag for coupling function (notaro 0, brambilla 1)")){
-   		bool READ_ITERPOLATOR = PARAM.int_value("READ_ITERPOLATOR", "flag for read interpolator from file ");
-    	if (!READ_ITERPOLATOR){
+   		bool READ_INTERPOLATOR = PARAM.int_value("READ_INTERPOLATOR", "flag for read interpolator from file ");
+    	if (!READ_INTERPOLATOR){
 		asm_exchange_aux_mat_transp(Mbar, Mlin, mimv, mf_oxy_Ct, mf_oxy_Cv, mf_coefv, param.R(), descr.NInt, nb_branches);
       	std::ostringstream mbar_name,mlin_name;
       	mbar_name << descr_oxy_transp.OUTPUT+"Mbar_transp";
@@ -1456,8 +1455,8 @@ bool oxygen_transport3d1d::solve_oxygen_fixpoint (void)
     	}
 	}
 	if(!PARAM.int_value("couple", "flag for coupling function (notaro 0, brambilla 1)")){
-   		bool READ_ITERPOLATOR = PARAM.int_value("READ_ITERPOLATOR", "flag for read interpolator from file ");
-    	if (!READ_ITERPOLATOR){
+   		bool READ_INTERPOLATOR = PARAM.int_value("READ_INTERPOLATOR", "flag for read interpolator from file ");
+    	if (!READ_INTERPOLATOR){
 			asm_exchange_aux_mat(Mbar, Mlin, mimv, mf_oxy_Ct, mf_oxy_Cv, param.R(), descr.NInt);
       	std::ostringstream mbar_name,mlin_name;
       	mbar_name << "./vtk/Mbar";
@@ -1474,11 +1473,6 @@ bool oxygen_transport3d1d::solve_oxygen_fixpoint (void)
       	gmm::MatrixMarket_load(mlin_name.str().c_str(), Mlin);
     	}
 	}
-	
-	#ifdef M3D1D_VERBOSE_
-	cout << "  Assembling exchange matrices ..." << endl;
-	#endif
-
 
 	bool NEWFORM = PARAM.int_value("NEW_FORMULATION", "flag for the new formulation");
 	
@@ -1578,7 +1572,7 @@ while (RK && iteration<max_iter && err>oxyres)
 	consump_coeff[i] = 1.0/consump_coeff[i];
 	}
 
-	gmm::scale(consump_coeff, param_oxy_transp.m0());
+	gmm::scale(consump_coeff, param_oxy_transp.M0());
 
 	//RR
 	getfem::interpolation(mf_oxy_Ct, mf_coeft, consump_coeff, reac_data);
@@ -1607,10 +1601,8 @@ while (RK && iteration<max_iter && err>oxyres)
 	
 	scalar_type k1;
 	k1= param_oxy_transp.N()*param_oxy_transp.MCHC();	
-	cout<<"k1= "<<k1<<endl;
 	scalar_type k2;
 	k2 = pow((param_oxy_transp.Ps_50()*param_oxy_transp.alpha_t()),param_oxy_transp.delta());	
-	cout<<"k2= "<<k2<<endl;	
 
 	for(size_type i=0; i<nb_branches; ++i)
 	{
@@ -1655,12 +1647,12 @@ while (RK && iteration<max_iter && err>oxyres)
 		}
 	asm_hemoadvection_rhs_network(Ov, mimv, mf_oxy_Cv, mf_coefvi[i], mf_Uvi[i], mf_coefv, mf_Hi[i], Uvi, param.lambdax(i), param.lambday(i), param.lambdaz(i),  param.R(), psi, meshv.region(i));	
 	}
-	
+
 	gmm::add(Ov, gmm::sub_vector(FM_oxy, 
 					gmm::sub_interval(dof_oxy_transp.Ct(),dof_oxy_transp.Cv())));
 	
 
-		// \ todo risolvere il nuovo sistema
+		//risolvere il nuovo sistema
 		cout<<"Risolvo il sistema nuovamente"<<endl;
 			RK = solve_oxy_transp();
 
@@ -1669,7 +1661,7 @@ while (RK && iteration<max_iter && err>oxyres)
 
 			gmm::copy(gmm::sub_vector(UM_oxy,
 							gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())), Cv_new);
-		// \ todo calcolare l'errore tra il passo k e quello k-1
+		//calcolare l'errore tra il passo k e quello k-1
 			err = computing_residual (Ct_new, Ct_old, Cv_new, Cv_old);
 
 	#ifdef M3D1D_VERBOSE_

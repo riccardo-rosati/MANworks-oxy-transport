@@ -88,9 +88,9 @@ struct descr3d1d_oxy_transp {
 	size_type Max_iterations_OXY;
 
 	//! Couple
-	size_type couple;
-	//! READ_INERPOLATOR
-	size_type READ_INTERPOLATOR;
+	bool couple;
+	//! READ_INTERPOLATOR
+	bool READ_INTERPOLATOR;
 	
 	// Utils
 	//! File .param
@@ -137,7 +137,7 @@ struct descr3d1d_oxy_transp {
 		PRINT_RESIDUALS = size_type(FILE_.int_value("PRINT_RESIDUALS"));
 
 		couple = size_type(FILE_.int_value("couple"));
-		READ_INTERPOLATOR = size_type(FILE_.int_value("READ_ITERPOLATOR","flag for read interpolator from file"));
+		READ_INTERPOLATOR = size_type(FILE_.int_value("READ_INTERPOLATOR","flag for read interpolator from file"));
 		
 		
 		
