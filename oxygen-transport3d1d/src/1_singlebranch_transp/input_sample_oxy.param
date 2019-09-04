@@ -66,7 +66,7 @@ READ_INTERPOLATOR = 0;
 % Flag to import dimensionless param
 TEST_PARAM      = 0;
 % Flag to import the dimensionless radius (to do that TEST_PARAM must be equal to 0 and parameters P U d k mu must be left)
-IMPORT_RADIUS   = 0;
+IMPORT_RADIUS   = 1;
 % Flag to import the file with curvature (Remember to ENABLE CURVE_PROBLEM) - If this flag is 0, the curvature is computed from the mesh
 IMPORT_CURVE = 0;
 
@@ -98,7 +98,7 @@ PRINT_RESIDUALS       = 1;
 % Flags to build a regular 3d mesh
 TEST_GEOMETRY = 1;
 GT_T       = 'GT_PK(3,1)';
-NSUBDIV_T  = '[3,3,3]'; %[11,11,11]
+NSUBDIV_T  = '[11,11,11]'; %[11,11,11]
 ORG_T      = '[0,0,0]';
 SIZES_T    = '[1,1,1]';
 NOISED_T   = '0';
@@ -215,31 +215,10 @@ UNDER_RELAXATION_COEFFICIENT_HEMA  = 0.4;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%										Oxygen transport											%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Max oxygen consumption rate [1/s]
-m0 =  3.7; 
-%Tissue concentration guess [kg/m^3]
-Ct_guess =  1;
-%Vessel concentration guess [kg/m^3]
-Cv_guess =  1;
-%Partial pressure at half max rate of metabolization [mmHg]
-Pm_50 = 4;
-%Solubility of oxygen in the tissue [kg/(m^3*mmHg]
-alpha_t = 2.8E-5;
-%Mean Corpuscolar Hematocrit Concentration [kg/m^3];
-MCHC = 0.34;
-%Hufner factor [-]
-N = 1.36;
-%Hill constant [-]
-delta = 2.0; %2.7
-%Partial pressure at half saturation [mmHg]
-Ps_50 = 26.8;
-%Oxygen solubility in the plasma [kg/(m^3*mmHg)]
-alpha_pl = 3.1E-5;
-
 %Maximum residual for FPM
 Residual_OXY = 1E-10;
 %Maximum number of iterations for FPM
-Max_iterations_OXY = 100;
+Max_iterations_OXY = 30;
 %=========================================================================================================
 %						 	DIMENSIONAL MODEL PARAMETERS (if TEST_PARAM = 0)
 %=========================================================================================================
@@ -292,13 +271,34 @@ D_LF = -2*133.32;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%										Oxygen transport											%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Riccardo metti qui quelli che ti servono (questi sono di esempio)
+%Max oxygen consumption rate [1/s]
+m0 =  3.7; 
+%Tissue concentration guess [ml_O2/ml_Blood]
+Ct_guess =  0.1;
+%Vessel concentration guess [ml_O2/ml_Blood]
+Cv_guess =  0.1;
+%Partial pressure at half max rate of metabolization [mmHg]
+Pm_50 = 4;
+%Solubility of oxygen in the tissue [ml_O2/(ml_Blood*mmHg]
+alpha_t = 2.8E-5;
+%Mean Corpuscolar Hematocrit Concentration [g_Hb/ml_Blood];
+MCHC = 0.34;
+%Hufner factor [ml_O2/g_Hb]
+N = 1.36;
+%Hill constant [-]
+delta = 2.0; %2.7
+%Partial pressure at half saturation [mmHg]
+Ps_50 = 26.8;
+%Oxygen solubility in the plasma [ml_O2/(ml_Blood*mmHg)]
+alpha_pl = 3.1E-5;
+
+
 %Diffusivity in the tissue [m^2/s]  
-Dt = 1.35E-09;
+Dt = 2.41E-09;
 %Diffusivity in the vessels [m^2/s] 
-Dv = 5E-07;
+Dv = 2.75E-09;
 %Permeability of the vessel wall [m/s]
-Perm = 3.5E-05*100;
+Perm = 1.205E-05*100;
 % surface area of lymphatic vessels per unit volume of tissue [1/m]
 SV = 1;
 
@@ -346,12 +346,13 @@ SV = 1;
 %%%										Oxygen transport											%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Riccardo metti qui quelli che ti servono (questi sono di esempio)
+%Dimensionless Oxygen consumption []
+M0 = 0.31;
 %Dimensionless At[]
-At=1.0;
+At=0.0482;
 %Dimensionless Av[]
-Av=1.0;
-%Dimensionless Dalpha[]
-D_alpha=0.0;
+Av=0.055;
+
 %Dimensionless Y[]
 Y=0.0;
 %Dimensionless Qpl[]
@@ -386,13 +387,13 @@ Temp=37
 %% Riccardo metti qui quelli che ti servono (questi sono di esempio)
 % Faces are ordered as follow:   x=0  x=L  y=0  y=L  z=0  z=L
 % BC labels (DIR / MIX)
-BClabel_transp = 'DIR  DIR  MIX  MIX  MIX  MIX'
+BClabel_transp = 'DIR  MIX  MIX  MIX  MIX  MIX'
 % BC values
 BCvalue_transp = '1.0  0.0  0.0  0.0  0.0  0.0'
-% Coefficient for MIX condition in tissue
-BETAtissue_transp = 1.0E-1
-% Coefficient for MIX condition in vessels
-BETAvessel_transp = 1.0E-1
+% Coefficient for MIX condition in tissue (At[])
+BETAtissue_transp = 4.82E-2;
+% Coefficient for MIX condition in vessels (Av[])
+BETAvessel_transp = 5.5E-2;
 
 
 
