@@ -25,11 +25,15 @@ VTK_EXPORT = 1;
 %Flag to add advection terms
 ADVECTION=1;
 %Flag to add coupling terms
-COUPLING=0;
+COUPLING=1;
 %Flag to take the stationary problem
 STATIONARY=0;
 %Flag for the new formulation
 NEW_FORMULATION = 1;
+%Flag to add reaction term
+REACTION = 0;
+%Flag to add oxyhemoglobin advection
+HEMOADVECTION = 0;
 
 % Flag to enable the curve model
 CURVE_PROBLEM = 0;
@@ -52,7 +56,7 @@ OutputDirectory = './vtk/';
 % Flags to build a regular 3d mesh
 TEST_GEOMETRY = 1;
 GT_T       = 'GT_PK(3,1)'; 
-NSUBDIV_T  = '[11,11,11]';  
+NSUBDIV_T  = '[3,3,3]'; %[11,11,11] 
 ORG_T      = '[0,0,0]'; 
 SIZES_T    = '[1,1,1]';  
 NOISED_T   = '0';
@@ -61,7 +65,7 @@ MESH_FILET = ' ';
 % Path to import the 1d list of points
 MESH_FILEV = './segment.pts';
 % Path to import the 1d list of points for transport
-MESH_FILEV_TRANSP = './segment_transp.pts';
+MESH_FILEV_OXY_TRANSP = './segment_transp.pts'; %MESH_FILEV_TRANSP
 % Path to import the 1d list of points for Ht
 MESH_FILEH = './segment_Ht.pts'
 % Path to import the curvature of the vessels
@@ -88,12 +92,12 @@ MESH_TYPEV  = 'GT_PK(1,1)';
 FEM_TYPET   = 'FEM_RT0(3)';
 FEM_TYPET_P = 'FEM_PK_DISCONTINUOUS(3,0)';
 FEM_TYPET_DATA = 'FEM_PK(3,0)';
-FEM_TYPET_C = 'FEM_PK(3,1)';
+FEM_TYPET_OT = 'FEM_PK(3,1)';	%FEM_TYPET_C
 % GetFem type for the 1D Finite Element Methods
 FEM_TYPEV   = 'FEM_PK(1,2)';  
 FEM_TYPEV_P = 'FEM_PK(1,1)';  
 FEM_TYPEV_DATA = 'FEM_PK(1,0)';  
-FEM_TYPEV_C = 'FEM_PK(1,1)';  
+FEM_TYPEV_OV = 'FEM_PK(1,1)';  %FEM_TYPEV_C
 FEM_TYPEH = 'FEM_PK(1,1)';
 FEM_TYPEH_DATA = 'FEM_PK(1,0)';
 % GetFem type for the 3D Integration Method
@@ -101,7 +105,7 @@ IM_TYPET    = 'IM_TETRAHEDRON(6)';
 % GetFem type for the 1D Integration Method
 IM_TYPEV    = 'IM_GAUSS1D(6)'; 
 % GetFem type for the 1D Integration Method for transport
-IM_TYPEV_TRANSP    = 'IM_GAUSS1D(6)'; 
+IM_TYPEV_OXY_TRANSP    = 'IM_GAUSS1D(6)';  %IM_TYPEV_TRANSP
 % GetFem type for the 1D Integration Method for hematocrit
 IM_TYPEH    = 'IM_GAUSS1D(6)'; 
 % Solver for the monolithic 3D/1D linear system (fluid and transport problems)
@@ -109,7 +113,7 @@ IM_TYPEH    = 'IM_GAUSS1D(6)';
 % iterative: 'CG','BiCGstab','GMRES','QMR','LSCG'
 % SAMG library: 'SAMG'   //It needs the SAMG license!
 SOLVE_METHOD = 'SuperLU';
-SOLVE_METHOD_TRANSP = 'SuperLU';
+SOLVE_METHOD_OXY_TRANSP = 'SuperLU'; %SOLVE_METHOD_TRANSP
 % Maximum number of iterations for iterative solvers
 MAXITER  = 100;
 % Residu for conjugate gradient
@@ -121,7 +125,15 @@ NIntA = 10;
 %flag for coupling function (0: use notaro matrix,1: use brambilla matrix)
 couple = 0;     %%%%%% questa flag è rimasta dopo la fase di testing. Si può anche eliminare dal codice
 % flag for reading the matrixes Mlin and Mbar (instead of assembling from scratch)
-READ_ITERPOLATOR = 0;
+READ_INTERPOLATOR = 0;
+%Flag to study oxygen transport
+OXYGEN_TRANSPORT = 1;
+
+%Maximum residual for FPM
+Residual_OXY = 1E-10;
+%Maximum number of iterations for FPM
+Max_iterations_OXY = 30;
+
 %===========================================
 %  DIMENSIONAL PARAMETERS FOR FLUID PROBLEM
 %===========================================
@@ -154,20 +166,18 @@ Gamma = 2;
 %  TRANSPORT
 %=================================
 %Diffusivity in the tissue [m^2/s]  
-Dt = 1.35E-09;
+Dt = 2.41E-3;
 %Diffusivity in the vessels [m^2/s] 
-Dv = 5E-07;
-
-
+Dv = 2.75E-10;
 
 %Max oxygen consumption rate [1/s]
-m0 =  3.7; 
+m0 =  0.062; 
 %Tissue concentration guess [kg/m^3]
 Ct_guess =  1;
 %Vessel concentration guess [kg/m^3]
 Cv_guess =  1;
 %Partial pressure at half max rate of metabolization [mmHg]
-Pm_50 = 4;
+Pm_50 = 4.0;
 %Solubility of oxygen in the tissue [kg/(m^3*mmHg]
 alpha_t = 2.8E-5;
 %Mean Corpuscolar Hematocrit Concentration [kg/m^3];
@@ -180,6 +190,8 @@ delta = 2.7;
 Ps_50 = 26.8;
 %Oxygen solubility in the plasma [kg/(m^3*mmHg)]
 alpha_pl = 3.1E-5;
+%maximum concentration [kg/m^3]
+C = 0.5;
 
 
 %Permeability of the vessel wall [m/s]
@@ -188,13 +200,13 @@ Perm = 3.5E-05*100;
 SV = 1;
 
 % simulation time length [s]
-T = 3;
+%T = 3;
 % time step [s]
-dt = 0.2;
+%dt = 0.2;
 % initial concentration in tissue
-C0t=0;
+%C0t=0;
 % initial concentration in network
-C0v=0;
+%C0v=0;
 
 %=================================
 %  LYMPHATIC FLOW

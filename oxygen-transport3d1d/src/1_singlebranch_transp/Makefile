@@ -4,7 +4,7 @@
 #                     Politecnico di Milano
 #                         A.Y. 2015-2016
 #
-#                    Copyright (C) 2016 Stefano Brambilla
+#                    Copyright (C) 2016 Riccardo Rosati
 # ====================================================================
 #   FILE        : Makefile
 #   DESCRIPTION : makefile for test simulations
@@ -29,7 +29,7 @@ endif
 LDFLAGS+=-L../../lib -L$(GETFEM_PREFIX)/lib -L$(PROBLEM_FLUID_PREFIX)/lib -Wl,-rpath=../../lib -Wl,-rpath=$(PROBLEM_FLUID_PREFIX)/lib -L$(mkBoostLib)
 LDFLAGS+=-L../../utilities/muparser/lib -Wl,-rpath=../../utilities/muparser/lib 
 #LDFLAGS += -L/opt/lib/samg/
-LIBRARIES=-lproblem3d1d -lgetfem -loxygen_transport3d1d -lutil -lboost_iostreams -lboost_system -lboost_filesystem -L/home/riccardo/Documenti/software/blas/blas/lib -lblas -llapack -L$(mkQhullLib) -lqhull
+LIBRARIES=-lproblem3d1d -loxygen_transport3d1d -lgetfem -lutil -lboost_iostreams -lboost_system -lboost_filesystem -L/home/riccardo/Documenti/software/blas/blas/lib -lblas -llapack -L$(mkQhullLib) -lqhull
 #LIBRARIES += -lamg -liomp5 
 
 SRCS=$(wildcard *.cpp)

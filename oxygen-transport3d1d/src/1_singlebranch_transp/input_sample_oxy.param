@@ -48,14 +48,18 @@ ADVECTION=1;
 %Flag to add coupling terms
 COUPLING=1;
 %Flag to take the stationary problem
-STATIONARY=1;
+%STATIONARY=1;
 %Flag for the new formulation
 NEW_FORMULATION = 1;
 %Flag to study oxygen transport
 OXYGEN_TRANSPORT = 1;
+%Flag to add reaction termn
+REACTION = 0;
+%Flag to add oxyhemoglobin advection termn (psi function)
+HEMOADVECTION = 0;
 
 %Fissi! si posso anche togliere
-%Couple
+%Couple (0: uso quella di Notaro)
 couple = 0;
 %flag for read interpolator from file
 READ_INTERPOLATOR = 0;
@@ -98,7 +102,7 @@ PRINT_RESIDUALS       = 1;
 % Flags to build a regular 3d mesh
 TEST_GEOMETRY = 1;
 GT_T       = 'GT_PK(3,1)';
-NSUBDIV_T  = '[11,11,11]'; %[11,11,11]
+NSUBDIV_T  = '[3,3,3]'; %[11,11,11]
 ORG_T      = '[0,0,0]';
 SIZES_T    = '[1,1,1]';
 NOISED_T   = '0';
@@ -272,31 +276,32 @@ D_LF = -2*133.32;
 %%%										Oxygen transport											%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Max oxygen consumption rate [1/s]
-m0 =  3.7; 
+m0 =  0.062; 
 %Tissue concentration guess [ml_O2/ml_Blood]
-Ct_guess =  0.1;
+Ct_guess =  1.0;
 %Vessel concentration guess [ml_O2/ml_Blood]
-Cv_guess =  0.1;
+Cv_guess =  1.0;
 %Partial pressure at half max rate of metabolization [mmHg]
-Pm_50 = 4;
+Pm_50 = 4.0;
 %Solubility of oxygen in the tissue [ml_O2/(ml_Blood*mmHg]
 alpha_t = 2.8E-5;
-%Mean Corpuscolar Hematocrit Concentration [g_Hb/ml_Blood];
+%Mean Corpuscolar Hematocrit Concentration [g_Hb/ml_RBC];
 MCHC = 0.34;
 %Hufner factor [ml_O2/g_Hb]
 N = 1.36;
 %Hill constant [-]
-delta = 2.0; %2.7
+delta = 2.7;
 %Partial pressure at half saturation [mmHg]
 Ps_50 = 26.8;
 %Oxygen solubility in the plasma [ml_O2/(ml_Blood*mmHg)]
 alpha_pl = 3.1E-5;
-
+%maximum concentration [kg/m^3]
+C = 0.5; %oxygen concentration in saturated rbc;
 
 %Diffusivity in the tissue [m^2/s]  
-Dt = 2.41E-09;
+Dt = 2.41E-3;
 %Diffusivity in the vessels [m^2/s] 
-Dv = 2.75E-09;
+Dv = 2.75E-7; 
 %Permeability of the vessel wall [m/s]
 Perm = 1.205E-05*100;
 % surface area of lymphatic vessels per unit volume of tissue [1/m]
@@ -387,13 +392,13 @@ Temp=37
 %% Riccardo metti qui quelli che ti servono (questi sono di esempio)
 % Faces are ordered as follow:   x=0  x=L  y=0  y=L  z=0  z=L
 % BC labels (DIR / MIX)
-BClabel_transp = 'DIR  MIX  MIX  MIX  MIX  MIX'
-% BC values
+BClabel_transp = 'DIR  DIR  MIX  MIX  MIX  MIX'
+% BC values tissue
 BCvalue_transp = '1.0  0.0  0.0  0.0  0.0  0.0'
 % Coefficient for MIX condition in tissue (At[])
-BETAtissue_transp = 4.82E-2;
+BETAtissue_transp = 1E-2;
 % Coefficient for MIX condition in vessels (Av[])
-BETAvessel_transp = 5.5E-2;
+BETAvessel_transp = 1E-2;
 
 
 

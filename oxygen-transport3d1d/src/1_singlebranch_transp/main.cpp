@@ -5,7 +5,7 @@
                       Politecnico di Milano
                          A.Y. 2015-2016
                   
-                Copyright (C) 2017 Stefano Brambilla
+                Copyright (C) 2017 Riccardo Rosati
 ======================================================================*/
 /*! 
   @file   main.cpp  
@@ -58,7 +58,15 @@ int main(int argc, char *argv[])
                                 p.problemHT::init(argc, argv);
 				cout<<"***** Inizializzato l'Ht *****"<<endl;
                                 if (!p.problemHT::solve_fixpoint()) GMM_ASSERT1(false, "solve procedure has failed");
-				cout<<"***** Risolto il trasporto di Ht *****"<<endl;
+
+        // Display some global results: mean pressures, total flow rate
+		std::cout << "--- FINAL RESULTS -------------------------" << std::endl; 
+		std::cout << "  Pt average            = " << p.problem3d1d::mean_pt()   << std::endl;
+		std::cout << "  Pv average            = " << p.problem3d1d::mean_pv()   << std::endl;
+		std::cout << "  Network-to-Tissue TFR = " << p.problem3d1d::flow_rate() << std::endl;
+		std::cout << "  Lymphatic FR          = " << p.problem3d1d::lymph_flow_rate() << std::endl;
+		std::cout << "-------------------------------------------" << std::endl; 	
+		cout<<"***** Risolto il trasporto di Ht *****"<<endl;
 
                                 // Save results in .vtk format
                                 p.problemHT::export_vtk();
@@ -99,16 +107,7 @@ int main(int argc, char *argv[])
 				}
 
 		// Save results in .vtk format
-                p.problem3d1d::export_vtk();
-
-		// Display some global results: mean pressures, total flow rate
-		std::cout << "--- FINAL RESULTS -------------------------" << std::endl; 
-		std::cout << "  Pt average            = " << p.problem3d1d::mean_pt()   << std::endl;
-		std::cout << "  Pv average            = " << p.problem3d1d::mean_pv()   << std::endl;
-		std::cout << "  Network-to-Tissue TFR = " << p.problem3d1d::flow_rate() << std::endl;
-		std::cout << "  Lymphatic FR          = " << p.problem3d1d::lymph_flow_rate() << std::endl;
-		std::cout << "-------------------------------------------" << std::endl; 	
-			      
+                p.problem3d1d::export_vtk();		      
 		   
 	}  
       
