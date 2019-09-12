@@ -213,8 +213,9 @@ asm_exchange_mat_transp
 	#ifdef M3D1D_VERBOSE_
 	cout << "    Assembling Bvt ..." << endl;
 	#endif
-	getfem::asm_mass_matrix_param(Bvv_temp, mim, 
+	getfem::asm_mass_matrix_two_param(Bvv_temp, mim, 
 					    mf_c, mf_pv, mf_coefv,
+					gmm::scaled(ONCOTIC, +1),
 					gmm::scaled(PERM, -1)); 
 	gmm::mult(Bvv_temp, Mbar, Bvt);
 	gmm::clear(Bvv_temp);
@@ -233,9 +234,10 @@ asm_exchange_mat_transp
 		#ifdef M3D1D_VERBOSE_
 		cout << "    Assembling Btt (alternative form) ..." << endl;
 		#endif
-		getfem::asm_mass_matrix_param(Bvv_temp, mim, 
+		getfem::asm_mass_matrix_two_param(Bvv_temp, mim, 
 					    mf_c, mf_pv, mf_coefv,
-					gmm::scaled(PERM, +1) ); 
+					gmm::scaled(ONCOTIC, -1),
+					gmm::scaled(PERM, +1)); 
 
 		gmm::mult3(gmm::transposed(Mbar),Bvv_temp,Mbar, Btt);
 		gmm::clear(Bvv_temp);
@@ -254,8 +256,9 @@ asm_exchange_mat_transp
 		#ifdef M3D1D_VERBOSE_
 		cout << "    Assembling Btt (alternative form) ..." << endl;
 		#endif
-		getfem::asm_mass_matrix_param(Bvv_temp, mim, 
+		getfem::asm_mass_matrix_two_param(Bvv_temp, mim, 
 					    mf_c, mf_pv, mf_coefv,
+					gmm::scaled(ONCOTIC, -1),
 					gmm::scaled(PERM, +1) ); 
 
 		gmm::mult3(gmm::transposed(Mlin),Bvv_temp,Mbar, Btt);
@@ -295,25 +298,53 @@ asm_exchange_mat_transp
     size_type Q2=mf2.get_qdim();
 
     size_type nb_dof1=mf1.nb_dof();
-    size_type nb_dof2=mf2.nb_dof();    
-    
+    size_type nb_dof2=mf2.nb_dof(); 
+
+    //PROVA:
+    int count=0;
+    //cout<<"*************************** assembling_Dirichlet_condition_coupled_tissue ******************************"<<endl;
+    //cout<<"#dof della mesh mf_ct= "<<nb_dof1<<endl; 
+    //cout<<"#dof della mesh mf_cv= "<<nb_dof2<<endl; 
+    ///////////////////
+
     GMM_ASSERT1(!(mf1.is_reduced()), "This function is not adapted to "
 		"reduced finite element methods"); 
     GMM_ASSERT1(!(mf2.is_reduced()), "This function is not adapted to "
 		"reduced finite element methods"); 
 						
     dal::bit_vector nndof = mf1.basic_dof_on_region(boundary);
+
+    //PROVA:: stamp i dof appratenenti all regione boundary 
+    //for(size_type dof=0; dof<nndof.size();dof++){
+    //	cout<<"Numero di dof presenti sulla regione "<<boundary<<" : "<<nndof.size()<<endl;
+    //cout<<"Dof sulla region "<<boundary<<" sono: "<<nndof[dof]<<endl;	
+    //}
+    ///////////////
+    
     pfem pf1;
     
-    for (dal::bv_visitor cv(mf1.convex_index()); !cv.finished(); ++cv) {	 	//per tutti i convessi cv della mesh 1
+    //TRADUZIONE: per ogni convesso della mesh1 (mf_ct), verifico che i suoi dof appartengano alle regioni boundary e verifico quali
+    // dof della mesh2 (mf_cv) sono all'interno di questa lista di dof (quella appartenente alla boundary)
+    for (dal::bv_visitor cv(mf1.convex_index()); !cv.finished(); ++cv) {	 	//per tutti i convessi cv della mesh1 (mf_ct)
     
       pf1 = mf1.fem_of_element(cv);
       pdof_description ldof = lagrange_dof(pf1->dim());
       size_type nbd = pf1->nb_dof(cv);	      
       for (size_type i = 0; i < nbd; i++) {					//per tutti i dof i del convesso cv
-	size_type dof1 = mf1.ind_basic_dof_of_element(cv)[i*Q1];				//trova l'indice delle colonne riferite all
+	size_type dof1 = mf1.ind_basic_dof_of_element(cv)[i*Q1]; //mi dà l'indice globale del dof (locale) dell'elemento cv
+
+	//PROVA:
+	//cout<<"Indice globale del dof dell'elemento cv= "<<dof1<<endl;
+	/////////////
+
+																//trova l'indice delle colonne riferite all
 	if (nndof.is_in(dof1) && pf1->dof_types()[i] == ldof) {			//se il dof i del convesso cv è in "boundary"
   
+  		//PROVA
+  		cout<<"Dimensione # di dof della mesh mf_ct sulla regione "<<boundary<<" ="<<mf1.ind_basic_dof_of_element(cv).size()<<endl;
+		cout<<"!! Indice globale "<<dof1<<" appartiene alla lista di dof della regione"<< boundary<<endl;		
+		count++;
+		//////////////////
 	  for (size_type j = nb_dof1; j < nb_dof1+ nb_dof2; j++) {				//allora per tutti i dof j della mesh 2
 		for (size_type l = 0; l < Q1; ++l) {
 			F[j] -= B(j, dof1+l) * DIR[dof1+l];
@@ -322,8 +353,11 @@ asm_exchange_mat_transp
 	    	}
 	    }
 	  } 
+	  cout<<"***********"<<endl;
 	}
+	cout<<"\n"<<endl;
      }
+     cout<<"Numero totale di dof apparteneneti alla regione "<<boundary<<" = "<<count<<endl;
    } /* end of assembling_Dirichlet_condition_coupled_tissue*/
 
   //! Build a single vessel Dirichlet condition on the tissue (modify @f$ B_{tv} @f$)
@@ -355,7 +389,14 @@ asm_exchange_mat_transp
     size_type Q2=mf2.get_qdim();
 
     size_type nb_dof1=mf1.nb_dof();
-    size_type nb_dof2=mf2.nb_dof();    
+    size_type nb_dof2=mf2.nb_dof(); 
+
+    //PROVA:
+    int count=0;
+    //cout<<"*************************** assembling_Dirichlet_condition_coupled_vessel ******************************"<<endl; 
+    //cout<<"nb_dof1= "<<nb_dof1<<endl; 
+    //cout<<"nb_dof2= "<<nb_dof2<<endl; 
+    ///////////////////  
     
     GMM_ASSERT1(!(mf1.is_reduced()), "This function is not adapted to "
 		"reduced finite element methods"); 
@@ -363,27 +404,51 @@ asm_exchange_mat_transp
 		"reduced finite element methods"); 
 					
     dal::bit_vector nndof = mf2.basic_dof_on_region(boundary);
+
+	//PROVA:: stamp i dof appratenenti all regione boundary 
+   	//for(size_type dof=0; dof<nndof.size();dof++){
+    //	cout<<"Numero di dof presenti sulla regione "<<boundary<<" : "<<nndof.size()<<endl;
+    //cout<<"Dof sulla region "<<boundary<<" sono: "<<nndof[dof]<<endl;	
+    //}
+    ///////////////
+
     pfem pf2;
     
-    for (dal::bv_visitor cv(mf2.convex_index()); !cv.finished(); ++cv) {	 	//per tutti i convessi cv della mesh 1
+    for (dal::bv_visitor cv(mf2.convex_index()); !cv.finished(); ++cv) {	 	//per tutti i convessi cv della mesh2
     
       pf2 = mf2.fem_of_element(cv);
       pdof_description ldof = lagrange_dof(pf2->dim());
       size_type nbd = pf2->nb_dof(cv);	      
       for (size_type i = 0; i < nbd; i++) {					//per tutti i dof i del convesso cv
-	size_type dof2 = mf2.ind_basic_dof_of_element(cv)[i*Q2];				//trova l'indice delle colonne riferite all
+	size_type dof2 = mf2.ind_basic_dof_of_element(cv)[i*Q2];
+
+	//PROVA:
+	//cout<<"Indice globale del dof dell'elemento cv= "<<dof2<<endl;
+	/////////////
+					//trova l'indice delle colonne riferite all
 	if (nndof.is_in(dof2) && pf2->dof_types()[i] == ldof) {			//se il dof i del convesso cv è in "boundary"
 	  
+	  	//PROVA::
+		cout<<"Dimensione # di dof della mesh mf_cv sulla regione "<<boundary<<" ="<<mf2.ind_basic_dof_of_element(cv).size()<<endl;
+		cout<<"!! Indice globale "<<dof2<<" appartiene alla lista di dof della regione"<< boundary<<endl;	
+		count++;
+		////////
+
 	  for (size_type j = 0; j < nb_dof1; j++) {				//allora per tutti i dof j della mesh 2
 		for (size_type l = 0; l < Q2; ++l) {
 			F[j] -= B(j, nb_dof1 + dof2+l) * DIR[nb_dof1 + dof2+l];
 	    		B(j, nb_dof1 + dof2+l) =  0;
 	    		B(nb_dof1 + dof2+l, j) =  0;
 	    	}
-	    }
+	    } 
 	  } 
+	  cout<<"**********"<<endl;
 	}
+	cout<<"\n"<<endl;
      }
+     //PROVA:
+     cout<<"Conta del numero totale di dof nella regione "<<boundary<<" = "<<count<<endl;
+     //////////
    } /* end of assembling_Dirichlet_condition_coupled_vessel*/
    
 
@@ -425,9 +490,11 @@ asm_coupled_bc_transp
 
 	//cycle over the tissue boundary nodes
 	for (size_type bc=0; bc < BC_tissue.size(); ++bc) {
-		GMM_ASSERT1(mf_ct.linked_mesh().has_region(bc), "missed mesh region" << bc);
+		GMM_ASSERT1(mf_ct.linked_mesh().has_region(bc), "TISSUE: missed mesh region " << bc);
 		if (BC_tissue[bc].label=="DIR") { // Dirichlet BC
 			VEC BC_temp(mf_ct.nb_dof(), BC_tissue[bc].value);
+			cout<<"BC tissue value di ["<<bc<<"]= "<<BC_temp[0]<<endl;
+			cout<<"**************************"<<endl;
 			getfem::assembling_Dirichlet_condition_coupled_tissue(M, F, mf_ct, mf_cv, BC_tissue[bc].rg, BC_temp);
 			gmm::clear(BC_temp);				
 		} 
@@ -435,9 +502,11 @@ asm_coupled_bc_transp
 	
 	//cycle over the vessels boundary nodes
 	for (size_type bc=0; bc < BC_vessel.size(); ++bc) {
-		GMM_ASSERT1(mf_cv.linked_mesh().has_region(bc), "missed mesh region" << bc);
+		GMM_ASSERT1(mf_cv.linked_mesh().has_region(bc), "VESSEL: missed mesh region" << bc);
 		if (BC_vessel[bc].label=="DIR") { // Dirichlet BC
 			VEC BC_temp(mf_cv.nb_dof(), BC_vessel[bc].value);
+			cout<<"BC vessel value di ["<<bc<<"]= "<<BC_temp[0]<<endl;
+			cout<<"**************************"<<endl;
 			getfem::assembling_Dirichlet_condition_coupled_vessel(M, F, mf_ct, mf_cv, BC_vessel[bc].rg, BC_temp);
 			gmm::clear(BC_temp);				
 		} 
@@ -448,6 +517,7 @@ asm_coupled_bc_transp
 
 
 /*!
+
 	Build the averaging matrix @f$\bar{\bar{\Pi}}_{tv}@f$.
 	@ingroup asm
  */

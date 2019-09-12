@@ -60,13 +60,14 @@ struct param3d1d_oxy_transp {
 	//Oxygen tissue solubility [kg/(m^3*mmHg);
 	scalar_type alpha_pl_;
 	//Partial Pressure of oxygen at half saturation [mmHg]
-	scalar_type Ps_50_; 
+	scalar_type Ps_50_;
+	//Maximum concentration
+	scalar_type C_;
 
 
 	// Dimensionless physical parameters (test-cases)
 	//Oxygen consumption rate
 	scalar_type M0_;
-
 	//Inverse of Peclet number for tissue
 	vector_type At_;
 	//Inverse of Peclet number for vessel
@@ -76,11 +77,7 @@ struct param3d1d_oxy_transp {
 	//Magnitude of leakage from the capillary bed
 	vector_type Y_;
 	//lymphatic drainage
-	vector_type Q_pl_;
-
-	//RR: vettore per il coefficiente di reazione adimensionalizzato
-	vector_type press50;
-	
+	vector_type Q_pl_;	
 	
 
 	// Utils
@@ -123,7 +120,7 @@ struct param3d1d_oxy_transp {
 			 Av_.assign(dof_datav,  Avval);
 			 //Dalpha_.assign(dof_datat,  Dalphaval);
 			 Y_.assign(dof_datav,  Yval);
-			 Q_pl_.assign(dof_datat,  Q_plval);	
+			 Q_pl_.assign(dof_datat,  Q_plval);
 		} 
 		else { 
 			// Import dimensional params from FILE_
@@ -132,6 +129,7 @@ struct param3d1d_oxy_transp {
 			scalar_type d_  = FILE_.real_value("d", "characteristic length of the problem [m]"); 
 			scalar_type k_  = FILE_.real_value("k", "permeability of the interstitium [m^2]"); 
 			scalar_type Lp_ = FILE_.real_value("Lp", "Hydraulic conductivity of the capillary walls [m^2 s/kg]"); 
+			
 			
 			Dt_   = FILE_.real_value("Dt","Diffusivity in the tissue [m^2/s]");
 			Dv_   = FILE_.real_value("Dv","Diffusivity in the vessels [m^2/s]");
@@ -151,6 +149,8 @@ struct param3d1d_oxy_transp {
 			Ps_50_ = FILE_.real_value("Ps_50","Partial pressure at half saturation [mmHg]");
 			alpha_pl_ = FILE_.real_value("alpha_pl","oxygen solubility in the plasma [kg/(m^3*mmHg)]");
 
+			C_ =  FILE_.real_value("C","maximum concentration [kg/m^3]");
+
 
 			Perm_ = FILE_.real_value("Perm","Permeability of the capillary walls [m/s]");
 			Lp_LF_ = FILE_.real_value("Lp_LF","hydraulic conductivity of the lymphatic wall [s * m^2/kg]");
@@ -159,13 +159,9 @@ struct param3d1d_oxy_transp {
 			// Compute the dimentionless params
 			At_.assign(dof_datat, Dt_/d_/U_);
 			Av_.assign(dof_datav, Dv_/d_/U_);
-		//modifica coefficiente di reazione
-			//Dalpha_.assign(dof_datat, (m0_/((C0_+(Pm_50_*alpha_T_)))/U_/d_);
 			Y_.assign(dof_datav, Perm_/U_);
 			Q_pl_.assign(dof_datat,Lp_LF_*SV_*P_*d_/U_);
-			M0_=m0_*d_/U_;
-			cout<<"M0_ = "<<M0_<<endl;
-						
+			M0_ = m0_*d_/U_;				
 		}
 	
 
@@ -228,10 +224,10 @@ void build_oxy(ftool::md_param & fname,
 	inline scalar_type Av (size_type i) { return Av_[i]; } const
 	//! Get the linphatic drainage at a given dof
 	inline scalar_type Q_pl  (size_type i) { return Q_pl_[i];  } const
-	//! Get the Dahmkholer number at a given dof
-	//inline scalar_type Dalpha  (size_type i) { return Dalpha_[i];  } const
 	//! Get the leakage of the capillary bed at a given dof
 	inline scalar_type Y  (size_type i) { return Y_[i];  } const
+	//! Get the maximum concentration in the vessel to adimensionalise the hemoadvection contribute
+	inline scalar_type C () { return C_;  } const
 		
 	//RR: 
 	//! Get the maximum consumption rate

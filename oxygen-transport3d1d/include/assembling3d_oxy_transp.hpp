@@ -55,9 +55,8 @@ void asm_tissue_transp
 	// Build the mass matrix Rt (consumption)
 	getfem::asm_mass_matrix_param(R, mim, mf_c, mf_coef, reac_data, rg);
 	// Build the divergence matrix Dt
-	getfem::asm_stiffness_matrix_for_laplacian(D,mim,mf_c, mf_coef, diff_data, rg);	
+	getfem::asm_stiffness_matrix_for_laplacian(D, mim, mf_c, mf_coef, diff_data, rg);	
 } /* end of asm_tissue_transp*/
-
 
 //! Build the advection matrice for the 3D transport problem,
 //! @f$ B = \int_{\Omega} \mathbf{u} \cdot \nabla c~v~dx  ~+~  \int_{\Omega} \nabla \cdot \mathbf{u}   c~v~dx @f$
@@ -131,6 +130,13 @@ asm_tissue_bc_transp
 {
 
 	
+	//PROVA:
+	for(size_type bc=0; bc<BC.size(); bc++){
+		cout<<"LABEL di BC["<<bc<<"] = "<<BC[bc].label<<endl;
+		cout<<"VALUE di BC["<<bc<<"] = "<<BC[bc].value<<endl;
+		cout<<"REGION di BC["<<bc<<"] = "<<BC[bc].rg<<endl;
+	}
+	/////////////////
 	
 	GMM_ASSERT1(mf_c.get_qdim()==1,  "invalid data mesh fem (Qdim=1 required)");
 	GMM_ASSERT1(mf_data.get_qdim()==1, "invalid data mesh fem (Qdim=1 required)");
@@ -139,11 +145,17 @@ asm_tissue_bc_transp
 	for (size_type bc=0; bc < BC.size(); ++bc) {
 		GMM_ASSERT1(mf_c.linked_mesh().has_region(bc), "missed mesh region" << bc);
 		if (BC[bc].label=="DIR") { // Dirichlet BC
+
+			cout<<"Ho una condizione DIR nel tessuto sulla regione "<<BC[bc].rg<<endl;
+
 			VEC BC_temp(mf_c.nb_dof(), BC[bc].value);
 			getfem::assembling_Dirichlet_condition(M, F, mf_c, BC[bc].rg, BC_temp);
 			gmm::clear(BC_temp);				
 		} 
 		else if (BC[bc].label=="MIX") { // Robin BC
+
+			cout<<"Ho una condizione MIX nel tessuto sulla regione "<<BC[bc].rg<<endl;
+
 			VEC BETA(mf_data.nb_dof(), beta);
 			getfem::asm_mass_matrix_param(M, mim, mf_c, mf_data, BETA,mf_c.linked_mesh().region(BC[bc].rg) );
 			

@@ -72,8 +72,6 @@
 	#ifdef M3D1D_VERBOSE_
 	cout << descr_oxy_transp;
 	#endif
-	 
- 
 	}; //end of import_data_oxy_transp
 	
 	 
@@ -88,15 +86,15 @@
 		mesht.clear();
 			bool test = 0;
 		test = PARAM.int_value("TEST_GEOMETRY");
-		/*if(test==0){
+		if(test==0){
 			#ifdef M3D1D_VERBOSE_
 			cout << "Importing the 3D mesh for the tissue ...  "   << endl;
 			#endif
 			string st("gmsh:"+descr.MESH_FILET);
 			getfem::import_mesh(st,mesht);
 				 //import_msh_file(descr.MESH_FILET, mesht);
-			}*/
-		//else{
+			}
+		else{
 			#ifdef M3D1D_VERBOSE_
 			cout << "Building the regular 3D mesh for the tissue ...  "   << endl;
 			#endif
@@ -114,7 +112,8 @@
 	#ifdef M3D1D_VERBOSE_
 	cout << "Importing the 1D mesh for the vessel (transport problem)... "   << endl;
 	#endif
-	std::ifstream ifs(descr_oxy_transp.MESH_FILEV_OXY);
+	std::ifstream ifs(descr_oxy_transp.MESH_FILEV_OXY); //legge il file di input di tipo .pts;
+
 	GMM_ASSERT1(ifs.good(), "impossible to read from file " << descr_oxy_transp.MESH_FILEV_OXY);
 	meshv.clear();
 		
@@ -135,14 +134,15 @@
 		import_pts_file(ifs,ifc, meshv, BCv_oxy_transp, nb_vertices, descr.MESH_TYPEV, param);
 
 		ifc.close();
-	} 
-	else{
+	} else{
 		import_pts_file(ifs, meshv, BCv_oxy_transp, nb_vertices, descr.MESH_TYPEV);
+		//da mesh1d.hpp : prende in input il file .pts (ottenuto con std::ifstream ifs(path)), la mesh 1D, la lista delle BC, i numeri di elementi, la tipologia di mesh (GT_PK(1,1))
+		//come output: ho numero la lista di BC
 	}
-
 
 	nb_branches = nb_vertices.size();
 	ifs.close();
+	}
 	}; // end of build_mesh_geometry
 
 	// Set finite elements methods and integration methods 
@@ -204,9 +204,7 @@
 	problem3d1d::set_im_and_fem();
 
 
-
 	mf_Hi.clear();
-	mf_coefh.clear();
 	mf_coefh.clear();
 
 	problemHT::set_im_and_fem();
@@ -300,6 +298,38 @@
 				
 		}
 
+
+//PROVA: ciclo sulla regione della mesh #2 (= la faccia left), per vedere quali facce di quali convessi fanno parte della mesh.region(j)
+for(size_type j=0; j<5; j++){
+		getfem::mesh_region &rg = mesht.region(j);
+for (getfem::mr_visitor i(rg); !i.finished(); ++i) {
+  cout << "La mesh_region "<<j<<" contains convex " << i.cv();
+  if (i.is_face()) cout  << "face " << i.f() << endl;
+}
+}
+
+
+//PROVA: lista di tutti i convessi (con indici locali e globali per ogni faccia del convesso)
+/*
+    dal::bit_vector nn = mesht.convex_index();
+    bgeot::size_type i;
+    for (i << nn; i != bgeot::size_type(-1); i << nn) {
+      cout << "Convex of index " << i << endl;
+      bgeot::pconvex_structure cvs = mesht.structure_of_convex(i);
+      cout << "Number of vertices: " << cvs->nb_points() << endl;
+      cout << "Number of faces: " << cvs->nb_faces() << endl;
+      for (bgeot::short_type f = 0; f < cvs->nb_faces(); ++f) {
+        cout << "face " << f << " has " << cvs->nb_points_of_face(f);
+        cout << " vertices with local indexes: ";
+        for (bgeot::size_type k = 0; k < cvs->nb_points_of_face(f); ++k)
+          cout << cvs->ind_points_of_face(f)[k] << " ";
+        cout << " and global indexes: ";
+        for (bgeot::size_type k = 0; k < cvs->nb_points_of_face(f); ++k)
+          cout << mesht.ind_points_of_convex(i)[cvs->ind_points_of_face(f)[k]] << " ";
+      }
+    }
+*/
+
 }; //end of build_tissue_boundary_transp
 
 	//Build boundary regions on network
@@ -337,8 +367,16 @@
 
 		// Build regions for BCs and junctions
 		// Global idx of mesh vertices
+		
 		size_type i0 = meshv.ind_points_of_convex(cv)[cvs->ind_points_of_face(1)[0]];
 		size_type i1 = meshv.ind_points_of_convex(cv)[cvs->ind_points_of_face(0)[0]];
+
+/*
+		PROVA: lista dei convessi di meshv e rispettivi indici dei nodi
+		cout<<"convesso numero: "<<cv<<endl;
+		cout<<"i0= "<<i0<<endl;
+		cout<<"i1= "<<i1<<endl;
+*/
 		// Identify vertex type
 		if (meshv.convex_to_point(i0).size()==1){ /* inflow extremum */
 			// Update information
@@ -357,7 +395,12 @@
 			}
 			GMM_ASSERT1(found=true, "Miss a boundary node in BCv list!");
 
-			BCv_oxy_transp[bc].rg = fer; 
+			BCv_oxy_transp[bc].rg = fer;
+
+			//PROVA:
+			cout<<"Regione boundary dove sta l'inflow extremum: "<<BCv_oxy_transp[bc].rg<<endl; 
+			//////////////
+
 			fer++;
 			// Store the containing branch index
 			size_type branch = 0; 
@@ -415,6 +458,8 @@
 				"Error in network labeling: -0 makes no sense");
 		}
 		
+
+		
 		if (meshv.convex_to_point(i1).size()==1){ 
 			size_type bc = 0; 
 			bool found = false;
@@ -432,6 +477,11 @@
 				// Store the current index and then update it
 				BCv_oxy_transp[bc].value *= +1.0;
 				BCv_oxy_transp[bc].rg = fer; 
+
+				//PROVA:
+				cout<<"Regione boundary dove sta l'outflow extremum: "<<BCv_oxy_transp[bc].rg<<endl; 
+				//////////////
+
 				fer++;
 				// Store the containing branch index
 				size_type branch = 0; 
@@ -572,6 +622,9 @@
 
 	} /* end of convexes loop */  
 
+
+
+
 	// Ckeck network assembly
 	#ifdef M3D1D_VERBOSE_
 	cout << "--- NETWORK ASSEMBLY ------------------ "   << endl;
@@ -690,36 +743,35 @@
 */
 
 	//Coefficient for reaction term:
-	vector_type reac_data(dof.Pt()); gmm::clear(reac_data);
+	vector_type consump_coeff(dof.Pt()); gmm::clear(consump_coeff); 
 
-	vector_type consump_coeff(dof_oxy_transp.Ct()); gmm::clear(consump_coeff); 
-
+	vector_type ct_guess(dof_oxy_transp.Ct(), param_oxy_transp.Ct_guess());
+	
 	vector_type PRESS50(dof_oxy_transp.Ct(), PARAM.real_value("Pm_50"));
 	gmm::scale(PRESS50, param_oxy_transp.alpha_t());
-	vector_type ct_guess(dof_oxy_transp.Ct(), param_oxy_transp.Ct_guess());
+	
 	gmm::add(PRESS50, ct_guess);
-	gmm::copy(ct_guess, consump_coeff);
 
 	for (size_type i=0; i<dof_oxy_transp.Ct(); i++)
 	{
-	consump_coeff[i] = 1.0/consump_coeff[i];
+	ct_guess[i] = 1.0/ct_guess[i];
 	}
-	gmm::scale(consump_coeff, param_oxy_transp.M0());
-
+	gmm::scale(ct_guess, param_oxy_transp.M0());
 
 	//RR
-	getfem::interpolation(mf_oxy_Ct, mf_coeft, consump_coeff, reac_data);
+	getfem::interpolation(mf_oxy_Ct, mf_coeft, ct_guess, consump_coeff);
+
+for(size_type r=0; r<dof_oxy_transp.Cv();r++){
+	cout<<"consump_coeff["<<r<<"]= "<<consump_coeff[r]<<endl;
+	
+}
+cout<<"At= "<<param_oxy_transp.At()[0]<<endl;
 	//Prtché? cosi da avere la dimensione di cv_guess, consump_coeff e press50 identica a quella di UM_oxy(0, Ct) --> utile per il FPM, e 
 	//dare come input a asm_tissue_transp il vettore di coefficienti (da costruire su mf_coeft) con le dimensioni corrette
-	
-	cout<<"Dof di mf_oxy_ct: "<<mf_oxy_Ct.nb_dof()<<endl;
-	cout<<"Dof di mf_coeft: "<<mf_coeft.nb_dof()<<endl;
-	cout<<"Size di consump_coeff: "<<consump_coeff.size()<<endl;
-	cout<<"Size di reac_data: "<<reac_data.size()<<endl;
 
 	//Build Dt, and Rt 
-	asm_tissue_transp(Dt, Rt, mimt, mf_oxy_Ct, mf_coeft,  param_oxy_transp.At(), reac_data );
-	
+	asm_tissue_transp(Dt, Rt, mimt, mf_oxy_Ct, mf_coeft,  param_oxy_transp.At(), consump_coeff);
+
 
 	// Copy Dt: diffusion in tissue		  
 	gmm::add(Dt,
@@ -728,10 +780,15 @@
 					gmm::sub_interval(0, dof_oxy_transp.Ct())));  
 	
 	// Copy Rt: reaction in tissue
+	if(!descr_oxy_transp.REACTION){
+		cout<<"No reaction term!"<<endl;
+	}
+	else{
  	gmm::add(Rt, 
 			  gmm::sub_matrix(AM_oxy, 
 					gmm::sub_interval(0, dof_oxy_transp.Ct()), 
 				 	gmm::sub_interval(0, dof_oxy_transp.Ct()))); 
+ 	}
 /*		 	
 	// Copy Lt: linfatic drainage in tissue
 	 gmm::add(Lt, 
@@ -871,7 +928,7 @@
 	scalar_type picoef=param.sigma()*(param.pi_v()-param.pi_t());
         vector_type DeltaPi(dof.Pv(),picoef);
         gmm::add(gmm::scaled(DeltaPi,-1.0), ONCOTIC);	
-	gmm::scale(ONCOTIC,(1.0-param.sigma())*param.Q(0));
+	gmm::scale(ONCOTIC,0.5*(1.0-param.sigma())*param.Q(0));
 	
 	// build permeability term for tissue
 	vector_type PERM (dof.coefv());
@@ -936,13 +993,29 @@
 	cout << "  Building coupling dirichlet boundary term ..." << endl;
 	#endif
 
+/*
 	cout<<"FM_oxy size: "<<FM_oxy.size()<<endl;
 	cout<<"AM_oxy rows: "<<gmm::mat_nrows(AM_oxy)<<" e AM_oxy cols: "<<gmm::mat_ncols(AM_oxy)<<endl;
 	cout<<"Dof di mf_oxy_Ct: "<<mf_oxy_Ct.nb_dof()<<endl;
 	cout<<"Dof di mf_oxy_Cv: "<<mf_oxy_Cv.nb_dof()<<endl;
+*/
+	//PROVA:
+	for(size_type bc; bc<BCt_oxy_transp.size();bc++){
+	cout<<"BCt_transp LABEL= "<<BCt_oxy_transp[bc].label<<endl;
+	cout<<"BCt_transp VALUE= "<<BCt_oxy_transp[bc].value<<endl;
+	//cout<<"BCt_transp IDX= "<<BCt_oxy_transp[bc].idx<<endl;
+	cout<<"BCt_transp REGION= "<<BCt_oxy_transp[bc].rg<<"\n"<<endl;
+	}
+	cout<<"******************************************************"<<endl;
+	for(size_type bc; bc<BCv_oxy_transp.size();bc++){
+	cout<<"BCv_transp LABEL= "<<BCv_oxy_transp[bc].label<<endl;
+	cout<<"BCv_transp VALUE= "<<BCv_oxy_transp[bc].value<<endl;
+	//cout<<"BCv_transp IDX= "<<BCv_oxy_transp[bc].idx<<endl;
+	cout<<"BCv_transp REGION= "<<BCv_oxy_transp[bc].rg<<"\n"<<endl;
+	}
+	/////////////////
 
 	asm_coupled_bc_transp (AM_oxy, FM_oxy, mf_oxy_Ct, mf_oxy_Cv, BCt_oxy_transp, BCv_oxy_transp);
-	cout<<"Ho costruito le BC nel caso accoppiato!"<<endl;
 	
 	
 	//Impongo le BC per il tessuto	
@@ -951,6 +1024,7 @@
 	//Vettore al rhs per le BC nel tessuto
 	vector_type Ft(dof_oxy_transp.Ct()); gmm::clear(Ft);
 	sparse_matrix_type Att(dof_oxy_transp.Ct(), dof_oxy_transp.Ct());
+
 
 	vector_type FM_temp(dof_oxy_transp.tot()); gmm::clear(FM_temp);
 	sparse_matrix_type AM_temp(dof_oxy_transp.tot(), dof_oxy_transp.tot()); gmm::clear(AM_temp);
@@ -972,7 +1046,6 @@
 			,Ft);	
 	gmm::scale(	 gmm::sub_vector(FM_temp, gmm::sub_interval(0,dof_oxy_transp.Ct()))
 			,0.0);
-	
 
 	#ifdef M3D1D_VERBOSE_
 	cout << "  Building tissue boundary term ..." << endl;
@@ -981,6 +1054,7 @@
 	//Right Hand Side for tissue
 	//Srtting the BC for tissue
 	scalar_type beta_t  = PARAM.real_value("BETAtissue_transp", "Coefficient for mixed BC for transport problem in tissue");	
+	cout<<"Beta= "<<beta_t<<endl;
 
 	asm_tissue_bc_transp(Ft, Att, mimt, mf_oxy_Ct, mf_coeft, BCt_oxy_transp, beta_t);
 	cout<<"Ho impostato le BC (DIR e MIX) per il tessuto"<<endl;
@@ -1019,6 +1093,7 @@
 			,Fv);	 
 	gmm::scale(	 gmm::sub_vector(FM_temp, gmm::sub_interval(dof_oxy_transp.Ct(),dof_oxy_transp.Cv()))
 			,0.0);
+
 
 	#ifdef M3D1D_VERBOSE_
 	cout << "  Building vessel boundary term ..." << endl;
@@ -1131,17 +1206,6 @@
 	
 	gmm::copy(Ov, gmm::sub_vector(FM_oxy, 
 					gmm::sub_interval(dof_oxy_transp.Ct(),dof_oxy_transp.Cv())));
-
-	
-int count=0;
-	for(size_type q;q<dof_oxy_transp.Cv();q++){
-			if(Ov[q]<0.0 ) count++;
-	}
-	cout<<"Numero di elementi <0 in Ov: "<<count<<endl;
-	count=0;
-	
-
-
 	*/
 
 
@@ -1305,7 +1369,7 @@ int count=0;
 	bool solved = solver(dof_oxy_transp.Ct(),dof_oxy_transp.Cv(),0,0);
 	if (!solved) return false;
 	
-/*
+
 	//export solution
 	#ifdef M3D1D_VERBOSE_
 	std::cout<<"solved! going to export..."<<std::endl;
@@ -1321,14 +1385,15 @@ int count=0;
 	std::cout<<"exported!"<<std::endl;
 	#endif	
 	
-	if(!descr_oxy_transp.STATIONARY)
-	cout << "... time to solve : "	<< gmm::uclock_sec() - time_partial << " seconds\n";
+	//if(!descr_oxy_transp.STATIONARY)
+	//cout << "... time to solve : "	<< gmm::uclock_sec() - time_partial << " seconds\n";
 	
-	if(!descr_oxy_transp.STATIONARY){
+/*	if(!descr_oxy_transp.STATIONARY){
 	cout << endl<<"... time to solve all the time steps: " << gmm::uclock_sec() - time << " seconds\n";}
 	else{
+*/
 	cout << endl<<"... time to solve : " << gmm::uclock_sec() - time << " seconds\n";
-	}*/
+	
 	return true;
  	}; // end of solve_oxy_transp
 
@@ -1348,6 +1413,9 @@ computing_residual (vector_type Ct_new, vector_type Ct_old, vector_type Cv_new, 
 
 	scalar_type Vnew = gmm::vect_norm2(Cv_new);
 	scalar_type Vold = gmm::vect_norm2(Cv_old);
+
+	cout<<"Residuo di Ct= "<<Tnew/Told<<endl;
+	cout<<"Residuo di Cv= "<<Vnew/Vold<<endl;
 	
 	scalar_type error;
 
@@ -1398,37 +1466,57 @@ bool oxygen_transport3d1d::solve_oxygen_fixpoint (void)
 
 	//Definisco le matrici che non cambiano durante il while
 	sparse_matrix_type Dt; gmm::resize(Dt, dof_oxy_transp.Ct(), dof_oxy_transp.Ct());
+	sparse_matrix_type Dt_temp; gmm::resize(Dt_temp, dof_oxy_transp.Ct(), dof_oxy_transp.Ct());
+
 	sparse_matrix_type At; gmm::resize(At, dof_oxy_transp.Ct(), dof_oxy_transp.Ct());
+	sparse_matrix_type At_temp; gmm::resize(At_temp, dof_oxy_transp.Ct(), dof_oxy_transp.Ct());
 
 	sparse_matrix_type Btt; gmm::resize(Btt, dof_oxy_transp.Ct(), dof_oxy_transp.Ct());
+	sparse_matrix_type Btt_temp; gmm::resize(Btt_temp, dof_oxy_transp.Ct(), dof_oxy_transp.Ct());
+
 	sparse_matrix_type Btv; gmm::resize(Btv, dof_oxy_transp.Ct(), dof_oxy_transp.Cv());
 	sparse_matrix_type Bvt; gmm::resize(Bvt, dof_oxy_transp.Cv(), dof_oxy_transp.Ct());
 	sparse_matrix_type Bvv; gmm::resize(Bvv, dof_oxy_transp.Cv(), dof_oxy_transp.Cv());
 	sparse_matrix_type Mbar; gmm::resize(Mbar, dof_oxy_transp.Cv(), dof_oxy_transp.Ct());
 	sparse_matrix_type Mlin; gmm::resize(Mlin, dof_oxy_transp.Cv(), dof_oxy_transp.Ct());
 
-	sparse_matrix_type DABv; gmm::resize(DABv, dof_oxy_transp.Cv(), dof_oxy_transp.Cv());
+
+	vector_type Ft (dof_oxy_transp.Ct());
+	vector_type Fv (dof_oxy_transp.Cv());
+
+	gmm::copy(
+			gmm::sub_vector(FM_oxy,
+				gmm::sub_interval(0, dof_oxy_transp.Ct())), Ft);
+
+	gmm::copy(
+			gmm::sub_vector(FM_oxy,
+				gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())), Fv);
 
 	//Inizializzo la marice Rt e il vettore Ov che cambino nel while
-	sparse_matrix_type Rt; gmm::resize(Rt, dof_oxy_transp.Ct(), dof_oxy_transp.Ct());
+	sparse_matrix_type Rt (dof_oxy_transp.Ct(), dof_oxy_transp.Ct());
 	vector_type Ov(dof_oxy_transp.Cv());
 
-	//Annullo il blocco in posizione 1,1 di AM_oxy per poterlo riassemblare
-	gmm::scale(gmm::sub_matrix(AM_oxy,
-					gmm::sub_interval(0,dof_oxy_transp.Ct()),
-					gmm::sub_interval(0, dof_oxy_transp.Ct())),0.0);
-
 	//Assemblo Dt
-	getfem::asm_stiffness_matrix_for_laplacian(Dt ,mimt,mf_oxy_Ct, mf_coeft, param_oxy_transp.At(), mesh_region::all_convexes());
+	getfem::asm_stiffness_matrix_for_laplacian(Dt ,mimt,mf_oxy_Ct, mf_coeft, param_oxy_transp.At());//, mesh_region::all_convexes());
+	gmm::copy(Dt, Dt_temp);
+	
+	/*
+	lo aggiungo all'interno del while
 	gmm::add(Dt,gmm::sub_matrix(AM_oxy,
 						gmm::sub_interval(0,dof_oxy_transp.Ct()),
 						gmm::sub_interval(0,dof_oxy_transp.Ct())));
+	*/
 
 	//Assemblo At
 	asm_advection_tissue(At, mimt, mf_oxy_Ct, mf_Ut, gmm::sub_vector(UM, gmm::sub_interval(0, dof.Ut())));
+	gmm::copy(At, At_temp);
+
+	/*
+	lo aggiungo all'interno del while
 	gmm::add(At,gmm::sub_matrix(AM_oxy,
 						gmm::sub_interval(0,dof_oxy_transp.Ct()),
 						gmm::sub_interval(0,dof_oxy_transp.Ct())));
+	*/
 
 	//Assemblo le matrici di scambio Btt, Btv, Bvt e Bvv (sarebbe meglio solo Btt)
 	bool COUPLING = PARAM.int_value("COUPLING", "flag for coupling-exchange term ");
@@ -1503,12 +1591,18 @@ bool oxygen_transport3d1d::solve_oxygen_fixpoint (void)
 			mimv, mf_oxy_Cv, mf_coefv, mf_Pv, Mbar, Mlin, 
 			ONCOTIC, PERM, NEWFORM);
 
+	gmm::copy(Btt, Btt_temp);
+
+	/*
+	lo aggiunego all'interno del while
 	gmm::add(Btt,gmm::sub_matrix(AM_oxy,
 						gmm::sub_interval(0,dof_oxy_transp.Ct()),
 						gmm::sub_interval(0, dof_oxy_transp.Ct())));
+	*/
 	}
 
 	//Copio i blocchi di AM_oxy e FM_oxy nelle matrici e nei vettori che non cambino nel while
+	/*
 	gmm::copy(gmm::sub_matrix(AM_oxy,
 						gmm::sub_interval(0, dof_oxy_transp.Ct()),
 						gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())),Btv);
@@ -1520,22 +1614,19 @@ bool oxygen_transport3d1d::solve_oxygen_fixpoint (void)
 	gmm::copy(gmm::sub_matrix(AM_oxy,
 						gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv()),
 						gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())),DABv);
+	*/
 
 
 
 	//Impongo un residuo e un massimo di iterazioni
-	size_type oxyres = descr_oxy_transp.Residual_OXY;
-	int max_iter = descr_oxy_transp.Max_iterations_OXY;
-
-	//Inizializzo un counter per le iterazioni e un valore di errore che deve essere minore del residuo
-	//clock_t t;
-	//clock_t time_G;
-	//time_G=clock();
-
-	int iteration=1;
+	scalar_type oxyres = descr_oxy_transp.Residual_OXY;
+	cout<<"Residuo FPM= "<<oxyres<<endl;
 	scalar_type err = 1.0; 
 
-	vector_type RES_SOL(max_iter);
+	int max_iter = descr_oxy_transp.Max_iterations_OXY;
+	cout<<"# max di iterazioni per FPM= "<<max_iter<<endl;
+	int iteration=1;
+	//vector_type RES_SOL(max_iter); per l'andamento dei residui
 	
 
 	//salvo la soluzione iniziale in Ct_old e in Cv_old
@@ -1544,53 +1635,85 @@ bool oxygen_transport3d1d::solve_oxygen_fixpoint (void)
 	gmm::copy(gmm::sub_vector(UM_oxy,
 				gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())), Cv_old);
 
-	// \todo aggiungere variabili per salvare i residui
-		 	
-while (RK && iteration<max_iter && err>oxyres)
+	//da fare solo nel caso di non linearità
+	if(!descr_oxy_transp.HEMOADVECTION && !descr_oxy_transp.REACTION){
+		cout<<"Any non-linearities are in the system"<<endl;
+	}
+	else {
+
+while (RK && iteration<=max_iter && err>oxyres)
 {
-
-
+	if(descr_oxy_transp.REACTION) {
+	
 	#ifdef M3D1D_VERBOSE_
-	cout<<"Assemblin Rt in FPM..."<<endl;
+	cout<<"Assembling Rt in FPM..."<<endl;
 	#endif
 
-	//Coefficient for reaction term:
-	vector_type reac_data(dof.Pt()); gmm::clear(reac_data);
+	gmm::scale(gmm::sub_matrix(AM_oxy,
+					gmm::sub_interval(0,dof_oxy_transp.Ct()),
+					gmm::sub_interval(0,dof_oxy_transp.Ct())),0.0);
 
-	vector_type consump_coeff(dof_oxy_transp.Ct()); gmm::clear(consump_coeff); 
-	
-	vector_type PRESS50(dof_oxy_transp.Ct(), PARAM.real_value("Pm_50")); 
-	gmm::scale(PRESS50, param_oxy_transp.alpha_t()); 
 	vector_type ct_guess(dof_oxy_transp.Ct());
+	sparse_matrix_type Rt_temp (dof_oxy_transp.Ct(), dof_oxy_transp.Ct()); gmm::clear(Rt_temp);
 
 	gmm::copy(Ct_old, ct_guess); //Riga di aggiornamento
 
-	gmm::add(PRESS50, ct_guess);
-	gmm::copy(ct_guess, consump_coeff);
+	//Coefficient for reaction term:
+	vector_type consump_coeff(dof.Pt()); gmm::clear(consump_coeff); 
+	
+	vector_type PRESS50(dof_oxy_transp.Ct(), PARAM.real_value("Pm_50")); 
+	gmm::scale(PRESS50, param_oxy_transp.alpha_t());
+
+	gmm::add(PRESS50,  ct_guess);
 
 	for (size_type i=0; i<dof_oxy_transp.Ct(); i++){
-	consump_coeff[i] = 1.0/consump_coeff[i];
+	ct_guess[i] = 1.0/ct_guess[i];
 	}
 
-	gmm::scale(consump_coeff, param_oxy_transp.M0());
-
+	gmm::scale(ct_guess, param_oxy_transp.M0());
+		
 	//RR
-	getfem::interpolation(mf_oxy_Ct, mf_coeft, consump_coeff, reac_data);
-	//Prtché? cosi da avere la dimensione di cv_guess, consump_coeff e press50 identica a quella di UM_oxy(0, Ct) --> utile per il FPM, e 
-	//dare come input a asm_tissue_transp il vettore di coefficienti (da costruire su mf_coeft) con le dimensioni corrette
-	
-	getfem::asm_mass_matrix_param(Rt, mimt, mf_oxy_Ct, mf_coeft, reac_data, mesh_region::all_convexes());
+	getfem::interpolation(mf_oxy_Ct, mf_coeft, ct_guess, consump_coeff);
+	//Prtché? cosi da avere la dimensione di ct_guess, consump_coeff e press50 identica a quella di UM_oxy(0, Ct) --> utile per il FPM, e 
+	//dare come input a asm_tissue_transp il vettore di coefficienti (consump_coeff, da costruire su mf_coeft) con le dimensioni corrette
 
- 	gmm::add(Rt, 
+
+	getfem::asm_mass_matrix_param(Rt_temp, mimt, mf_oxy_Ct, mf_coeft, consump_coeff);
+	gmm::copy(Rt_temp, Rt);
+
+	gmm::add(Rt, 
+			  gmm::sub_matrix(AM_oxy, 
+					gmm::sub_interval(0, dof_oxy_transp.Ct()), 
+				 	gmm::sub_interval(0, dof_oxy_transp.Ct())));
+
+	gmm::add(Dt_temp, 
 			  gmm::sub_matrix(AM_oxy, 
 					gmm::sub_interval(0, dof_oxy_transp.Ct()), 
 				 	gmm::sub_interval(0, dof_oxy_transp.Ct())));
 
 
- 	//Assemblo Ov
+	gmm::add(At_temp, 
+			  gmm::sub_matrix(AM_oxy, 
+					gmm::sub_interval(0, dof_oxy_transp.Ct()), 
+				 	gmm::sub_interval(0, dof_oxy_transp.Ct())));
+
+	gmm::add(Btt_temp, 
+			  gmm::sub_matrix(AM_oxy, 
+					gmm::sub_interval(0, dof_oxy_transp.Ct()), 
+				 	gmm::sub_interval(0, dof_oxy_transp.Ct())));
+
+	gmm::clear(Rt_temp);
+ 	}
+
+
+ 	if(descr_oxy_transp.HEMOADVECTION){
+
  	#ifdef M3D1D_VERBOSE_
-	cout<<"Assemblin Ov in FPM..."<<endl;
+	cout<<"Assembling Ov in FPM..."<<endl;
 	#endif
+
+	gmm::scale(gmm::sub_vector(FM_oxy,
+					gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())),0.0);
 
  	vector_type cv_guess (dof_oxy_transp.Cv());
 
@@ -1600,9 +1723,9 @@ while (RK && iteration<max_iter && err>oxyres)
 	size_type shift_h=0;
 	
 	scalar_type k1;
-	k1= param_oxy_transp.N()*param_oxy_transp.MCHC();	
+	k1= param_oxy_transp.N()*param_oxy_transp.MCHC();
 	scalar_type k2;
-	k2 = pow((param_oxy_transp.Ps_50()*param_oxy_transp.alpha_t()),param_oxy_transp.delta());	
+	k2 = pow((param_oxy_transp.Ps_50()*param_oxy_transp.alpha_t()),param_oxy_transp.delta());
 
 	for(size_type i=0; i<nb_branches; ++i)
 	{
@@ -1640,17 +1763,21 @@ while (RK && iteration<max_iter && err>oxyres)
 		gmm::add(gmm::sub_vector(UM,
 			gmm::sub_interval(dof.Ut()+dof.Pt()+shift, mf_Uvi[i].nb_dof())) ,  Uvi);
 
-
 		for (size_type j=0; j<mf_Hi[i].nb_dof(); ++j)
 		{
-			psi[j] = Hi[j]*k1*pow(cv_i[j], param_oxy_transp.delta())/(pow(cv_i[j], param_oxy_transp.delta())+k2);	
+			psi[j] = Hi[j]*k1*pow(cv_i[j], param_oxy_transp.delta())/(pow(cv_i[j], param_oxy_transp.delta())+k2); //calcolo dimensionale
+			psi[j] = psi[j]/param_oxy_transp.C(); //per adimensionalizzare
 		}
-	asm_hemoadvection_rhs_network(Ov, mimv, mf_oxy_Cv, mf_coefvi[i], mf_Uvi[i], mf_coefv, mf_Hi[i], Uvi, param.lambdax(i), param.lambday(i), param.lambdaz(i),  param.R(), psi, meshv.region(i));	
+		
+	asm_hemoadvection_rhs_network(Ov, mimv, mf_oxy_Cv, mf_coefvi[i], mf_Uvi[i], mf_coefv, mf_Hi[i], Uvi, param.lambdax(i), param.lambday(i), param.lambdaz(i),  param.R(), psi, meshv.region(i));
 	}
 
 	gmm::add(Ov, gmm::sub_vector(FM_oxy, 
 					gmm::sub_interval(dof_oxy_transp.Ct(),dof_oxy_transp.Cv())));
-	
+
+	gmm::add(Fv, gmm::sub_vector(FM_oxy, 
+					gmm::sub_interval(dof_oxy_transp.Ct(),dof_oxy_transp.Cv())));
+	} //fine HEMOADVECTION
 
 		//risolvere il nuovo sistema
 		cout<<"Risolvo il sistema nuovamente"<<endl;
@@ -1685,7 +1812,7 @@ while (RK && iteration<max_iter && err>oxyres)
 			cout << "********************************************************" << endl;
 	iteration++;
 }; //esco dal while
-
+} //fine dell'if (presenza o no di non linearità)
 	gmm::copy(Ct_old, gmm::sub_vector(UM_oxy, 
 					 gmm::sub_interval(0,dof_oxy_transp.Ct())));
 	
@@ -1696,7 +1823,7 @@ while (RK && iteration<max_iter && err>oxyres)
 	cout<< "Iterative Process Time = " << ((float)time_G)/CLOCKS_PER_SEC << " s"<< endl;
 	SaveResidual.close();*/
 
-	return true;	
+	return true;
 }; //end of oxygen fixpoint
 	
 
@@ -1875,20 +2002,20 @@ while (RK && iteration<max_iter && err>oxyres)
 	gmm::copy(gmm::sub_vector(UM_oxy, 
 		gmm::sub_interval(0, dof_oxy_transp.Ct())),  Ct);
 	gmm::copy(gmm::sub_vector(UM_oxy, 
-		gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())), Cv);
-
-	for(size_type a; a<dof_oxy_transp.Ct();a++)
+		gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())), Cv);	
+/*
+	for(size_type a=0;a<dof_oxy_transp.Ct();a++){
 		cout<<"Ct["<<a<<"]= "<<Ct[a]<<endl;
-
-	for(size_type b; b<dof_oxy_transp.Cv();b++)
+	}
+	for(size_type b=0;b<dof_oxy_transp.Cv();b++){
 		cout<<"Cv["<<b<<"]= "<<Cv[b]<<endl;
-
-	
+	}
+*/
 
 	#ifdef M3D1D_VERBOSE_
 	cout << "  Exporting Ct ..." << endl;
 	#endif
-	vtk_export exp_Ct(descr_oxy_transp.OUTPUT+"Ct"+suff+"_t"+time_suff+".vtk");
+	vtk_export exp_Ct(descr_oxy_transp.OUTPUT+"Ct"+time_suff+".vtk");
 	exp_Ct.exporting(mf_oxy_Ct);
 	exp_Ct.write_mesh();
 	exp_Ct.write_point_data(mf_oxy_Ct, Ct, "Ct");
@@ -1898,7 +2025,7 @@ while (RK && iteration<max_iter && err>oxyres)
 	#ifdef M3D1D_VERBOSE_
 	cout << "  Exporting Cv ..." << endl;
 	#endif
-	vtk_export exp_Cv(descr_oxy_transp.OUTPUT+"Cv"+suff+"_t"+time_suff+".vtk");
+	vtk_export exp_Cv(descr_oxy_transp.OUTPUT+"Cv"+time_suff+".vtk");
 	exp_Cv.exporting(mf_oxy_Cv);
 	exp_Cv.write_mesh();
 	exp_Cv.write_point_data(mf_oxy_Cv, Cv, "Cv");
@@ -1908,10 +2035,10 @@ while (RK && iteration<max_iter && err>oxyres)
 	#endif
   }
  }; // end of export_transp
- 
-  
-  
+
 /*
+
+
   // Interface with problem3d1d class
   	//! Initialize the problem
 	void transport3d1d::init_fluid (int argc, char *argv[])

@@ -228,15 +228,28 @@ asm_network_bc_transp
 	GMM_ASSERT1(mf_c.get_qdim()==1,  "invalid data mesh fem (Qdim=1 required)");
 	GMM_ASSERT1(mf_data.get_qdim()==1, "invalid data mesh fem (Qdim=1 required)");
 
+	//PROVA:
+	for(size_type bc=0; bc<BC.size(); bc++){
+		cout<<"LABEL di BC["<<bc<<"] = "<<BC[bc].label<<endl;
+		cout<<"VALUE di BC["<<bc<<"] = "<<BC[bc].value<<endl;
+		cout<<"REGION di BC["<<bc<<"] = "<<BC[bc].rg<<endl;
+	}
+	///////////////
 
 	for (size_type bc=0; bc < BC.size(); bc++) { 
 		GMM_ASSERT1(mf_c.linked_mesh().has_region(bc), "missed mesh region" << bc);
 		if (BC[bc].label=="DIR") { // Dirichlet BC
 			VEC BC_temp(mf_c.nb_dof(), BC[bc].value);
+
+			cout<<"Ho una condizione DIR nel vaso sulla regione "<<BC[bc].rg<<endl;
+
 			getfem::assembling_Dirichlet_condition(M, F, mf_c, BC[bc].rg, BC_temp);
 			gmm::clear(BC_temp);			
 		} 
 		else if (BC[bc].label=="MIX") { // Robin BC
+
+			cout<<"Ho una condizione MIX nel vaso sulla regione "<<BC[bc].rg<<endl;
+
 			VEC BETA(mf_data.nb_dof(), beta*pi);
 			gmm::vscale(R, BETA); gmm::vscale(R, BETA);
 			getfem::asm_mass_matrix_param(M, mim, mf_c, mf_data, BETA,mf_c.linked_mesh().region(BC[bc].rg) ); //int(beta*cv*bv)

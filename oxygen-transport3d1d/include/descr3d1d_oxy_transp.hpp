@@ -45,11 +45,15 @@ struct descr3d1d_oxy_transp {
 	//Flag to add coupling terms
 	bool COUPLING;
 	//Flag to take the stationary problem
-	bool STATIONARY;
+	//bool STATIONARY;
 	//Flag for the new formulation
 	bool NEW_FORMULATION;
 	//Flag to study oxygen transport
 	bool OXYGEN_TRANSPORT;
+	//Flag to add reaction term;
+	bool REACTION;
+	//Flag to add oxyhemoglobin advection
+	bool HEMOADVECTION;
 
 	//! Absolute path to the vessel mesh file
 	std::string MESH_FILEV_OXY;
@@ -83,7 +87,7 @@ struct descr3d1d_oxy_transp {
 
 	//For FixPOint Method
 	//! Maximum residual for FPM
-	size_type Residual_OXY;
+	scalar_type Residual_OXY;
 	//! Maximum number of iterations for FPM
 	size_type Max_iterations_OXY;
 
@@ -120,7 +124,7 @@ struct descr3d1d_oxy_transp {
 		NInt = size_type(FILE_.int_value("NInt", "Node numbers on the circle for the nonlocal term"));    
 		OUTPUT = FILE_.string_value("OUTPUT","Output Directory");
 
-		Residual_OXY = size_type(FILE_.int_value("Residual_OXY","Maximum residual for FPM"));
+		Residual_OXY = FILE_.real_value("Residual_OXY","Maximum residual for FPM"); if (Residual_OXY == 0.) Residual_OXY = 1.0e-9;
 		Max_iterations_OXY = size_type(FILE_.int_value("Max_iterations_OXY","Maximum number of iterations for FPM"));
 
 		//General Flags
@@ -130,11 +134,13 @@ struct descr3d1d_oxy_transp {
 		ADVECTION = size_type(FILE_.int_value("ADVECTION","Flag to add advection terms"));
 		Visco_v = size_type(FILE_.int_value("Visco_v","Flag for Type of Viscosity (0 = Vivo - including glycocalyx effect - or 1 = vitro) based on Pries and Secomb works"));
 		COUPLING = size_type(FILE_.int_value("COUPLING","Flag to add coupling terms"));
-		STATIONARY = size_type(FILE_.int_value("STATIONARY","Flag to take the stationary problem"));
+		//STATIONARY = size_type(FILE_.int_value("STATIONARY","Flag to take the stationary problem"));
 		NEW_FORMULATION = size_type(FILE_.int_value("NEW_FORMULATION","Flag for the new formulation"));
 		OXYGEN_TRANSPORT = size_type(FILE_.int_value("OXYGEN_TRANSPORT","Flag to study oxygen transport"));
 		FACE = size_type(FILE_.int_value("FACE", "Number of region of the first face of the boundary of the 3d domain"));
 		PRINT_RESIDUALS = size_type(FILE_.int_value("PRINT_RESIDUALS"));
+		REACTION = size_type(FILE_.int_value("REACTION","Flag to add reaction term"));
+		HEMOADVECTION = size_type(FILE_.int_value("HEMOADVECTION","Flag to add oxyhemoglobin advection"));
 
 		couple = size_type(FILE_.int_value("couple"));
 		READ_INTERPOLATOR = size_type(FILE_.int_value("READ_INTERPOLATOR","flag for read interpolator from file"));
