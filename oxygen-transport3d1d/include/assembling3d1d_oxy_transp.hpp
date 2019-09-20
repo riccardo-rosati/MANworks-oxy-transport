@@ -301,7 +301,7 @@ asm_exchange_mat_transp
     size_type nb_dof2=mf2.nb_dof(); 
 
     //PROVA:
-    int count=0;
+    //int count=0;
     //cout<<"*************************** assembling_Dirichlet_condition_coupled_tissue ******************************"<<endl;
     //cout<<"#dof della mesh mf_ct= "<<nb_dof1<<endl; 
     //cout<<"#dof della mesh mf_cv= "<<nb_dof2<<endl; 
@@ -341,9 +341,9 @@ asm_exchange_mat_transp
 	if (nndof.is_in(dof1) && pf1->dof_types()[i] == ldof) {			//se il dof i del convesso cv è in "boundary"
   
   		//PROVA
-  		cout<<"Dimensione # di dof della mesh mf_ct sulla regione "<<boundary<<" ="<<mf1.ind_basic_dof_of_element(cv).size()<<endl;
+  		/*cout<<"Dimensione # di dof della mesh mf_ct sulla regione "<<boundary<<" ="<<mf1.ind_basic_dof_of_element(cv).size()<<endl;
 		cout<<"!! Indice globale "<<dof1<<" appartiene alla lista di dof della regione"<< boundary<<endl;		
-		count++;
+		count++;*/
 		//////////////////
 	  for (size_type j = nb_dof1; j < nb_dof1+ nb_dof2; j++) {				//allora per tutti i dof j della mesh 2
 		for (size_type l = 0; l < Q1; ++l) {
@@ -353,11 +353,11 @@ asm_exchange_mat_transp
 	    	}
 	    }
 	  } 
-	  cout<<"***********"<<endl;
+	  //cout<<"***********"<<endl;
 	}
-	cout<<"\n"<<endl;
+	//cout<<"\n"<<endl;
      }
-     cout<<"Numero totale di dof apparteneneti alla regione "<<boundary<<" = "<<count<<endl;
+     //cout<<"Numero totale di dof apparteneneti alla regione "<<boundary<<" = "<<count<<endl;
    } /* end of assembling_Dirichlet_condition_coupled_tissue*/
 
   //! Build a single vessel Dirichlet condition on the tissue (modify @f$ B_{tv} @f$)
@@ -392,7 +392,7 @@ asm_exchange_mat_transp
     size_type nb_dof2=mf2.nb_dof(); 
 
     //PROVA:
-    int count=0;
+    //int count=0;
     //cout<<"*************************** assembling_Dirichlet_condition_coupled_vessel ******************************"<<endl; 
     //cout<<"nb_dof1= "<<nb_dof1<<endl; 
     //cout<<"nb_dof2= "<<nb_dof2<<endl; 
@@ -429,9 +429,9 @@ asm_exchange_mat_transp
 	if (nndof.is_in(dof2) && pf2->dof_types()[i] == ldof) {			//se il dof i del convesso cv è in "boundary"
 	  
 	  	//PROVA::
-		cout<<"Dimensione # di dof della mesh mf_cv sulla regione "<<boundary<<" ="<<mf2.ind_basic_dof_of_element(cv).size()<<endl;
-		cout<<"!! Indice globale "<<dof2<<" appartiene alla lista di dof della regione"<< boundary<<endl;	
-		count++;
+		//cout<<"Dimensione # di dof della mesh mf_cv sulla regione "<<boundary<<" ="<<mf2.ind_basic_dof_of_element(cv).size()<<endl;
+		//cout<<"!! Indice globale "<<dof2<<" appartiene alla lista di dof della regione"<< boundary<<endl;	
+		//count++;
 		////////
 
 	  for (size_type j = 0; j < nb_dof1; j++) {				//allora per tutti i dof j della mesh 2
@@ -442,12 +442,12 @@ asm_exchange_mat_transp
 	    	}
 	    } 
 	  } 
-	  cout<<"**********"<<endl;
+	  //cout<<"**********"<<endl;
 	}
-	cout<<"\n"<<endl;
+	//cout<<"\n"<<endl;
      }
      //PROVA:
-     cout<<"Conta del numero totale di dof nella regione "<<boundary<<" = "<<count<<endl;
+     //cout<<"Conta del numero totale di dof nella regione "<<boundary<<" = "<<count<<endl;
      //////////
    } /* end of assembling_Dirichlet_condition_coupled_vessel*/
    
@@ -493,8 +493,8 @@ asm_coupled_bc_transp
 		GMM_ASSERT1(mf_ct.linked_mesh().has_region(bc), "TISSUE: missed mesh region " << bc);
 		if (BC_tissue[bc].label=="DIR") { // Dirichlet BC
 			VEC BC_temp(mf_ct.nb_dof(), BC_tissue[bc].value);
-			cout<<"BC tissue value di ["<<bc<<"]= "<<BC_temp[0]<<endl;
-			cout<<"**************************"<<endl;
+			//cout<<"BC tissue value di ["<<bc<<"]= "<<BC_temp[0]<<endl;
+			//cout<<"**************************"<<endl;
 			getfem::assembling_Dirichlet_condition_coupled_tissue(M, F, mf_ct, mf_cv, BC_tissue[bc].rg, BC_temp);
 			gmm::clear(BC_temp);				
 		} 
@@ -505,8 +505,8 @@ asm_coupled_bc_transp
 		GMM_ASSERT1(mf_cv.linked_mesh().has_region(bc), "VESSEL: missed mesh region" << bc);
 		if (BC_vessel[bc].label=="DIR") { // Dirichlet BC
 			VEC BC_temp(mf_cv.nb_dof(), BC_vessel[bc].value);
-			cout<<"BC vessel value di ["<<bc<<"]= "<<BC_temp[0]<<endl;
-			cout<<"**************************"<<endl;
+			//cout<<"BC vessel value di ["<<bc<<"]= "<<BC_temp[0]<<endl;
+			//cout<<"**************************"<<endl;
 			getfem::assembling_Dirichlet_condition_coupled_vessel(M, F, mf_ct, mf_cv, BC_vessel[bc].rg, BC_temp);
 			gmm::clear(BC_temp);				
 		} 

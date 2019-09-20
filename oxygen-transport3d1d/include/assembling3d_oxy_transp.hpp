@@ -76,6 +76,7 @@ void asm_tissue_transp
 	const getfem::mesh_im & mim,
 	const getfem::mesh_fem & mf,
         const getfem::mesh_fem & mfvel,
+        const bool TEST,
         const VECT & vel,
         const mesh_region & rg = mesh_region::all_convexes())
 {
@@ -89,7 +90,7 @@ void asm_tissue_transp
     assem1.push_mat(A);
     assem1.assembly(rg);
     
-    
+    if(TEST == 0){
     getfem::generic_assembly
       assem2("vel=data(#2);"
             "M$1(#1,#1) += comp(Base(#1).Base(#1).vGrad(#2))(:, :,k, p,p).vel(k);");
@@ -99,6 +100,7 @@ void asm_tissue_transp
     assem2.push_data(vel);
     assem2.push_mat(A);
     assem2.assembly(rg);
+    }
   }  /* end of asm_advection_tissue*/
 
 
@@ -131,11 +133,11 @@ asm_tissue_bc_transp
 
 	
 	//PROVA:
-	for(size_type bc=0; bc<BC.size(); bc++){
-		cout<<"LABEL di BC["<<bc<<"] = "<<BC[bc].label<<endl;
-		cout<<"VALUE di BC["<<bc<<"] = "<<BC[bc].value<<endl;
-		cout<<"REGION di BC["<<bc<<"] = "<<BC[bc].rg<<endl;
-	}
+	//for(size_type bc=0; bc<BC.size(); bc++){
+	//	cout<<"LABEL di BC["<<bc<<"] = "<<BC[bc].label<<endl;
+	//	cout<<"VALUE di BC["<<bc<<"] = "<<BC[bc].value<<endl;
+	//	cout<<"REGION di BC["<<bc<<"] = "<<BC[bc].rg<<endl;
+	//}
 	/////////////////
 	
 	GMM_ASSERT1(mf_c.get_qdim()==1,  "invalid data mesh fem (Qdim=1 required)");
@@ -146,7 +148,7 @@ asm_tissue_bc_transp
 		GMM_ASSERT1(mf_c.linked_mesh().has_region(bc), "missed mesh region" << bc);
 		if (BC[bc].label=="DIR") { // Dirichlet BC
 
-			cout<<"Ho una condizione DIR nel tessuto sulla regione "<<BC[bc].rg<<endl;
+			//cout<<"Ho una condizione DIR nel tessuto sulla regione "<<BC[bc].rg<<endl;
 
 			VEC BC_temp(mf_c.nb_dof(), BC[bc].value);
 			getfem::assembling_Dirichlet_condition(M, F, mf_c, BC[bc].rg, BC_temp);
@@ -154,7 +156,7 @@ asm_tissue_bc_transp
 		} 
 		else if (BC[bc].label=="MIX") { // Robin BC
 
-			cout<<"Ho una condizione MIX nel tessuto sulla regione "<<BC[bc].rg<<endl;
+			//cout<<"Ho una condizione MIX nel tessuto sulla regione "<<BC[bc].rg<<endl;
 
 			VEC BETA(mf_data.nb_dof(), beta);
 			getfem::asm_mass_matrix_param(M, mim, mf_c, mf_data, BETA,mf_c.linked_mesh().region(BC[bc].rg) );

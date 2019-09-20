@@ -103,7 +103,7 @@ struct param3d1d_oxy_transp {
 //		bool IMPORT_RADIUS = FILE_.int_value("IMPORT_RADIUS");
 		bool NONDIM_PARAM  = FILE_.int_value("TEST_PARAM");
 		bool EXPORT_PARAM  = FILE_.int_value("EXPORT_PARAM");
-		
+		bool TEST_ANALYTICAL = FILE_.int_value("TEST_ANALYTICAL");
 		
 		#ifdef M3D1D_VERBOSE_
 		cout << "  Assembling dimensionless parameters Dt, Dv, Dalpha, Q_pl ... "   << endl;
@@ -130,8 +130,15 @@ struct param3d1d_oxy_transp {
 			scalar_type k_  = FILE_.real_value("k", "permeability of the interstitium [m^2]"); 
 			scalar_type Lp_ = FILE_.real_value("Lp", "Hydraulic conductivity of the capillary walls [m^2 s/kg]"); 
 			
-			
-			Dt_   = FILE_.real_value("Dt","Diffusivity in the tissue [m^2/s]");
+			if(TEST_ANALYTICAL == 1)
+			{
+				Dt_   = FILE_.real_value("Dt_test","Test Diffusivity in the tissue [m^2/s]");
+			}
+			else
+			{
+				Dt_   = FILE_.real_value("Dt","Diffusivity in the tissue [m^2/s]");
+			}
+
 			Dv_   = FILE_.real_value("Dv","Diffusivity in the vessels [m^2/s]");
 			
 			//Importo i coefficienti dimensionali per l'ossigeno
@@ -218,6 +225,8 @@ void build_oxy(ftool::md_param & fname,
 
 	//! Get the radius at a given dof
 	//inline scalar_type R  (size_type i) { return R_[i];  } const
+	//! Get test diffusivity
+	inline scalar_type Dt () { return Dt_; } const
 	//! Get the tissue diffusivity at a given dof
 	inline scalar_type At (size_type i) { return At_[i]; } const
 	//! Get the vessel diffusivity at a given dof
