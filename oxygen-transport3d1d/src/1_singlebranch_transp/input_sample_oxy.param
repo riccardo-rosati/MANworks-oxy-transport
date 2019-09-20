@@ -57,6 +57,8 @@ OXYGEN_TRANSPORT = 1;
 REACTION = 0;
 %Flag to add oxyhemoglobin advection termn (psi function)
 HEMOADVECTION = 0;
+%Flag to test the analytical solution
+TEST_ANALYTICAL = 1;
 
 %Fissi! si posso anche togliere
 %Couple (0: uso quella di Notaro)
@@ -70,7 +72,7 @@ READ_INTERPOLATOR = 0;
 % Flag to import dimensionless param
 TEST_PARAM      = 0;
 % Flag to import the dimensionless radius (to do that TEST_PARAM must be equal to 0 and parameters P U d k mu must be left)
-IMPORT_RADIUS   = 1;
+IMPORT_RADIUS   = 0;
 % Flag to import the file with curvature (Remember to ENABLE CURVE_PROBLEM) - If this flag is 0, the curvature is computed from the mesh
 IMPORT_CURVE = 0;
 
@@ -229,13 +231,16 @@ Max_iterations_OXY = 30;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%									 	Fluid flow 													%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Hydraulic conductivity of the interstitium [m^2]
-k  = 1.0E-18;
+%Hydraulic conductivity of the interstitium [m^2]
+%k=1.0E-18; %condizioni fisiologiche
+%Test hydraulic conductivity of the interstitium [m^2]
+k = 1.0E-8; %per sol. analitica
+
 % Average interstitial pressure [Pa]
 P  = 133.32;
 % Characteristic flow speed in the capillary bed [m/s]
 U  = 100E-06;
-% Characteristic l37ength of the problem [m]
+% Characteristic length of the problem [m]
 d  = 5.0E-4;
 % Hydraulic conductivity of the capillary walls [m^2 s/kg]
 Lp = 1E-12;
@@ -275,8 +280,8 @@ D_LF = -2*133.32;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%										Oxygen transport											%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Max oxygen consumption rate [1/s]
-m0 =  0.062; 
+%Max oxygen consumption rate [ml_O2/ml_tissue*1/s]
+m0 =  1.75E-4; 
 %Tissue concentration guess [ml_O2/ml_Blood]
 Ct_guess =  1.0;
 %Vessel concentration guess [ml_O2/ml_Blood]
@@ -290,20 +295,27 @@ MCHC = 0.34;
 %Hufner factor [ml_O2/g_Hb]
 N = 1.36;
 %Hill constant [-]
-delta = 2.7;
+delta = 2.0; %2.7
 %Partial pressure at half saturation [mmHg]
-Ps_50 = 26.8;
+Ps_50 = 30;
 %Oxygen solubility in the plasma [ml_O2/(ml_Blood*mmHg)]
-alpha_pl = 3.1E-5;
+alpha_pl = 3.0E-5;
 %maximum concentration [kg/m^3]
 C = 0.5; %oxygen concentration in saturated rbc;
 
 %Diffusivity in the tissue [m^2/s]  
-Dt = 2.41E-3;
+Dt = 2.41E-9; %condizioni fisiologiche
+%Test diffusivity in the tissue [m^2/s]
+Dt_test = 2.41E-3; %per la soluzione analitica
+
 %Diffusivity in the vessels [m^2/s] 
-Dv = 2.75E-7; 
-%Permeability of the vessel wall [m/s]
-Perm = 1.205E-05*100;
+%Dv = 2.75E-9; %per la soluzione analitica 3 casi in cui Dv cambia di 3 ordini di grandezza
+%Dv = 2.75E-6;
+%Dv = 2.75E-3;
+Dv = 2.75;
+
+%Permeability of the vessel wall [m/s] = Dv/h, con h = spessore della membrana endoteliale (1.0E-6 [m])
+Perm = 2.75E-3;
 % surface area of lymphatic vessels per unit volume of tissue [1/m]
 SV = 1;
 
@@ -392,9 +404,9 @@ Temp=37
 %% Riccardo metti qui quelli che ti servono (questi sono di esempio)
 % Faces are ordered as follow:   x=0  x=L  y=0  y=L  z=0  z=L
 % BC labels (DIR / MIX)
-BClabel_transp = 'DIR  DIR  MIX  MIX  MIX  MIX'
+BClabel_transp = 'DIR  DIR  DIR  DIR  DIR  DIR'
 % BC values tissue
-BCvalue_transp = '1.0  0.0  0.0  0.0  0.0  0.0'
+BCvalue_transp = '0.0  0.0  0.0  0.0  0.0  0.0'
 % Coefficient for MIX condition in tissue (At[])
 BETAtissue_transp = 1E-2;
 % Coefficient for MIX condition in vessels (Av[])
