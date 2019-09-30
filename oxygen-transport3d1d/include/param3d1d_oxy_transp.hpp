@@ -130,7 +130,7 @@ struct param3d1d_oxy_transp {
 			scalar_type k_  = FILE_.real_value("k", "permeability of the interstitium [m^2]"); 
 			scalar_type Lp_ = FILE_.real_value("Lp", "Hydraulic conductivity of the capillary walls [m^2 s/kg]"); 
 			
-			if(TEST_ANALYTICAL == 1)
+			if(TEST_ANALYTICAL)
 			{
 				Dt_   = FILE_.real_value("Dt_test","Test Diffusivity in the tissue [m^2/s]");
 			}
@@ -226,7 +226,7 @@ void build_oxy(ftool::md_param & fname,
 	//! Get the radius at a given dof
 	//inline scalar_type R  (size_type i) { return R_[i];  } const
 	//! Get test diffusivity
-	inline scalar_type Dt () { return Dt_; } const
+	inline scalar_type Dv () { return Dv_; } const
 	//! Get the tissue diffusivity at a given dof
 	inline scalar_type At (size_type i) { return At_[i]; } const
 	//! Get the vessel diffusivity at a given dof

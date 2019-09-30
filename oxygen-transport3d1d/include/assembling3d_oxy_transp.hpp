@@ -76,7 +76,6 @@ void asm_tissue_transp
 	const getfem::mesh_im & mim,
 	const getfem::mesh_fem & mf,
         const getfem::mesh_fem & mfvel,
-        const bool TEST,
         const VECT & vel,
         const mesh_region & rg = mesh_region::all_convexes())
 {
@@ -90,7 +89,6 @@ void asm_tissue_transp
     assem1.push_mat(A);
     assem1.assembly(rg);
     
-    if(TEST == 0){
     getfem::generic_assembly
       assem2("vel=data(#2);"
             "M$1(#1,#1) += comp(Base(#1).Base(#1).vGrad(#2))(:, :,k, p,p).vel(k);");
@@ -100,7 +98,7 @@ void asm_tissue_transp
     assem2.push_data(vel);
     assem2.push_mat(A);
     assem2.assembly(rg);
-    }
+   
   }  /* end of asm_advection_tissue*/
 
 

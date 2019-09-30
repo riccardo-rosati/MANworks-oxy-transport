@@ -94,6 +94,7 @@ asm_advection_network
 	 const mesh_fem & mf_data,
 	 const mesh_fem & mf_u,
 	 const mesh_fem & mf_R,
+	 bool TEST,
 	 const VEC & U,
 	 const VEC & lambdax, const VEC & lambday, const VEC & lambdaz,
 	 const VEC & R,
@@ -120,7 +121,7 @@ asm_advection_network
 	assem1.assembly(rg);
 	
 		
-	
+	if(TEST == 0){
 	generic_assembly 
 	assem2("l1=data$1(#2); l2=data$2(#2); l3=data$3(#2);  u=data$4(#3);  R=data$5(#4);"
 		  "t=comp(Base(#1).Base(#1).Base(#2).Grad(#3).Base(#4).Base(#4));"
@@ -137,6 +138,7 @@ asm_advection_network
 	assem2.push_data(R);
 	assem2.push_mat(A);
 	assem2.assembly(rg);
+	}
 } //end of asm_advection_network
 
 //RR: sto assemblando i due vettori ottenuti da pi*R*R*d(uv*psi)/dS
@@ -155,7 +157,8 @@ asm_hemoadvection_rhs_network
 	const VEC & lambdax, const VEC & lambday, const VEC & lambdaz,
 	const VEC & R,
 	const VEC & psi,
-	const mesh_region & rg = mesh_region::all_convexes())	
+	const mesh_region & rg = mesh_region::all_convexes()
+	)	
 	 
 	{
 generic_assembly

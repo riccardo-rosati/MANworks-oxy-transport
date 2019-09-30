@@ -54,8 +54,11 @@ struct descr3d1d_oxy_transp {
 	bool REACTION;
 	//Flag to add oxyhemoglobin advection
 	bool HEMOADVECTION;
+	//PROVA
 	//Flag to test the analytical solution
 	bool TEST_ANALYTICAL;
+	////////////////////
+
 
 	//! Absolute path to the vessel mesh file
 	std::string MESH_FILEV_OXY;
@@ -97,7 +100,7 @@ struct descr3d1d_oxy_transp {
 	bool couple;
 	//! READ_INTERPOLATOR
 	bool READ_INTERPOLATOR;
-	
+
 	// Utils
 	//! File .param
 	ftool::md_param FILE_;
@@ -107,7 +110,7 @@ struct descr3d1d_oxy_transp {
 		FILE_ = fname;
 		
 		MESH_FILEV_OXY  = FILE_.string_value("MESH_FILEV_OXY_TRANSP","1D points file for oxygen transport problem");
-
+		
 		FEM_TYPET_OT   = FILE_.string_value("FEM_TYPET_OT","FEM 3D tissue - concentration");
 		FEM_TYPEV_OV   = FILE_.string_value("FEM_TYPEV_OV","FEM 1D vessel - concentration");
 
@@ -143,7 +146,12 @@ struct descr3d1d_oxy_transp {
 		PRINT_RESIDUALS = size_type(FILE_.int_value("PRINT_RESIDUALS"));
 		REACTION = size_type(FILE_.int_value("REACTION","Flag to add reaction term"));
 		HEMOADVECTION = size_type(FILE_.int_value("HEMOADVECTION","Flag to add oxyhemoglobin advection"));
+
+		//PROVA
+	//Flag to test the analytical solution
 		TEST_ANALYTICAL = size_type(FILE_.int_value("TEST_ANALYTICAL","Flag to test the analytical solution"));
+	////////////////////
+		
 
 		couple = size_type(FILE_.int_value("couple"));
 		READ_INTERPOLATOR = size_type(FILE_.int_value("READ_INTERPOLATOR","flag for read interpolator from file"));
