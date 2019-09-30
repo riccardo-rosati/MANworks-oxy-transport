@@ -46,7 +46,7 @@ Visco_v=0;
 %Flag to add advection terms
 ADVECTION=1;
 %Flag to add coupling terms
-COUPLING=1;
+COUPLING=0;
 %Flag to take the stationary problem
 %STATIONARY=1;
 %Flag for the new formulation
@@ -54,11 +54,11 @@ NEW_FORMULATION = 1;
 %Flag to study oxygen transport
 OXYGEN_TRANSPORT = 1;
 %Flag to add reaction termn
-REACTION = 0;
+REACTION = 1;
 %Flag to add oxyhemoglobin advection termn (psi function)
 HEMOADVECTION = 0;
-%Flag to test the analytical solution
-TEST_ANALYTICAL = 1;
+%Flag to test the analytical solution for Cv
+TEST_ANALYTICAL = 0;
 
 %Fissi! si posso anche togliere
 %Couple (0: uso quella di Notaro)
@@ -104,7 +104,7 @@ PRINT_RESIDUALS       = 1;
 % Flags to build a regular 3d mesh
 TEST_GEOMETRY = 1;
 GT_T       = 'GT_PK(3,1)';
-NSUBDIV_T  = '[3,3,3]'; %[11,11,11]
+NSUBDIV_T  = '[11,11,11]'; %[11,11,11]
 ORG_T      = '[0,0,0]';
 SIZES_T    = '[1,1,1]';
 NOISED_T   = '0';
@@ -232,22 +232,22 @@ Max_iterations_OXY = 30;
 %%%									 	Fluid flow 													%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Hydraulic conductivity of the interstitium [m^2]
-%k=1.0E-18; %condizioni fisiologiche
+k=1.0E-18; %condizioni fisiologiche
 %Test hydraulic conductivity of the interstitium [m^2]
-k = 1.0E-8; %per sol. analitica
+%k = 1.0E-8; %per sol. cv analitica
 
 % Average interstitial pressure [Pa]
 P  = 133.32;
 % Characteristic flow speed in the capillary bed [m/s]
-U  = 100E-06;
+U  = 1E-03; %100E-6
 % Characteristic length of the problem [m]
-d  = 5.0E-4;
+d  = 1.0E-4; %5E-4
 % Hydraulic conductivity of the capillary walls [m^2 s/kg]
-Lp = 1E-12;
+Lp = 1E-12 *0; 
 % Average radius of the capillary vessels [m]
 RADIUS = 4.00E-6;
 % Blood Viscosity [kg/m/s]
-mu_v = 3E-3;
+mu_v = 9.33E-3; %3E-3
 % Interstial Fluid Viscosity [kg/m/s]
 mu_t = 1.2E-3;
 % Oncotic plasma pressure [Pa]
@@ -255,7 +255,7 @@ Pi_v = 27*133.32;
 % Oncotic Interstitial pressure [Pa]
 Pi_t = 2*133.32;
 % Reflection Coefficient of Starling Equation [-]
-sigma = 0.95;
+sigma = 1.0; %0.95
 % Order of velocity profile in the vessels [-]
 Gamma = 2;
 
@@ -280,16 +280,18 @@ D_LF = -2*133.32;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%										Oxygen transport											%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Max oxygen consumption rate [ml_O2/ml_tissue*1/s]
-m0 =  1.75E-4; 
-%Tissue concentration guess [ml_O2/ml_Blood]
+%Tissue concentration guess [ml_O2/ml_tissue]
 Ct_guess =  1.0;
 %Vessel concentration guess [ml_O2/ml_Blood]
 Cv_guess =  1.0;
+
+%Max oxygen consumption rate [ml_O2/ml_tissue/s]
+m0 =  1.6E-4 *0 - 1.11E-6;
 %Partial pressure at half max rate of metabolization [mmHg]
-Pm_50 = 4.0;
+Pm_50 = 4.0 *0;
 %Solubility of oxygen in the tissue [ml_O2/(ml_Blood*mmHg]
-alpha_t = 2.8E-5;
+alpha_t = 2.8E-5 *0;
+
 %Mean Corpuscolar Hematocrit Concentration [g_Hb/ml_RBC];
 MCHC = 0.34;
 %Hufner factor [ml_O2/g_Hb]
@@ -298,10 +300,10 @@ N = 1.36;
 delta = 2.0; %2.7
 %Partial pressure at half saturation [mmHg]
 Ps_50 = 30;
-%Oxygen solubility in the plasma [ml_O2/(ml_Blood*mmHg)]
+%Oxygen solubility in the plasma [ml_O2/(ml_tissue*mmHg)]
 alpha_pl = 3.0E-5;
-%maximum concentration [kg/m^3]
-C = 0.5; %oxygen concentration in saturated rbc;
+%maximum concentration [ml_O2/ml_Blood]
+C = 0.3; %free oxygen concentration;
 
 %Diffusivity in the tissue [m^2/s]  
 Dt = 2.41E-9; %condizioni fisiologiche
@@ -309,10 +311,10 @@ Dt = 2.41E-9; %condizioni fisiologiche
 Dt_test = 2.41E-3; %per la soluzione analitica
 
 %Diffusivity in the vessels [m^2/s] 
-%Dv = 2.75E-9; %per la soluzione analitica 3 casi in cui Dv cambia di 3 ordini di grandezza
+Dv = 2.75E-9; %per la soluzione analitica 3 casi in cui Dv cambia di 3 ordini di grandezza
 %Dv = 2.75E-6;
 %Dv = 2.75E-3;
-Dv = 2.75;
+%Dv = 2.75;
 
 %Permeability of the vessel wall [m/s] = Dv/h, con h = spessore della membrana endoteliale (1.0E-6 [m])
 Perm = 2.75E-3;
@@ -364,7 +366,7 @@ SV = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Riccardo metti qui quelli che ti servono (questi sono di esempio)
 %Dimensionless Oxygen consumption []
-M0 = 0.31;
+M0 = 1.6E-5;
 %Dimensionless At[]
 At=0.0482;
 %Dimensionless Av[]
@@ -383,12 +385,12 @@ Q_pl=0.0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Faces are ordered as follow:   x=0  x=L  y=0  y=L  z=0  z=L
 % BC labels (DIR / MIX) - DIR = Dirichlet considions, MIX = Robin mixed condition
-BClabel = 'MIX MIX  MIX  MIX  MIX  MIX'
+BClabel = 'DIR DIR  MIX  MIX  MIX  MIX'
 % BC values (Specify pressure for DIR, or far field pressure for MIX)
-BCvalue = '0.0 0.0  0.0  0.0  0.0  0.0'
+BCvalue = '1.0 0.0  0.0  0.0  0.0  0.0'
 % Coefficient beta for MIX condition
 BETA = 1.10E-1;
-BCbeta = '2.22E-6 2.22E-6 2.22E-6 2.22E-6 2.22E-6 2.22E-6';
+BCbeta = '2.22E-16 2.22E-16 2.22E-16 2.22E-16 2.22E-16 2.22E-16';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%											RBC flow 												%%%%%%
@@ -404,12 +406,12 @@ Temp=37
 %% Riccardo metti qui quelli che ti servono (questi sono di esempio)
 % Faces are ordered as follow:   x=0  x=L  y=0  y=L  z=0  z=L
 % BC labels (DIR / MIX)
-BClabel_transp = 'DIR  DIR  DIR  DIR  DIR  DIR'
+BClabel_transp = 'DIR  DIR  MIX  MIX  MIX  MIX'
 % BC values tissue
-BCvalue_transp = '0.0  0.0  0.0  0.0  0.0  0.0'
-% Coefficient for MIX condition in tissue (At[])
-BETAtissue_transp = 1E-2;
-% Coefficient for MIX condition in vessels (Av[])
+BCvalue_transp = '1.0  0.0  0.0  0.0  0.0  0.0'
+% Coefficient for MIX condition in tissue
+BETAtissue_transp = 1E-12;
+% Coefficient for MIX condition in vessels
 BETAvessel_transp = 1E-2;
 
 

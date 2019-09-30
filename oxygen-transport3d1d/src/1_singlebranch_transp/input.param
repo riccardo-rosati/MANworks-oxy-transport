@@ -31,9 +31,9 @@ STATIONARY=0;
 %Flag for the new formulation
 NEW_FORMULATION = 1;
 %Flag to add reaction term
-REACTION = 0;
+REACTION = 1;
 %Flag to add oxyhemoglobin advection
-HEMOADVECTION = 0;
+HEMOADVECTION = 1;
 
 % Flag to enable the curve model
 CURVE_PROBLEM = 0;
@@ -166,9 +166,9 @@ Gamma = 2;
 %  TRANSPORT
 %=================================
 %Diffusivity in the tissue [m^2/s]  
-Dt = 2.41E-3;
+Dt = 2.41E-9;
 %Diffusivity in the vessels [m^2/s] 
-Dv = 2.75E-10;
+Dv = 2.75E-9;
 
 %Max oxygen consumption rate [1/s]
 m0 =  0.062; 
@@ -195,7 +195,7 @@ C = 0.5;
 
 
 %Permeability of the vessel wall [m/s]
-Perm = 3.5E-05*100;
+Perm = 1.205*100*E-05;
 % surface area of lymphatic vessels per unit volume of tissue [1/m]
 SV = 1;
 
@@ -299,9 +299,9 @@ BClabel_transp = 'DIR  DIR  MIX  MIX  MIX  MIX'
 % BC values
 BCvalue_transp = '1.0  0.0  0.0  0.0  0.0  0.0'
 % Coefficient for MIX condition in tissue
-BETAtissue_transp = 1.0E-1
+BETAtissue_transp = 1.0E-2
 % Coefficient for MIX condition in vessels
-BETAvessel_transp = 1.0E-1
+BETAvessel_transp = 1.0E-2
 
 %===================================
 %  FLAG FOR FIXED POINT METHOD (FPM)
