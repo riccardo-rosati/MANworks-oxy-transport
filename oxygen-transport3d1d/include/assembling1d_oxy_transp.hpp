@@ -94,7 +94,6 @@ asm_advection_network
 	 const mesh_fem & mf_data,
 	 const mesh_fem & mf_u,
 	 const mesh_fem & mf_R,
-	 bool TEST,
 	 const VEC & U,
 	 const VEC & lambdax, const VEC & lambday, const VEC & lambdaz,
 	 const VEC & R,
@@ -120,8 +119,7 @@ asm_advection_network
 	assem1.push_mat(A);
 	assem1.assembly(rg);
 	
-		
-	if(TEST == 0){
+
 	generic_assembly 
 	assem2("l1=data$1(#2); l2=data$2(#2); l3=data$3(#2);  u=data$4(#3);  R=data$5(#4);"
 		  "t=comp(Base(#1).Base(#1).Base(#2).Grad(#3).Base(#4).Base(#4));"
@@ -138,11 +136,10 @@ asm_advection_network
 	assem2.push_data(R);
 	assem2.push_mat(A);
 	assem2.assembly(rg);
-	}
 } //end of asm_advection_network
 
-//RR: sto assemblando i due vettori ottenuti da pi*R*R*d(uv*psi)/dS
-
+//dal 30/9: i temrini con psi vanno a sx; questa funzione li metti al rhs
+/*
 template<typename VEC>
 void 
 asm_hemoadvection_rhs_network
@@ -199,6 +196,66 @@ assem2.push_data(psi);
 assem2.push_vec(Ov);
 assem2.assembly(rg);
 
+} //end of asm_hemoadvection_rhs_network
+*/
+
+//Con Ov al LHS: non sono sicuro
+template<typename MAT, typename VEC>
+void 
+asm_hemoadvection_network
+	(MAT & Ov,
+	const mesh_im & mim,
+	const mesh_fem & mf_c,
+	const mesh_fem & mf_data,
+	const mesh_fem & mf_u,
+	const mesh_fem & mf_R,
+	const mesh_fem & mf_H,
+	const VEC & U,
+	const VEC & lambdax, const VEC & lambday, const VEC & lambdaz,
+	const VEC & R,
+	const VEC & psi,
+	const mesh_region & rg = mesh_region::all_convexes()
+	)	
+	 
+	{
+	generic_assembly 
+	assem1("l1=data$1(#2); l2=data$2(#2); l3=data$3(#2);  u=data$4(#3); R=data$5(#4); psi=data$6(#5);"
+		  "t=comp(Base(#1).Grad(#1).Base(#2).Base(#3).Base(#4).Base(#4).Base(#5));"
+		  "M$1(#1,#1)+=t(:,:,1,i,p,m,n,d).l1(i).u(p).R(m).R(n).psi(d)+t(:,:,2,i,p,m,n,d).l2(i).u(p).R(m).R(n).psi(d)+t(:,:,3,i,p,m,n,d).l3(i).u(p).R(m).R(n).psi(d);");
+	assem1.push_mi(mim);
+	assem1.push_mf(mf_c);
+	assem1.push_mf(mf_data);
+	assem1.push_mf(mf_u);
+	assem1.push_mf(mf_R);
+	assem1.push_mf(mf_H);
+	assem1.push_data(lambdax);
+	assem1.push_data(lambday);
+	assem1.push_data(lambdaz);
+	assem1.push_data(U);
+	assem1.push_data(R);
+	assem1.push_data(psi);
+	assem1.push_mat(Ov);
+	assem1.assembly(rg);
+	
+
+	generic_assembly 
+	assem2("l1=data$1(#2); l2=data$2(#2); l3=data$3(#2);  u=data$4(#3);  R=data$5(#4); psi=data$6(#5);"
+		  "t=comp(Base(#1).Base(#1).Base(#2).Grad(#3).Base(#4).Base(#4).Base(#5));"
+		  "M$1(#1,#1)+=t(:,:,i,p,1,m,n,d).l1(i).u(p).R(m).R(n).psi(d)+t(:,:,i,p,2,m,n,d).l2(i).u(p).R(m).R(n).psi(d)+t(:,:,i,p,3,m,n,d).l3(i).u(p).R(m).R(n).psi(d);"); 
+	assem2.push_mi(mim);
+	assem2.push_mf(mf_c);
+	assem2.push_mf(mf_data);
+	assem2.push_mf(mf_u);
+	assem2.push_mf(mf_R);
+	assem2.push_mf(mf_H);
+	assem2.push_data(lambdax);
+	assem2.push_data(lambday);
+	assem2.push_data(lambdaz);
+	assem2.push_data(U);
+	assem2.push_data(R);
+	assem2.push_data(psi);
+	assem2.push_mat(Ov);
+	assem2.assembly(rg);
 } //end of asm_hemoadvection_rhs_network
 
 

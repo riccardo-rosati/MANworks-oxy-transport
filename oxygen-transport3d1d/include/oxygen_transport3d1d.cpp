@@ -238,12 +238,11 @@
 	#ifdef M3D1D_VERBOSE_
 	cout << param_oxy_transp ;
 	#endif
-
-	cout<<"C'è il test analtico? TEST_ANALYTICAL = "<<descr_oxy_transp.TEST_ANALYTICAL<<endl;
-	cout<<"r = "<<param.R()[0]<<endl;
-	cout<<" mu_v = "<<param.kv()[0]<<endl;
-
-
+	//PROVA: si può cancellare
+	//cout<<"C'è il test analtico? TEST_ANALYTICAL = "<<descr_oxy_transp.TEST_ANALYTICAL<<endl;
+	//cout<<"r = "<<param.R()[0]<<endl;
+	//cout<<" mu_v = "<<param.kv()[0]<<endl;
+	//////
 	}; // end of build_param_oxy_transp
   
   
@@ -309,7 +308,7 @@
 
 //PROVA: ciclo sulla regione della mesh #2 (= la faccia left), per vedere quali facce di quali convessi fanno parte della mesh.region(j)
 /*
-for(size_type j=0; j<5; j++){
+for(size_type j=0; j<6; j++){
 		getfem::mesh_region &rg = mesht.region(j);
 for (getfem::mr_visitor i(rg); !i.finished(); ++i) {
   cout << "La mesh_region "<<j<<" contains convex " << i.cv();
@@ -323,10 +322,10 @@ for (getfem::mr_visitor i(rg); !i.finished(); ++i) {
     dal::bit_vector nn = mesht.convex_index();
     bgeot::size_type i;
     for (i << nn; i != bgeot::size_type(-1); i << nn) {
-      cout << "Convex of index " << i << endl;
+      cout << "\n Convex of index " << i << endl;
       bgeot::pconvex_structure cvs = mesht.structure_of_convex(i);
-      cout << "Number of vertices: " << cvs->nb_points() << endl;
-      cout << "Number of faces: " << cvs->nb_faces() << endl;
+      cout << "\n Number of vertices: " << cvs->nb_points() << endl;
+      cout << "\n Number of faces: " << cvs->nb_faces() << endl;
       for (bgeot::short_type f = 0; f < cvs->nb_faces(); ++f) {
         cout << "face " << f << " has " << cvs->nb_points_of_face(f);
         cout << " vertices with local indexes: ";
@@ -337,7 +336,7 @@ for (getfem::mr_visitor i(rg); !i.finished(); ++i) {
           cout << mesht.ind_points_of_convex(i)[cvs->ind_points_of_face(f)[k]] << " ";
       }
     }
-*/
+*/		
 
 }; //end of build_tissue_boundary_transp
 
@@ -645,9 +644,80 @@ for (getfem::mr_visitor i(rg); !i.finished(); ++i) {
 	} 
 	GMM_STANDARD_CATCH_ERROR; // catches standard errors
 
+////////PROVA
+	///ciclo sulle regioni della meshv
+	/*
+for(size_type j=0; j<nb_branches; j++){
+		getfem::mesh_region &rg = meshv.region(j);
+for (getfem::mr_visitor i(rg); !i.finished(); ++i) {
+  cout << "La mesh_region "<<j<<" contains convex " << i.cv();
+  if (i.is_face()) cout  << "face " << i.f() << endl;
+}
+}
+*/
+		//////////////PROVA per i convessi
+	/*
+	for(size_type i=0; i<BCv_oxy_transp.size(); ++i)
+	{
+		//Ottengo un array con tutti gli inidici degli elementi della mesh mf_oxy_Cv
+		//cout<<"Set di indici su cui la mesh è definita"<<mf_oxy_Cv.convex_index()<<endl;
+
+		//Numero di dof della mesh
+		//cout<<"Numero totale dei dof"<<mf_oxy_Cv.nb_dof()<<endl;
+		}
+	*/
+
+	/////PROVA sui vertici degli elementi: DA FARE PER VERIFICARE LA CORRETTA NUMERAZIONE DEI VERTICI
+	/*
+	for(size_type j=0; j<nb_branches;j++)
+	{
+		cout<<"MESH PER LA CV: Per il branch numero "<<j<<endl;
+	for (getfem::mr_visitor mrv(mf_oxy_Cv.linked_mesh().region(j)); !mrv.finished(); ++mrv)
+		{
+			//Lista dei convessi/elementi (.cv()) sull regione i-esima del i-esimo branch
+			cout<<"\n convex: "<<mrv.cv()<<endl;
+			//cout<<"\n indici globali dei veritici/nodi dell'elemento "<<mrv.cv()<<" : "<<meshv.ind_points_of_convex(mrv.cv()); //lista degli inidici globali dell'elemento mrv.cv();
+			cout<<"\n indici dei veritici/nodi dell'elemento "<<mrv.cv()<<" : "<<mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[0] <<" e "<<mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1]<<endl; //lista dei vertici dell'elemento di indice mrv.cv()
+		}	
+	}	
+	//NB: Getfem, per ogni branch mette i convessi/elementi in ordine, ma globalmente gli inidici/vertici dei convessi non lo sono: saltano, se uso ind_points_of_convex(mrv.cv())
+	//invece vengono scelti correttamente con ind_basic_dof_of_element(mrv.cv()) --> ridaà un aray con gli inidici globali dei vertici dell'elemento mrv.cv()
+
+	*/
+	//per verificare la mesh_fem di Cv: sostituire mf_Hi[i] con mf_oxy_Cv
+	/*for(size_type j=0; j<nb_branches;j++)
+	{
+		cout<<"MESH PER L'EMATOCRITO: Per il branch numero "<<j<<endl;
+		cout<<"***** mf_Hi["<<j<<"] *****"<<endl;
+	for (getfem::mr_visitor mrv(mf_Hi[j].linked_mesh().region(j)); !mrv.finished(); ++mrv)
+		{
+			//Lista dei convessi/elementi (.cv()) sull regione j-esima del j-esimo branch
+			cout<<"\n convex sulla mesh dell'ematocrito: "<<mrv.cv()<<endl;
+			//cout<<"\n indici globali dei veritici/nodi dell'elemento "<<mrv.cv()<<" : "<<meshv.ind_points_of_convex(mrv.cv()); //lista degli inidici globali dell'elemento mrv.cv();
+			cout<<"\n indici dei veritici/nodi dell'elemento "<<mrv.cv()<<" : "<<mf_Hi[j].ind_basic_dof_of_element(mrv.cv())[0] <<" e "<<mf_Hi[j].ind_basic_dof_of_element(mrv.cv())[1]<<endl; //lista dei vertici dell'elemento di indice mrv.cv()
+		}	
+	}*/	
+
 	} /* end of build_vessel_boundary_oxy_transp */
 
 	//////////////////////////// ASSEMBLAGGIO ////////////////////////////
+	//funzione per dimensionalizzare la concentrazione nel termine di saturazione in Ov --> così da rendere l'intero termine adimensionale
+	vector_type oxygen_transport3d1d::dimensioning_saturation (vector_type cv){
+		scalar_type k2;
+		k2 = pow(param_oxy_transp.Ps_50()*param_oxy_transp.alpha_pl(),param_oxy_transp.delta()); //ml_O2/ml_B^delta
+
+		vector_type num(cv.size());
+		vector_type denum(cv.size());
+		vector_type saturation(cv.size());
+
+		gmm::scale(cv, param_oxy_transp.C());
+
+		for(size_type i=0; i<cv.size(); i++){
+		saturation[i] = pow(cv[i], (param_oxy_transp.delta()-1.0)) / (pow(cv[i], param_oxy_transp.delta()) + k2); //ml_O2/ml_B^(delta-1) * ml_O2/ml_B^delta
+		}
+
+		return saturation;
+	};
   
 	  void oxygen_transport3d1d::assembly_oxy_transp (void)
 	 {
@@ -687,8 +757,10 @@ for (getfem::mr_visitor i(rg); !i.finished(); ++i) {
 	//Nel vaso
 	//Matrice di diffusione
 	sparse_matrix_type Dv (dof_oxy_transp.Cv(), dof_oxy_transp.Cv()); gmm::clear(Dv);
-	//Matrcei di convezione
+	//Matrice di convezione
 	sparse_matrix_type Av (dof_oxy_transp.Cv(), dof_oxy_transp.Cv()); gmm::clear(Av);
+	//Matrice di trasporto di ossiemoglobina
+	//sparse_matrix_type Ov (dof_oxy_transp.Cv(), dof_oxy_transp.Cv()); gmm::clear(Ov);
 
 	//Matrici di scambio
 	//Matrice di scambio tissue-to-tisse
@@ -744,24 +816,7 @@ for (getfem::mr_visitor i(rg); !i.finished(); ++i) {
 
 	//Coefficient for reaction term:
 	vector_type ct_guess(dof_oxy_transp.Ct(), param_oxy_transp.Ct_guess());
-	/*vector_type s (dof_oxy_transp.Ct()); 
 
-	//PROVA ANALITICA: sotruiscono ct_guess come ct_guess = 1 - x
-	for(scalar_type S=0; S<dof_oxy_transp.Ct(); S++){
-		s[S] = 1 - S/dof_oxy_transp.Ct();
-		cout<<S<<endl;
-	}
-
-	gmm::copy(s, ct_guess);
-	*/
-
-	//interpolo il coefficiente di consumo (ct_guess) su un polinomio di grado 0
-	/*
-	pfem pf_consump = fem_descriptor("FEM_PK(3,0)");
-	mesh_fem mf_R(mesht);
-	mf_R.set_qdim(1);
-	mf_R.set_finite_element(mesht.convex_index(), pf_consump);
-	*/
 	vector_type consump_coeff(dof.Pt());
 	
 	getfem::interpolation(mf_oxy_Ct, mf_coeft, ct_guess, consump_coeff);
@@ -776,20 +831,7 @@ for (getfem::mr_visitor i(rg); !i.finished(); ++i) {
 	consump_coeff[i] = param_oxy_transp.M0()/consump_coeff[i];
 	}
 
-	/*
-	//interpolo il coefficiente di consumo (ct_guess) su un polinomio di grado 0
-	pfem pf_consump = fem_descriptor("FEM_PK(3,0)");
-	mesh_fem mf_R(mesht);
-	mf_R.set_qdim(1);
-	mf_R.set_finite_element(mesht.convex_index(), pf_consump);
-	vector_type consump_coeff(mf_R.nb_dof());
-
-	getfem::interpolation(mf_oxy_Ct, mf_R, ct_guess, consump_coeff);
-	*/
-	
-	//cout<<"Dimensione mf_R: "<<mf_R.nb_dof()<<endl;
 	cout<<"Dimensione mf_coeft: "<<mf_coeft.nb_dof()<<endl;
-
 
 	//RR
 	//getfem::interpolation(mf_oxy_Ct, mf_coeft, ct_guess, consump_coeff);
@@ -840,8 +882,6 @@ for (getfem::mr_visitor i(rg); !i.finished(); ++i) {
 					gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv()), 
 					gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())));
 	
-
-
 	if(descr_oxy_transp.ADVECTION ==0)
 	{cout<<"No advection: only diffusion and reaction terms"<<endl;}
 		
@@ -849,9 +889,8 @@ for (getfem::mr_visitor i(rg); !i.finished(); ++i) {
 
 	//ADVECTION	
 	#ifdef M3D1D_VERBOSE_
-	cout << "  Assembling At and Av ..." << endl;
+	cout << "  Assembling At ..." << endl;
 	#endif	
-	
 		
 	//ADVECTION IN TISSUE		
 	// Build At
@@ -861,29 +900,141 @@ for (getfem::mr_visitor i(rg); !i.finished(); ++i) {
 	gmm::add(At,
 			  gmm::sub_matrix(AM_oxy, 
 					gmm::sub_interval(0, dof_oxy_transp.Ct()), 
-					gmm::sub_interval(0, dof_oxy_transp.Ct()))); 	
+					gmm::sub_interval(0, dof_oxy_transp.Ct())));
+
+ 	#ifdef M3D1D_VERBOSE_
+	cout<<"Assembling Av ..."<<endl;
+	#endif
+
+ 	vector_type cv_guess (dof_oxy_transp.Cv(), param_oxy_transp.Cv_guess());
+
+	size_type shift =0;
+	size_type shift_h=0;
+	
+	scalar_type k1;
+	k1= param_oxy_transp.N()*param_oxy_transp.MCHC();
+	//scalar_type k2; lo inizializzo in dimensioning_saturation
+
+
+	for(size_type i=0; i<nb_branches; ++i)
+	{
+		vector_type cv_i(mf_Hi[i].nb_dof()); gmm::clear(cv_i); //salvo la Cv puntualmente, per ogni branch
+		vector_type Hi(mf_Hi[i].nb_dof()); gmm::clear(Hi); //salvo l'ematocrito per ogni branch (come è definito)
+
+		vector_type Uvi(mf_Uvi[i].nb_dof()); gmm::clear(Uvi); //salvo la veclotià per ogni branch
+		vector_type new_uvi (mf_Uvi[i].nb_dof()); gmm::clear(new_uvi); //la nuova velocità: uv(1+PSI) --> quella da mettere nella fase di assemblaggio
+
+		vector_type psi(mf_Hi[i].nb_dof()); gmm::clear(psi); //salvo i valori di PSI = ossigeno legato all'emoglobina
+		vector_type new_psi (mf_Uvi[i].nb_dof()); gmm::clear(new_psi);//la nuova PSI: (1+PSI) dopo interpolazione
+
 		
-	// build Av
-	size_type shift = 0;
-	for(size_type i=0; i<nb_branches; ++i){
-
 		if(i>0) shift += mf_Uvi[i-1].nb_dof();
+		gmm::copy(gmm::sub_vector(UM, gmm::sub_interval(dof.Ut()+dof.Pt()+shift, mf_Uvi[i].nb_dof())) ,  Uvi);
 
-		vector_type Uvi (mf_Uvi[i].nb_dof()); gmm::clear(Uvi);
-		gmm::add(gmm::sub_vector(UM, 
-				gmm::sub_interval(dof.Ut()+dof.Pt()+shift, mf_Uvi[i].nb_dof())) ,  Uvi);
+		//if(descr_oxy_transp.HEMOADVECTION)
 
+		if(i>0) shift_h += mf_Hi[i-1].nb_dof();
+		gmm::copy(gmm::sub_vector(UM_HT, gmm::sub_interval(shift_h, mf_Hi[i].nb_dof())), Hi);
 
-		asm_advection_network(Av, mimv, mf_oxy_Cv, mf_coefvi[i], mf_Uvi[i], mf_coefv, 
-			descr_oxy_transp.TEST_ANALYTICAL, Uvi, param.lambdax(i), param.lambday(i), param.lambdaz(i),  param.R(), meshv.region(i) );
+		for(size_type t=0; t<mf_Hi[i].nb_dof(); t++){
+			cout<<"Hi["<<t<<"]= "<<Hi[t]<<endl;
+		}
+/*
+		for(getfem::mr_visitor mrv(mf_Hi[i].linked_mesh().region(i)); !mrv.finished(); ++mrv)
+		{
+			cout<<"Elemento ematocrito "<<mrv.cv()<<endl;
+			cout<<"\n ha come nodi: "<<mf_Hi[i].ind_basic_dof_of_element(mrv.cv())[0]<<"e "<<mf_Hi[i].ind_basic_dof_of_element(mrv.cv())[1]<<endl;
+			cout<<"Valori di ematocrito in quei nodi"<<Hi[mf_Hi[i].ind_basic_dof_of_element(mrv.cv())[0]]<<" e "<<Hi[mf_Hi[i].ind_basic_dof_of_element(mrv.cv())[1]]<<endl;
+		}
+*/
+
+	size_type pos=0;
+	//ciclo sui convessi sulla regione i-esima della mesh mf_oxy_cv; (.linked_mesh ridà una reference alla mesh mf_oxy_cv)
+	for (getfem::mr_visitor mrv(mf_oxy_Cv.linked_mesh().region(i)); !mrv.finished(); ++mrv)
+		{
+		if(pos == 0)
+			{
+			cv_i[pos] = cv_guess[mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[0]];
+			cout << " cv_i [" << pos << "] = cv_guess [" << mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[0] << "]" <<"="<<cv_guess[mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[0]]<< endl;
+			pos ++;
+			cv_i[pos] = cv_guess[mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1]];
+			cout << " cv_i [" << pos << "] = cv_guess [" << mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1] << "]" <<"="<<cv_guess[mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1]]<< endl;
+			pos ++;
+			}
+		else{
+			cv_i[pos] = cv_guess[mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1]];
+			cout << " cv_i [" << pos << "] = cv_guess [" << mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1] << "]" <<"="<<cv_guess[mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1]]<< endl;
+			pos ++;
+			}
+	//ho fatto questo tipo di ciclo perché sul singolo elemento mi prendeva due volte il nodo iniziale: ora prendo entrambi nodi per il primo ciclo e poi per il secondo prendo solo il secondo valore del nodo
+	//NB: in questo modo metto in ordine la Cv per ogni branch: dato che la numerazione dei vertici salta per default di getfem, così ottengo la  numerazione corretta
+		}
+	//ma devo farlo anche per Ht? SI:
+	/*	
+		cout<<"Mesh per l'ematocrito mf_Hi["<<i<<"]"<<endl;
+		for(getfem::mr_visitor mrv(mf_Hi[i].linked_mesh().region(i)); !mrv.finished(); ++mrv)
+		{
+			cout<<"Elemento "<<mrv.cv()<<" ha come estremi: "<<mf_Hi[i].ind_basic_dof_of_element(mrv.cv())[0]<<" e "<<mf_Hi[i].ind_basic_dof_of_element(mrv.cv())[1]<<endl;
+		}
+
+		cout<<"Dimensione mesh ematocrito: "<<mf_Hi[i].nb_dof()<<endl;
+		cout<<"Dimensione mesh velocità: "<<mf_Uvi[i].nb_dof()<<endl;
+		//uv è P2, invece la Ht è  P1 --> interpolo Ht su Uv --> ora, Ht è P2
+
+		for(size_type s=0; s<saturation.size(); s++){
+			cout<<"saturation["<<s<<"]= "<<saturation[s]<<endl;
+		}
+	*/
+
+		vector_type saturation(mf_Hi[i].nb_dof()); gmm::clear(saturation);
+		saturation = dimensioning_saturation(cv_i);
+
+		for (size_type j=0; j<mf_Hi[i].nb_dof(); ++j)
+		{
+			psi[j] = Hi[j]*k1*saturation[j]; //*param_oxy_transp.C();
+			//cout<<"psi["<<j<<"]= "<<psi[j]<<endl;
+		}
+
+		getfem::interpolation(mf_Hi[i], mf_Uvi[i], psi, new_psi);
+		cout<<"Dimensione mf_Hi["<<i<<"]= "<<mf_Hi[i].nb_dof()<<endl;
+		cout<<"Dimensione mf_Uvi["<<i<<"]= "<<mf_Uvi[i].nb_dof()<<endl;
+		cout<<"Dimensione psi= "<<psi.size()<<endl;
+		cout<<"Dimensione new_psi"<<new_psi.size()<<endl;
+
+		//assemblo una nuova velocità: uv(1+PSI), ma PSI vive su mf_Hi (P1), invece la uv vive su mf_Uvi (P2) --> interpolo psi (che vive su mf_Hi[i]) sulla mesh
+		//della velocità mf_Uvi (P2), così non sto neanche a cambiare la mesh nella fase di assemblaggio
+
+		for(size_type c=0; c<mf_Uvi[i].nb_dof(); c++){
+		new_psi[c] = new_psi[c] + 1.0; //(1+PSI)
+		new_uvi[c] = Uvi[c] * new_psi[c];
+		}
+
+		gmm::copy(new_uvi, Uvi);
+
+	asm_advection_network(Av, mimv, mf_oxy_Cv, mf_coefvi[i], mf_Uvi[i], mf_coefv,
+							Uvi, param.lambdax(i), param.lambday(i), param.lambdaz(i),  param.R(), meshv.region(i) );
+
+	//asm_hemoadvection_network(Ov, mimv, mf_oxy_Cv, mf_coefvi[i], mf_Uvi[i], mf_coefv, mf_Hi[i], 
+	//						Uvi, param.lambdax(i), param.lambday(i), param.lambdaz(i),  param.R(), psi, meshv.region(i));
 	}
+	//gmm::scale(Ov, pi);
+
 	gmm::scale(Av, pi);
 
-	// Copy Av: advection in network
+	// Copy Av: advection in network	
 	gmm::add(Av,
 			  gmm::sub_matrix(AM_oxy, 
 					gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv()), 
 					gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())));
+	
+	/*	
+	if(descr_oxy_transp.HEMOADVECTION){
+	gmm::add(Ov, gmm::sub_matrix(AM_oxy,
+					gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv()),
+					gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())));
+			}
+	*/
+
 	}/* end of advection assembly*/ 
 
 
@@ -1002,7 +1153,7 @@ for (getfem::mr_visitor i(rg); !i.finished(); ++i) {
 	// De-allocate memory
 	gmm::clear(Dt);    gmm::clear(Dv);
 	gmm::clear(At);    gmm::clear(Av);
-	gmm::clear(Rt);
+	gmm::clear(Rt);	   //gmm::clear(Ov);
 	gmm::clear(Mbar);  gmm::clear(Mlin);
 	gmm::clear(Btt);   gmm::clear(Btv);
 	gmm::clear(Bvt);   gmm::clear(Bvv);
@@ -1126,7 +1277,7 @@ for (getfem::mr_visitor i(rg); !i.finished(); ++i) {
 	//Setting the BC for vessel
 	scalar_type beta_v  = PARAM.real_value("BETAvessel_transp", "Coefficient for mixed BC for transport problem in vessels");
 	asm_network_bc_transp(Fv, Avv, mimv, mf_oxy_Cv, mf_coefv, BCv_oxy_transp, beta_v, param.R());
-	cout<<"Ho impostato le BC (DIR e MIX) per il vaso"<<endl;
+	//cout<<"Ho impostato le BC (DIR e MIX) per il vaso"<<endl;
 	//Avv --> dall'integrazione per parti del termine diffusivo
 	//Fv --> condizioni al contorno;
 
@@ -1141,9 +1292,6 @@ for (getfem::mr_visitor i(rg); !i.finished(); ++i) {
 	// De-allocate memory
 	gmm::clear(Avv);
 	gmm::clear(Fv);	
-	
-
-
 	/*
 
 	//Assembling Ov: oxyhemoglobin advcetion vector
@@ -1464,7 +1612,6 @@ computing_residual (vector_type Ct_new, vector_type Ct_old, vector_type Cv_new, 
 	cout<<"Residuo di Cv= "<<Vnew/Vold<<endl;
 	
 	scalar_type error;
-
 	error = Tnew/Told + Vnew/Vold;
 
 	return error;
@@ -1502,7 +1649,7 @@ bool oxygen_transport3d1d::solve_oxygen_fixpoint (void)
 */
 
 
-// 2 - declaration of variables
+// Declaration of variables
 	vector_type Ct_new(dof_oxy_transp.Ct()); gmm::clear(Ct_new);	//Ct(k)
 	vector_type Ct_old(dof_oxy_transp.Ct()); gmm::clear(Ct_old);	//Ct(k-1)
 
@@ -1515,7 +1662,9 @@ bool oxygen_transport3d1d::solve_oxygen_fixpoint (void)
 	sparse_matrix_type Dt(dof_oxy_transp.Ct(), dof_oxy_transp.Ct()); gmm::clear(Dt);
 
 	//Vessel Matrix
-	vector_type Ov(dof_oxy_transp.Cv()); gmm::clear(Ov);
+	sparse_matrix_type Av(dof_oxy_transp.Cv(), dof_oxy_transp.Cv()); gmm::clear(Av);
+	sparse_matrix_type Dv(dof_oxy_transp.Cv(), dof_oxy_transp.Cv()); gmm::clear(Dv);
+	//sparse_matrix_type Ov(dof_oxy_transp.Cv(), dof_oxy_transp.Cv()); gmm::clear(Ov);
 
 	//Exchange matrices
 	sparse_matrix_type Btt (dof_oxy_transp.Ct(), dof_oxy_transp.Ct()); gmm::clear(Btt);
@@ -1606,15 +1755,33 @@ bool oxygen_transport3d1d::solve_oxygen_fixpoint (void)
 	// PERM adimensionale: 27.5 (Perm/U = 27.5e-3/1.0e-4)
 
 	//build exchange matrixes for tissue
-	asm_exchange_mat_transp(Btt, Btv, Bvt, Bvv,
-			mimv, mf_oxy_Cv, mf_coefv, mf_Pv, Mbar, Mlin, 
-			ONCOTIC, PERM, NEWFORM);
+	asm_exchange_mat_transp(Btt, Btv, Bvt, Bvv, mimv, mf_oxy_Cv, mf_coefv, mf_Pv, Mbar, Mlin, ONCOTIC, PERM, NEWFORM);
 	}
 
+	//compute peclet
+	//vectors containing the exact solution
+	vector_type Ut(dof.Ut()); 	gmm::add(gmm::sub_vector(UM, gmm::sub_interval(0, dof.Ut())), 		Ut);
+	vector_type Uv(dof.Uv()); 	gmm::add(gmm::sub_vector(UM, gmm::sub_interval(dof.Ut()+dof.Pt(), dof.Uv())), Uv);
+	//Interpolate Ut on polinomials of degree 0 
+	pfem pf_U = fem_descriptor("FEM_PK(3,0)");
+	mesh_fem mf_U(mesht);
+	mf_U.set_qdim(3);
+	mf_U.set_finite_element(mesht.convex_index(), pf_U);
+	vector_type Ut_(mf_U.nb_dof());
+	getfem::interpolation(mf_Ut, mf_U, Ut, Ut_);
 
-	//Impongo un residuo e un massimo di iterazioni
+	//scalar_type peclet_v= peclet(meshv, Uv, param_oxy_transp.Av(1), 1);
+	scalar_type peclet_t= peclet(mesht, Ut_, param_oxy_transp.At(1), 3);
+
+	//Impongo un residuo (per la concentrazion) e un massimo di iterazioni 
 	scalar_type oxyres = descr_oxy_transp.Residual_OXY;
 	scalar_type err = 1.0; 
+
+	//Impongo un residuo (per il bilanzio di massa)
+	//scalar_type toll_diff = ...; es. 1.0e-3;
+	//scalar_type toll_adv = ...; es. 1.0e-7
+	//come condizione per il while --> count_diff==Jv_oxy_transp.size() && count_adv==Jv_oxy_transp.size()
+
 
 	int max_iter = descr_oxy_transp.Max_iterations_OXY;
 	int iteration=1;
@@ -1639,10 +1806,10 @@ while (RK && iteration<=max_iter && err>oxyres)
 	if(descr_oxy_transp.REACTION) {
 		
  	#ifdef M3D1D_VERBOSE_
-	cout<<"Assembling Rv in FPM..."<<endl;
+	cout<<"Assembling Rt in FPM..."<<endl;
 	#endif
 
-		gmm::scale(gmm::sub_matrix(AM_oxy, 
+	gmm::scale(gmm::sub_matrix(AM_oxy, 
 							gmm::sub_interval(0, dof_oxy_transp.Ct()),
 							gmm::sub_interval(0, dof_oxy_transp.Ct())),0.0);
 	vector_type ct_guess(dof_oxy_transp.Ct());
@@ -1652,15 +1819,15 @@ while (RK && iteration<=max_iter && err>oxyres)
 	gmm::copy(Ct_old, ct_guess);
 
 	getfem::interpolation(mf_oxy_Ct, mf_coeft, ct_guess, consump_coeff);
-
 /*
 	for(size_type q=0; q<mf_coeft.nb_dof(); q++){
 		cout<<"consump_coeff["<<q<<"]= "<<consump_coeff[q]<<endl;
 	}
 */
-
 	vector_type PRESS50(dof.Pt(), param_oxy_transp.Pm_50());
+
 	gmm::scale(PRESS50, param_oxy_transp.alpha_t());
+
 	gmm::add(PRESS50, consump_coeff);
 
 	for(size_type r=0; r<mf_coeft.nb_dof(); r++){
@@ -1668,13 +1835,38 @@ while (RK && iteration<=max_iter && err>oxyres)
 	}
 
 	asm_tissue_transp(Dt, Rt, mimt, mf_oxy_Ct, mf_coeft,  param_oxy_transp.At(), consump_coeff);
+	if((descr_oxy_transp.ADVECTION==1) && (peclet_t>1))
+		{ cout<<"WARNING!! Peclet > 1 in tissue: applying artificial diffusion"<<std::endl;	
+	  	  gmm::scale(Dt, (1+peclet_t));}
 
 	asm_advection_tissue(At, mimt, mf_oxy_Ct, mf_Ut, gmm::sub_vector(UM, gmm::sub_interval(0, dof.Ut())));
+
+	bool NEWFORM = PARAM.int_value("NEW_FORMULATION", "flag for the new formulation");
+	// bluid oncotic term fot tissue
+	vector_type ONCOTIC (dof.Pv());
+	gmm::copy(gmm::sub_vector(UM, 
+		  		  gmm::sub_interval(dof.Ut()+dof.Pt()+dof.Uv(), dof.Pv())),
+		  ONCOTIC);
+	gmm::mult_add(gmm::scaled(Mbar,-1.0), 
+		  gmm::sub_vector(UM, 
+		  		  gmm::sub_interval(dof.Ut(), dof.Pt())),
+		  ONCOTIC);
+	scalar_type picoef=param.sigma()*(param.pi_v()-param.pi_t());
+        vector_type DeltaPi(dof.Pv(),picoef);
+        gmm::add(gmm::scaled(DeltaPi,-1.0), ONCOTIC);	
+	gmm::scale(ONCOTIC,0.5*(1.0-param.sigma())*param.Q(0));
+	
+	// build permeability term for tissue
+	vector_type PERM (dof.coefv());
+	gmm::copy(param.R(), PERM);
+	gmm::scale(PERM, 2*pi*param_oxy_transp.Y()[0]);
+
+	asm_exchange_mat_transp(Btt, Btv, Bvt, Bvv, mimv, mf_oxy_Cv, mf_coefv, mf_Pv, Mbar, Mlin, ONCOTIC, PERM, NEWFORM);
 
 		gmm::add(Dt, gmm::sub_matrix(AM_oxy,
 									gmm::sub_interval(0,dof_oxy_transp.Ct()),
 									gmm::sub_interval(0,dof_oxy_transp.Ct())));
-	
+
 		gmm::add(Rt, gmm::sub_matrix(AM_oxy,
 									gmm::sub_interval(0,dof_oxy_transp.Ct()),
 									gmm::sub_interval(0,dof_oxy_transp.Ct())));
@@ -1683,27 +1875,27 @@ while (RK && iteration<=max_iter && err>oxyres)
 									gmm::sub_interval(0,dof_oxy_transp.Ct()),
 									gmm::sub_interval(0,dof_oxy_transp.Ct())));
 
-
-		//asm_exchange_mat_transp(Btt, Btv, Bvt, Bvv, mimv, mf_oxy_Cv, mf_coefv, mf_Pv, Mbar, Mlin, ONCOTIC, PERM, NEWFORM);
-
-		if(descr_oxy_transp.COUPLING){
+		//if(descr_oxy_transp.COUPLING && descr_oxy_transp.ADVECTION){
 		gmm::add(Btt, gmm::sub_matrix(AM_oxy, 
 									gmm::sub_interval(0, dof_oxy_transp.Ct()), 
 									gmm::sub_interval(0, dof_oxy_transp.Ct())));
-		}
+		//}
 
 		gmm::clear(At);
 		gmm::clear(Dt);
 		gmm::clear(Rt);
+		gmm::clear(Btt);
  	}
-
-
 
 if(descr_oxy_transp.HEMOADVECTION){
 
  	#ifdef M3D1D_VERBOSE_
-	cout<<"Assembling Ov in FPM..."<<endl;
+	cout<<"Assembling Av in FPM..."<<endl;
 	#endif
+
+	gmm::scale( gmm::sub_matrix(AM_oxy,
+					gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv()),
+					gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())), 0.0);
 
  	vector_type cv_guess (dof_oxy_transp.Cv());
 
@@ -1714,16 +1906,22 @@ if(descr_oxy_transp.HEMOADVECTION){
 	
 	scalar_type k1;
 	k1= param_oxy_transp.N()*param_oxy_transp.MCHC();
-	scalar_type k2;
-	k2 = pow((param_oxy_transp.Ps_50()*param_oxy_transp.alpha_t()),param_oxy_transp.delta());
+	//k1= 4.624e-1;
+	//scalar_type k2;
+	//k2 = pow((param_oxy_transp.Ps_50()*param_oxy_transp.alpha_pl()),param_oxy_transp.delta());
+	//k2= 5.97e-9;
 
 	for(size_type i=0; i<nb_branches; ++i)
 	{
-
 		vector_type cv_i(mf_Hi[i].nb_dof()); gmm::clear(cv_i);
+
 		vector_type Hi(mf_Hi[i].nb_dof()); gmm::clear(Hi);
+
 		vector_type Uvi(mf_Uvi[i].nb_dof()); gmm::clear(Uvi);
+		vector_type new_uvi (mf_Uvi[i].nb_dof()); gmm::clear(new_uvi); 
+
 		vector_type psi(mf_Hi[i].nb_dof()); gmm::clear(psi);
+		vector_type new_psi (mf_Uvi[i].nb_dof()); gmm::clear(new_psi); 
 
 	size_type pos=0;
 	for (getfem::mr_visitor mrv(mf_oxy_Cv.linked_mesh().region(i)); !mrv.finished(); ++mrv)
@@ -1731,49 +1929,109 @@ if(descr_oxy_transp.HEMOADVECTION){
 		if(pos == 0)
 			{
 			cv_i[pos] = cv_guess[mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[0]];
-			cout << " cv_i [" << pos << "] = cv_guess [" << mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[0] << "]" <<"="<<cv_guess[mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[0]]<< endl;
+			//cout << " cv_i [" << pos << "] = cv_guess [" << mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[0] << "]" <<"="<<cv_guess[mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[0]]<< endl;
 			pos ++;
 			cv_i[pos] = cv_guess[mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1]];
-			cout << " cv_i [" << pos << "] = cv_guess [" << mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1] << "]" <<"="<<cv_guess[mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1]]<< endl;
+			//cout << " cv_i [" << pos << "] = cv_guess [" << mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1] << "]" <<"="<<cv_guess[mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1]]<< endl;
 			pos ++;
 			}
 		else{
 			cv_i[pos] = cv_guess[mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1]];
-			cout << " cv_i [" << pos << "] = cv_guess [" << mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1] << "]" <<"="<<cv_guess[mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1]]<< endl;
+			//cout << " cv_i [" << pos << "] = cv_guess [" << mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1] << "]" <<"="<<cv_guess[mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1]]<< endl;
 			pos ++;
 			}
 	//ho fatto questo tipo di ciclo perché sul singolo elemento mi prendeva due volte il nodo iniziale: ora prendo entrambi nodi per il primo ciclo e poi per il secondo prendo solo il secondo valore del nodo
 		}
 
-
 		if(i>0) shift_h += mf_Hi[i-1].nb_dof();
 		if(i>0) shift += mf_Uvi[i-1].nb_dof();
 		
-		gmm::add(gmm::sub_vector(UM_HT, 
+		gmm::copy(gmm::sub_vector(UM_HT, 
 			gmm::sub_interval(shift_h, mf_Hi[i].nb_dof())), Hi);
 
-		gmm::add(gmm::sub_vector(UM,
+		gmm::copy(gmm::sub_vector(UM,
 			gmm::sub_interval(dof.Ut()+dof.Pt()+shift, mf_Uvi[i].nb_dof())) ,  Uvi);
 
+		vector_type saturation(mf_Hi[i].nb_dof());
+		saturation = dimensioning_saturation(cv_i);
 
 		for (size_type j=0; j<mf_Hi[i].nb_dof(); ++j)
 		{
-			psi[j] = Hi[j]*k1*pow(cv_i[j], param_oxy_transp.delta())/(pow(cv_i[j], param_oxy_transp.delta())+k2); //calcolo dimensionale
-			psi[j] = psi[j]/param_oxy_transp.C(); //per adimensionalizzare
+			psi[j] = Hi[j]*k1*saturation[j]; //*param_oxy_transp.C(); //calcolo dimensionale
 		}
 
-	asm_hemoadvection_rhs_network(Ov, mimv, mf_oxy_Cv, mf_coefvi[i], mf_Uvi[i], mf_coefv, mf_Hi[i], 
-							Uvi, param.lambdax(i), param.lambday(i), param.lambdaz(i),  param.R(), psi, meshv.region(i));
+		getfem::interpolation(mf_Hi[i], mf_Uvi[i], psi, new_psi);
+
+		for(size_type p=0;p<mf_Uvi[i].nb_dof(); ++p){
+		cout<<"new_psi["<<p<<"]= "<<new_psi[p]<<endl;
+		}
+	
+		//assemblo una nuova velocità: uv(1+PSI), ma PSI vive su mf_Hi (P1), invece la uv vive su mf_Uvi (P2) --> interpolo psi (che vive su mf_Hi[i]) sulla mesh
+		//della velocità mf_Uvi (P2), così non sto neanche a cambiare la mesh nella fase di assemblaggio
+
+		for(size_type c=0; c<mf_Uvi[i].nb_dof(); c++){
+		new_psi[c] = new_psi[c] + 1.0; //(1+PSI)
+		new_uvi[c] = Uvi[c] * new_psi[c]; //uvi(1+PSI)
+		}
+
+		gmm::copy(new_uvi, Uvi);
+
+	asm_advection_network(Av, mimv, mf_oxy_Cv, mf_coefvi[i], mf_Uvi[i], mf_coefv, 
+							Uvi, param.lambdax(i), param.lambday(i), param.lambdaz(i),  param.R(), meshv.region(i) );
+
+	//asm_hemoadvection_network(Ov, mimv, mf_oxy_Cv, mf_coefvi[i], mf_Uvi[i], mf_coefv, mf_Hi[i], 
+	//						Uvi, param.lambdax(i), param.lambday(i), param.lambdaz(i),  param.R(), psi, meshv.region(i));
 	}
-	gmm::scale(Ov, pi);
+	//gmm::scale(Ov, pi);
+	gmm::scale(Av, pi);
 
-	gmm::add(Ov, 
-			gmm::sub_vector(FM_oxy, gmm::sub_interval(dof_oxy_transp.Ct(),dof_oxy_transp.Cv())));
+	asm_network_transp(Dv, mimv, mf_oxy_Cv, mf_coefv, param_oxy_transp.Av(), param.R());
 
-	gmm::clear(Ov);
+	bool NEWFORM = PARAM.int_value("NEW_FORMULATION", "flag for the new formulation");
+	// bluid oncotic term fot tissue
+	vector_type ONCOTIC (dof.Pv());
+	gmm::copy(gmm::sub_vector(UM, 
+		  		  gmm::sub_interval(dof.Ut()+dof.Pt()+dof.Uv(), dof.Pv())),
+		  ONCOTIC);
+	gmm::mult_add(gmm::scaled(Mbar,-1.0), 
+		  gmm::sub_vector(UM, 
+		  		  gmm::sub_interval(dof.Ut(), dof.Pt())),
+		  ONCOTIC);
+	scalar_type picoef=param.sigma()*(param.pi_v()-param.pi_t());
+        vector_type DeltaPi(dof.Pv(),picoef);
+        gmm::add(gmm::scaled(DeltaPi,-1.0), ONCOTIC);	
+	gmm::scale(ONCOTIC,0.5*(1.0-param.sigma())*param.Q(0));
+	
+	// build permeability term for tissue
+	vector_type PERM (dof.coefv());
+	gmm::copy(param.R(), PERM);
+	gmm::scale(PERM, 2*pi*param_oxy_transp.Y()[0]);
+
+	asm_exchange_mat_transp(Btt, Btv, Bvt, Bvv, mimv, mf_oxy_Cv, mf_coefv, mf_Pv, Mbar, Mlin, ONCOTIC, PERM, NEWFORM);
+
+	gmm::add(Dv, gmm::sub_matrix(AM_oxy, 
+			gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv()),
+			gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())));		
+
+	gmm::add(Av, gmm::sub_matrix(AM_oxy, 
+			gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv()),
+			gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())));	
+
+	/*gmm::add(Ov, gmm::sub_matrix(AM_oxy, 
+			gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv()),
+			gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())));
+	*/
+	//if(descr_oxy_transp.COUPLING && descr_oxy_transp.ADVECTION){
+	gmm::add(Bvv, gmm::sub_matrix(AM_oxy, 
+			gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv()),
+			gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())));	
+	//}
+
+	//gmm::clear(Ov);
+	gmm::clear(Av);
+	gmm::clear(Dv);
+	gmm::clear(Bvv);
 	} //fine HEMOADVECTION
-
-
 
 		//risolvere il nuovo sistema
 		assembly_rhs_oxy_transp();
@@ -1798,8 +2056,6 @@ if(descr_oxy_transp.HEMOADVECTION){
 	#ifdef M3D1D_VERBOSE_
 	cout << "Checking Residuals at iteration: "<< iteration << "..." << endl;
 	#endif
-
-
 	//Saving residual values in an output file
 	//SaveResidual << iteration << "\t" << resSol << "\t" << resCM << "\t" << resH << endl;
 
@@ -1808,15 +2064,31 @@ if(descr_oxy_transp.HEMOADVECTION){
 			//cout << "\t\t\t\tTime: " <<  ((float)t)/CLOCKS_PER_SEC << " s "<< endl;
 					}
 			cout << "********************************************************" << endl;
+
+/*
+	//Uso i flussi, convettivo e diffusivo, come condizione per il while
+	scalar_type DIFF=0, ADV=0;
+	int count_diff=0, count_adv=0;
+	mass_balance();
+	for(size_type j=0; j<Jv_oxy_transp.size(); j++){
+	DIFF = Jv_oxy_transp[j].MBD;
+	ADV = Jv_oxy_transp[j].MBA;
+	
+	if(abs(DIFF)<toll_diff) count_diff++;
+	if(abs(ADV)<toll_adv) count_adv++;
+	}
+	cout<<"Count_diff= "<<count_diff<<endl;
+	cout<<"Count_adv= "<<count_adv<<endl;
+	//se questi due valori sono = al numeri di giunzioni --> condizione per uscire dal while
+*/
 	iteration++;
 
 	//PROVA
-	gmm::clear(FM_oxy);
+	//gmm::clear(FM_oxy);
 	gmm::clear(Ct_new);
 	gmm::clear(Cv_new);
 	//////
-	}
-	 //esco dal while
+	}//esco dal while
 } //fine dell'if (presenza o no di non linearità)
 	gmm::copy(Ct_old, gmm::sub_vector(UM_oxy, 
 					 gmm::sub_interval(0,dof_oxy_transp.Ct())));
@@ -1839,25 +2111,41 @@ if(descr_oxy_transp.HEMOADVECTION){
 	cout << " Compute MBD and MBA "   << endl;
 	#endif	
 
+	//PROVA
+	cout<<"Dimensione Jv_oxy_transp= "<<Jv_oxy_transp.size()<<endl;
+	///////
+
 	// initialize the MBD and MBA to zero (clear at eac time step)
 	for (size_type i=0; i<Jv_oxy_transp.size(); ++i){
 		Jv_oxy_transp[i].MBD=0;
 		Jv_oxy_transp[i].MBA=0;
+
+		//PROVA
+		cout<<"Analizziamo cosa c'è dentro a Jv_oxy_transp"<<endl;
+		cout<<"\n Jv_oxy_transp["<<i<<"].label= "<<Jv_oxy_transp[i].label<<endl;
+		cout<<"\n Jv_oxy_transp["<<i<<"].rg= "<<Jv_oxy_transp[i].rg<<endl;
+		cout<<"\n Jv_oxy_transp["<<i<<"].idx= "<<Jv_oxy_transp[i].idx<<endl;
+		cout<<"\n Jv_oxy_transp["<<i<<"].branches= "<<Jv_oxy_transp[i].branches<<endl;
+		///////
 	}	
 
 	size_type shift = 0; //counter for branches
+
+	//PROVA
+	cout<<"\n dimesione mf_Uvi= "<<mf_Uvi.size()<<endl; //come dire il nb_branches
+	////
 	
 	for (size_type i=0; i<mf_Uvi.size(); ++i){ // branch loop 	
 		if(i>0) shift += mf_Uvi[i-1].nb_dof(); 
 		mesh_region &rg_branch = meshv.region(i); // branch region
 
 		for (size_type j=0; j<Jv_oxy_transp.size(); ++j){ //junction loop
-			mesh_region &rg_junction = meshv.region(Jv_oxy_transp[j].rg);  // junction region
+			mesh_region &rg_junction = meshv.region(Jv_oxy_transp[j].rg);  // junction region: dico qual è la regione della giunzione j-esima
 			// Iterators for all the branches which flow in the junction j
 			std::vector<long signed int>::const_iterator bb = Jv_oxy_transp[j].branches.begin();
 			std::vector<long signed int>::const_iterator be = Jv_oxy_transp[j].branches.end();
 		
-			//Check if outflow of branch i is in junction j			
+			//Check if outflow of branch i is in junction j: per quale branch la regione della giunzione j-esima è l'outflow		
 			if ((std::find(bb, be, +i) != be)){
 
 				// find last element of the branch
@@ -1882,7 +2170,6 @@ if(descr_oxy_transp.HEMOADVECTION){
 					{dof_enum_U.emplace_back(b);
 					fine_U++;}			
 				}
-	
 
 				last_C = dof_enum_C[fine_C-1];
 				last_C2= dof_enum_C[fine_C-2];
@@ -1939,13 +2226,13 @@ if(descr_oxy_transp.HEMOADVECTION){
 	
 				scalar_type DIFF=0,ADV=0;
 	
-				//Compute the diffusive flux
+				//Compute the diffusive flux: Fick's Law
 				 DIFF = pi* Ri * Ri*(
 						UM_oxy[dof_oxy_transp.Ct()+first_C2]-UM_oxy[dof_oxy_transp.Ct()+first_C] )
 						/estimate_h(meshv, ii.cv()) ;
 	
 	
-				//Compute the advective fluxes
+				//Compute the advective fluxes: mass flow rate
 				ADV = pi* Ri * Ri*UM[dof.Ut()+dof.Pt()+shift+first_U]*UM_oxy[dof_oxy_transp.Ct()+first_C];
 	
 				#ifdef M3D1D_VERBOSE_		
@@ -1962,8 +2249,6 @@ if(descr_oxy_transp.HEMOADVECTION){
 
 		} //end of junction loop
 	} // end of branch loop	
-
-
 
 
 
@@ -2009,7 +2294,7 @@ if(descr_oxy_transp.HEMOADVECTION){
 	gmm::copy(gmm::sub_vector(UM_oxy, 
 		gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())), Cv);	
 
-/*
+
 	for(size_type a=0;a<dof_oxy_transp.Ct();a++){
 		cout<<"Ct["<<a<<"]= "<<Ct[a]<<endl;
 	}
@@ -2017,8 +2302,9 @@ if(descr_oxy_transp.HEMOADVECTION){
 	for(size_type b=0;b<dof_oxy_transp.Cv();b++){
 		cout<<"Cv["<<b<<"]= "<<Cv[b]<<endl;
 	}
-+/
-//PROVA
+
+
+//PROVA: per vedere dove sono gli elemenenti negativi di Ct
 	/*
 	for(size_type t=0; t<dof_oxy_transp.Ct(); t++){
 		if (Ct[t]<0){

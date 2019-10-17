@@ -60,7 +60,9 @@ public:
 	//! Export the transport solution
 	const void export_vtk_oxy_transp (const string & time_suff = "",const string & suff = "");
 	//! Compute residuals for mass balance at each junction
-	void mass_balance (void);	
+	void mass_balance (void);
+	//! Compute the adimensional saturation (RR)
+	vector_type dimensioning_saturation (vector_type cv_g);
 	
 
 	//! Getter for solution
