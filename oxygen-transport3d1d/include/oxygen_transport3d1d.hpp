@@ -63,6 +63,8 @@ public:
 	void mass_balance (void);
 	//! Compute the adimensional saturation (RR)
 	vector_type dimensioning_saturation (vector_type cv_g);
+	//! Compute the modified uv in presence of Hemoglobin (RR)
+	vector_type modifing_Uvi(vector_type Hi, vector_type uvi, size_type i, vector_type cv);
 	
 
 	//! Getter for solution
