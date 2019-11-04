@@ -63,12 +63,7 @@ struct descr3d1d_oxy_transp {
 	//! Absolute path to the vessel mesh file
 	std::string MESH_FILEV_OXY;
 	//! Identifier of tissue concentration's FEM type
-	std::string FEM_TYPET_OT;
-
-	//RR
-	//! Identifier of tissue oxygen coefficients
-	//std::string FEM_TYPET_ODATA;	
-	
+	std::string FEM_TYPET_OT;	
 	//! Identifier of vessel concentration's FEM type
 	std::string FEM_TYPEV_OV;
 	//! Identifier of vessel integration method type
@@ -151,12 +146,9 @@ struct descr3d1d_oxy_transp {
 	//Flag to test the analytical solution
 		TEST_ANALYTICAL = size_type(FILE_.int_value("TEST_ANALYTICAL","Flag to test the analytical solution"));
 	////////////////////
-		
-
+	
 		couple = size_type(FILE_.int_value("couple"));
-		READ_INTERPOLATOR = size_type(FILE_.int_value("READ_INTERPOLATOR","flag for read interpolator from file"));
-		
-		
+		READ_INTERPOLATOR = size_type(FILE_.int_value("READ_INTERPOLATOR","flag for read interpolator from file"));	
 		
 	}
 

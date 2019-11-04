@@ -44,7 +44,7 @@ class oxygen_transport3d1d: public problemHT {
 
 public:
 	oxygen_transport3d1d(void) : 
-		mf_oxy_Ct(mesht), mf_oxy_Cv(meshv), mf_Ct_Omega(mesht),mf_Ct_Sigma(mesht){}//,mf_coeft_oxy(mesht){} 
+		mf_oxy_Ct(mesht), mf_oxy_Cv(meshv), mf_Ct_Omega(mesht),mf_Ct_Sigma(mesht){} 
 	
 	// Main methods of class: implement standard and complete transport problem
 	//! Initialize the transport problem
@@ -65,6 +65,8 @@ public:
 	vector_type dimensioning_saturation (vector_type cv_g);
 	//! Compute the modified uv in presence of Hemoglobin (RR)
 	vector_type modifing_Uvi(vector_type Hi, vector_type uvi, size_type i, vector_type cv);
+	//! Compute the oxyhemoglobin concentration before exporting
+	vector_type computing_oxyhemoglobin(vector_type Hi, size_type i, vector_type cv);
 	
 
 	//! Getter for solution
@@ -86,10 +88,6 @@ protected:
 	mesh_fem mf_oxy_Ct; 
 	//! Finite Element Method for the vessel oxygen concentration @f$c_v@f$
 	mesh_fem mf_oxy_Cv; 
-	
-	//RR
-	//! Finite element method for the tissue oxygen coefficients
-	//mesh_fem mf_coeft_oxy;
 
 	//! Finite Element Method for the tissue oxygen concentration @f$c_t@f$
 	mesh_fem mf_Ct_Omega; 

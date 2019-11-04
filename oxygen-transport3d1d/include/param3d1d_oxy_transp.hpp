@@ -41,7 +41,7 @@ struct param3d1d_oxy_transp {
 	scalar_type SV_;
 
 	
-	//Max rate of oxygen metabolization [1/s]
+	//Max rate of oxygen metabolization [ml_O2/ml_B/s]
 	scalar_type m0_;
 	//Tissue Concentration guess [kg/m^3]
 	scalar_type Ct_guess_;
@@ -63,6 +63,10 @@ struct param3d1d_oxy_transp {
 	scalar_type Ps_50_;
 	//Maximum concentration
 	scalar_type C_;
+
+
+	//Under-relaxation coefficient
+	//scalar_type underOXY_;
 
 
 	// Dimensionless physical parameters (test-cases)
@@ -129,7 +133,7 @@ struct param3d1d_oxy_transp {
 			scalar_type d_  = FILE_.real_value("d", "characteristic length of the problem [m]"); 
 			scalar_type k_  = FILE_.real_value("k", "permeability of the interstitium [m^2]"); 
 			scalar_type Lp_ = FILE_.real_value("Lp", "Hydraulic conductivity of the capillary walls [m^2 s/kg]"); 
-			
+
 			if(TEST_ANALYTICAL)
 			{
 				Dt_   = FILE_.real_value("Dt_test","Test Diffusivity in the tissue [m^2/s]");
@@ -157,6 +161,7 @@ struct param3d1d_oxy_transp {
 			alpha_pl_ = FILE_.real_value("alpha_pl","oxygen solubility in the plasma [kg/(m^3*mmHg)]");
 
 			C_ =  FILE_.real_value("C","maximum concentration [kg/m^3]");
+			//underOXY_ = FILE_.real_value("UNDER_RELAXATION_COEFFICIENT_OXY","Under-relaxation coefficient for Transport Solution");
 
 
 			Perm_ = FILE_.real_value("Perm","Permeability of the capillary walls [m/s]");
@@ -168,7 +173,7 @@ struct param3d1d_oxy_transp {
 			Av_.assign(dof_datav, Dv_/d_/U_);
 			Y_.assign(dof_datav, Perm_/U_);
 			Q_pl_.assign(dof_datat,Lp_LF_*SV_*P_*d_/U_);
-			M0_ = m0_*d_/U_;				
+			M0_ = m0_*d_/U_/C_;				
 		}
 	
 
@@ -191,37 +196,6 @@ struct param3d1d_oxy_transp {
 		}
 
 	}
-
-/*
-//! Build the arrays of dimensionless oxygen parameters
-void build_oxy(ftool::md_param & fname,
-			const getfem::mesh_fem & mf_datat
-			) 
-{
-	FILE_ = fname;
-		mf_datat_ = mf_datat;
-		size_type dof_datat = mf_datat_.nb_dof();
-
-	//Importo i coefficienti dimensionali per l'ossigeno
-//RR: MICHEALIS-MENTEN:
-			m0_    = FILE_.real_value("m0","Max rate of oxygen metabolization [1/s]");
-			Ct_guess_	= FILE_.real_value("Ct_guess","Tissue Concentration guess [kg/m^3]");
-			Cv_guess_	= FILE_.real_value("Cv_guess","Vessel Concentration guess [kg/m^3]");
-			Pm_50_	= FILE_.real_value("Pm_50","Partial pressure at half max rate of metabolization [mmHg]");
-			alpha_t_ = FILE_.real_value("alpha_t","Solubility of oxygen in the tissue [kg/(m^3*mmHg]");
-	
-//RR: Parametri OSSIEMOGLOBINA
-			MCHC_	= FILE_.real_value("MCHC","Mean Corpuscolar Hematocrit Concentration [-]");
-			N_ = FILE_.real_value("N","Hufner factor [-]");
-			delta_ = FILE_.real_value("delta","Hill constant [-]");
-			Ps_50_ = FILE_.real_value("Ps_50","Partial pressure at half saturation [mmHg]");
-			alpha_pl_ = FILE_.real_value("alpha_pl","oxygen solubility in the plasma [kg/(m^3*mmHg)]");
-
-
-			//calcolo il coefficienti di reazione adimensionalizzato
-			press50.assign(dof_datat, Pm_50_*alpha_t_);
-}
-*/
 
 	//! Get the radius at a given dof
 	//inline scalar_type R  (size_type i) { return R_[i];  } const
@@ -259,9 +233,11 @@ void build_oxy(ftool::md_param & fname,
 	inline scalar_type Ps_50  () { return Ps_50_;  } const
 	//! Get the Hill constant
 	inline scalar_type delta  () { return delta_;  } const
+	//! Get the under-relaxation coefficient
+	//inline scalar_type underOXY  () { return underOXY_; } const
 		
 	//! Get the radius at a given mesh_region
-	//scalar_type R  (const getfem::mesh_im & mim, const size_type rg) { 
+	//scalar_type R  (const getfem::mesh_im & mim, const size_type rg) 
 	//	return compute_radius(mim, mf_datav_, R_, rg);  
 	//}
 	//! Get the radius

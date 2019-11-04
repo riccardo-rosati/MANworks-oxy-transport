@@ -148,7 +148,7 @@ for(dal::bv_visitor i(mesh.convex_index()); !i.finished(); ++i){
 	}
 
 // compute peclet
-scalar_type peclet= Umax*h/(2*A);
+scalar_type peclet= Umax*h/2/A;
 
 	#ifdef M3D1D_VERBOSE_
 	cout <<"U:   "<<Umax<<endl;
