@@ -138,127 +138,6 @@ asm_advection_network
 	assem2.assembly(rg);
 } //end of asm_advection_network
 
-//dal 30/9: i temrini con psi vanno a sx; questa funzione li metti al rhs
-/*
-template<typename VEC>
-void 
-asm_hemoadvection_rhs_network
-	(VEC & Ov,
-	const mesh_im & mim,
-	const mesh_fem & mf_c,
-	const mesh_fem & mf_data,
-	const mesh_fem & mf_u,
-	const mesh_fem & mf_R,
-	const mesh_fem & mf_H,
-	const VEC & U,
-	const VEC & lambdax, const VEC & lambday, const VEC & lambdaz,
-	const VEC & R,
-	const VEC & psi,
-	const mesh_region & rg = mesh_region::all_convexes()
-	)	
-	 
-	{
-generic_assembly
-assem1("l1=data$1(#2); l2= data$2(#2); l3=data$3(#2); u=data$4(#3); R=data$5(#4); psi=data$6(#5);"
-	"t=comp(Base(#1).Base(#2).Base(#3).Grad(#5).Base(#4).Base(#4));"
-	"V$1(#1)+=t(:,i,p,d,1,m,n).l1(i).u(p).psi(d).R(m).R(n)+t(:,i,p,d,2,m,n).l2(i).u(p).psi(d).R(m).R(n)+t(:,i,p,d,3,m,n).l3(i).u(p).psi(d).R(m).R(n);");
-assem1.push_mi(mim);
-assem1.push_mf(mf_c);
-assem1.push_mf(mf_data);
-assem1.push_mf(mf_u);
-assem1.push_mf(mf_R);
-assem1.push_mf(mf_H);
-assem1.push_data(lambdax);
-assem1.push_data(lambday);
-assem1.push_data(lambdaz);
-assem1.push_data(U);
-assem1.push_data(R);
-assem1.push_data(psi);
-assem1.push_vec(Ov);
-assem1.assembly(rg);
-
-generic_assembly
-assem2("l1=data$1(#2); l2= data$2(#2); l3=data$3(#2); u=data$4(#3); R=data$5(#4); psi=data$6(#5);"
-	"t=comp(Base(#1).Base(#2).Grad(#3).Base(#5).Base(#4).Base(#4));"
-	"V$1(#1)+=t(:,i,p,1,d,m,n).l1(i).u(p).psi(d).R(m).R(n)+t(:,i,p,2,d,m,n).l2(i).u(p).psi(d).R(m).R(n)+t(:,i,p,3,d,m,n).l3(i).u(p).psi(d).R(m).R(n);");
-assem2.push_mi(mim);
-assem2.push_mf(mf_c);
-assem2.push_mf(mf_data);
-assem2.push_mf(mf_u);
-assem2.push_mf(mf_R);
-assem2.push_mf(mf_H);
-assem2.push_data(lambdax);
-assem2.push_data(lambday);
-assem2.push_data(lambdaz);
-assem2.push_data(U);
-assem2.push_data(R);
-assem2.push_data(psi);
-assem2.push_vec(Ov);
-assem2.assembly(rg);
-
-} //end of asm_hemoadvection_rhs_network
-*/
-
-//Con Ov al LHS: non sono sicuro
-template<typename MAT, typename VEC>
-void 
-asm_hemoadvection_network
-	(MAT & Ov,
-	const mesh_im & mim,
-	const mesh_fem & mf_c,
-	const mesh_fem & mf_data,
-	const mesh_fem & mf_u,
-	const mesh_fem & mf_R,
-	const mesh_fem & mf_H,
-	const VEC & U,
-	const VEC & lambdax, const VEC & lambday, const VEC & lambdaz,
-	const VEC & R,
-	const VEC & psi,
-	const mesh_region & rg = mesh_region::all_convexes()
-	)	
-	 
-	{
-	generic_assembly 
-	assem1("l1=data$1(#2); l2=data$2(#2); l3=data$3(#2);  u=data$4(#3); R=data$5(#4); psi=data$6(#5);"
-		  "t=comp(Base(#1).Grad(#1).Base(#2).Base(#3).Base(#4).Base(#4).Base(#5));"
-		  "M$1(#1,#1)+=t(:,:,1,i,p,m,n,d).l1(i).u(p).R(m).R(n).psi(d)+t(:,:,2,i,p,m,n,d).l2(i).u(p).R(m).R(n).psi(d)+t(:,:,3,i,p,m,n,d).l3(i).u(p).R(m).R(n).psi(d);");
-	assem1.push_mi(mim);
-	assem1.push_mf(mf_c);
-	assem1.push_mf(mf_data);
-	assem1.push_mf(mf_u);
-	assem1.push_mf(mf_R);
-	assem1.push_mf(mf_H);
-	assem1.push_data(lambdax);
-	assem1.push_data(lambday);
-	assem1.push_data(lambdaz);
-	assem1.push_data(U);
-	assem1.push_data(R);
-	assem1.push_data(psi);
-	assem1.push_mat(Ov);
-	assem1.assembly(rg);
-	
-
-	generic_assembly 
-	assem2("l1=data$1(#2); l2=data$2(#2); l3=data$3(#2);  u=data$4(#3);  R=data$5(#4); psi=data$6(#5);"
-		  "t=comp(Base(#1).Base(#1).Base(#2).Grad(#3).Base(#4).Base(#4).Base(#5));"
-		  "M$1(#1,#1)+=t(:,:,i,p,1,m,n,d).l1(i).u(p).R(m).R(n).psi(d)+t(:,:,i,p,2,m,n,d).l2(i).u(p).R(m).R(n).psi(d)+t(:,:,i,p,3,m,n,d).l3(i).u(p).R(m).R(n).psi(d);"); 
-	assem2.push_mi(mim);
-	assem2.push_mf(mf_c);
-	assem2.push_mf(mf_data);
-	assem2.push_mf(mf_u);
-	assem2.push_mf(mf_R);
-	assem2.push_mf(mf_H);
-	assem2.push_data(lambdax);
-	assem2.push_data(lambday);
-	assem2.push_data(lambdaz);
-	assem2.push_data(U);
-	assem2.push_data(R);
-	assem2.push_data(psi);
-	assem2.push_mat(Ov);
-	assem2.assembly(rg);
-} //end of asm_hemoadvection_rhs_network
-
-
 /*! Build the mixed boundary conditions (weak form) and dirichlet (strong form) for vessels
     @f$ M=\int_{\mathcal{E}_{MIX}} \beta~c~v~d\sigma@f$ and
     @f$ F=\int_{\mathcal{E}_{MIX}} \beta~c_0~v~d\sigma@f$
@@ -277,23 +156,23 @@ asm_hemoadvection_network
 template<typename MAT, typename VEC>
 void
 asm_network_bc_transp
-	(VEC & F, MAT & M, 
-	 const mesh_im & mim,
-	 const mesh_fem & mf_c,
-	 const mesh_fem & mf_data,
-	 const std::vector<getfem::node> & BC,
-	 const scalar_type beta,
-	 const VEC & R) 
+	(VEC & F, MAT & M, //Fv e Avv
+	 const mesh_im & mim, //mimv
+	 const mesh_fem & mf_c, //mf_oxy_Cv
+	 const mesh_fem & mf_data, //mf_coefv
+	 const std::vector<getfem::node> & BC, //BCv_oxy_transp
+	 const scalar_type beta,	 //beta_v
+	 const VEC & R) //R
 { 
 	GMM_ASSERT1(mf_c.get_qdim()==1,  "invalid data mesh fem (Qdim=1 required)");
 	GMM_ASSERT1(mf_data.get_qdim()==1, "invalid data mesh fem (Qdim=1 required)");
 
 	//PROVA:
-	//for(size_type bc=0; bc<BC.size(); bc++){
-	//	cout<<"LABEL di BC["<<bc<<"] = "<<BC[bc].label<<endl;
-	//	cout<<"VALUE di BC["<<bc<<"] = "<<BC[bc].value<<endl;
-	//	cout<<"REGION di BC["<<bc<<"] = "<<BC[bc].rg<<endl;
-	//}
+	for(size_type bc=0; bc<BC.size(); bc++){
+		cout<<"LABEL di BC["<<bc<<"] = "<<BC[bc].label<<endl;
+		cout<<"VALUE di BC["<<bc<<"] = "<<BC[bc].value<<endl;
+		cout<<"REGION di BC["<<bc<<"] = "<<BC[bc].rg<<endl;
+	}
 	///////////////
 
 	for (size_type bc=0; bc < BC.size(); bc++) { 

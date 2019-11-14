@@ -147,11 +147,11 @@ struct param3d1d_oxy_transp {
 			
 			//Importo i coefficienti dimensionali per l'ossigeno
 //RR: MICHEALIS-MENTEN:
-			m0_    = FILE_.real_value("m0","Max rate of oxygen metabolization [1/s]");
-			Ct_guess_	= FILE_.real_value("Ct_guess","Tissue Concentration guess [kg/m^3]");
-			Cv_guess_	= FILE_.real_value("Cv_guess","Vessel Concentration guess [kg/m^3]");
+			m0_    = FILE_.real_value("m0","Max oxygen consumption rate [ml_O2/ml_tissue/s]");
+			Ct_guess_	= FILE_.real_value("Ct_guess","Tissue Concentration guess []");
+			Cv_guess_	= FILE_.real_value("Cv_guess","Vessel Concentration guess []");
 			Pm_50_	= FILE_.real_value("Pm_50","Partial pressure at half max rate of metabolization [mmHg]");
-			alpha_t_ = FILE_.real_value("alpha_t","Solubility of oxygen in the tissue [kg/(m^3*mmHg]");
+			alpha_t_ = FILE_.real_value("alpha_t","Solubility of oxygen in the tissue [ml_O2/(ml_Blood*mmHg]");
 	
 //RR: Parametri OSSIEMOGLOBINA
 			MCHC_	= FILE_.real_value("MCHC","Mean Corpuscolar Hematocrit Concentration [-]");
