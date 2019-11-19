@@ -46,7 +46,7 @@ Visco_v=0;
 %Flag to add advection terms
 ADVECTION=1;
 %Flag to add coupling terms
-COUPLING=0;
+COUPLING=1;
 %Flag to take the stationary problem
 %STATIONARY=1;
 %Flag for the new formulation
@@ -54,15 +54,15 @@ NEW_FORMULATION = 1;
 %Flag to study oxygen transport
 OXYGEN_TRANSPORT = 1;
 %Flag to add reaction termn
-REACTION = 1;
+REACTION = 0;
 %Flag to add oxyhemoglobin advection termn (psi function)
 HEMOADVECTION = 0;
 %Flag to test the analytical solution for Cv
 TEST_ANALYTICAL = 0;
 
 %Fissi! si posso anche togliere
-%Couple (0: uso quella di Notaro)
-couple = 0;
+%Couple (0: uso quella di Notaro; 1: uso quello di Brambilla)
+couple = 1;
 %flag for read interpolator from file
 READ_INTERPOLATOR = 0;
 
@@ -72,7 +72,7 @@ READ_INTERPOLATOR = 0;
 % Flag to import dimensionless param
 TEST_PARAM      = 0;
 % Flag to import the dimensionless radius (to do that TEST_PARAM must be equal to 0 and parameters P U d k mu must be left)
-IMPORT_RADIUS   = 0;
+IMPORT_RADIUS   = 1;
 % Flag to import the file with curvature (Remember to ENABLE CURVE_PROBLEM) - If this flag is 0, the curvature is computed from the mesh
 IMPORT_CURVE = 0;
 
@@ -104,7 +104,7 @@ PRINT_RESIDUALS       = 1;
 % Flags to build a regular 3d mesh
 TEST_GEOMETRY = 1;
 GT_T       = 'GT_PK(3,1)';
-NSUBDIV_T  = '[11,11,11]'; %[11,11,11]
+NSUBDIV_T  = '[3,3,3]'; %[11,11,11]
 ORG_T      = '[0,0,0]';
 SIZES_T    = '[1,1,1]';
 NOISED_T   = '0';
@@ -138,7 +138,6 @@ FEM_TYPET   = 'FEM_RT0(3)';
 FEM_TYPET_P = 'FEM_PK_DISCONTINUOUS(3,0)';
 FEM_TYPET_DATA = 'FEM_PK(3,0)';
 FEM_TYPET_OT = 'FEM_PK(3,1)';		%Oxygen tissue concentration
-%FEM_TYPET_ODATA = 'FEM_PK(3,0)';	%Oxygen coeff mesh 	//RR
 % GetFem type for the 3D Integration Method
 IM_TYPET    = 'IM_TETRAHEDRON(8)'; 
 
@@ -164,7 +163,7 @@ IM_TYPEV_OXY_TRANSP = 'IM_GAUSS1D(6)';	%Oxygen transport
 %%%											Coupling (3D/1D) 										%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Nb of discretisation point for 3D-1D interpolation
-NInt = 50;
+NInt = 30; %50
 
 
 
@@ -192,7 +191,7 @@ FACE = 0;
 %%%										General		 												%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Maximum number of iterations for FPM
-Number_Iteration   = 5; %30 itaration for results
+Number_Iteration   = 30; %30 itaration for results
 % Number of iteration between saving progress (saving process overwrites files)
 Saving_Iteration   = 1;
 
@@ -243,7 +242,7 @@ U  = 1E-03; %100E-6
 % Characteristic length of the problem [m]
 d  = 1.0E-4; %5E-4
 % Hydraulic conductivity of the capillary walls [m^2 s/kg]
-Lp = 1E-12 *0; 
+Lp = 0*1E-12; 
 % Average radius of the capillary vessels [m]
 RADIUS = 4.00E-6;
 % Blood Viscosity [kg/m/s]
@@ -255,7 +254,7 @@ Pi_v = 27*133.32;
 % Oncotic Interstitial pressure [Pa]
 Pi_t = 2*133.32;
 % Reflection Coefficient of Starling Equation [-]
-sigma = 1.0; %0.95
+sigma = 0.95;
 % Order of velocity profile in the vessels [-]
 Gamma = 2;
 
@@ -264,7 +263,7 @@ Gamma = 2;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%% LINEAR case
 % Hydraulic conductivity of the lymphatic wall [kg * m/s]
-Lp_LF = 1.04E-06*0;
+Lp_LF = 1.04E-06;
 % Pressure inside lymphatic capillaries [-] %% This is dimensionless pressure as the ones specified for the network!
 PL = 0;
 %%%%%%%%%%%%%%% Coefficient of lymphatic flow modelled as a SIGMOID of equation QLF = A - B / ( 1 + exp ( ( Pt + D ) / C )
@@ -286,24 +285,24 @@ Ct_guess =  1.0;
 Cv_guess =  1.0;
 
 %Max oxygen consumption rate [ml_O2/ml_tissue/s]
-m0 =  1.6E-4 *0 - 1.11E-6;
+m0 =  1.6E-4;  %PER TEST: *0 - 1.11E-6;
 %Partial pressure at half max rate of metabolization [mmHg]
-Pm_50 = 4.0 *0;
+Pm_50 = 4.0; %PER TEST:  *0;
 %Solubility of oxygen in the tissue [ml_O2/(ml_Blood*mmHg]
-alpha_t = 2.8E-5 *0;
+alpha_t = 2.8E-5; %PER TEST: *0;
 
 %Mean Corpuscolar Hematocrit Concentration [g_Hb/ml_RBC];
 MCHC = 0.34;
 %Hufner factor [ml_O2/g_Hb]
 N = 1.36;
 %Hill constant [-]
-delta = 2.0; %2.7
+delta = 2.7; %2.7
 %Partial pressure at half saturation [mmHg]
 Ps_50 = 30;
 %Oxygen solubility in the plasma [ml_O2/(ml_tissue*mmHg)]
 alpha_pl = 3.0E-5;
 %maximum concentration [ml_O2/ml_Blood]
-C = 0.3; %free oxygen concentration;
+C = 3E-3; %free oxygen concentration;
 
 %Diffusivity in the tissue [m^2/s]  
 Dt = 2.41E-9; %condizioni fisiologiche
@@ -317,7 +316,7 @@ Dv = 2.75E-9; %per la soluzione analitica 3 casi in cui Dv cambia di 3 ordini di
 %Dv = 2.75;
 
 %Permeability of the vessel wall [m/s] = Dv/h, con h = spessore della membrana endoteliale (1.0E-6 [m])
-Perm = 2.75E-3;
+Perm = 0*2.75E-3;
 % surface area of lymphatic vessels per unit volume of tissue [1/m]
 SV = 1;
 
@@ -385,7 +384,7 @@ Q_pl=0.0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Faces are ordered as follow:   x=0  x=L  y=0  y=L  z=0  z=L
 % BC labels (DIR / MIX) - DIR = Dirichlet considions, MIX = Robin mixed condition
-BClabel = 'DIR DIR  MIX  MIX  MIX  MIX'
+BClabel = 'DIR MIX  MIX  MIX  MIX  MIX'
 % BC values (Specify pressure for DIR, or far field pressure for MIX)
 BCvalue = '1.0 0.0  0.0  0.0  0.0  0.0'
 % Coefficient beta for MIX condition
@@ -406,13 +405,13 @@ Temp=37
 %% Riccardo metti qui quelli che ti servono (questi sono di esempio)
 % Faces are ordered as follow:   x=0  x=L  y=0  y=L  z=0  z=L
 % BC labels (DIR / MIX)
-BClabel_transp = 'DIR  DIR  MIX  MIX  MIX  MIX'
+BClabel_transp = 'DIR  MIX  MIX  MIX  MIX  MIX'
 % BC values tissue
 BCvalue_transp = '1.0  0.0  0.0  0.0  0.0  0.0'
 % Coefficient for MIX condition in tissue
 BETAtissue_transp = 1E-12;
 % Coefficient for MIX condition in vessels
-BETAvessel_transp = 1E-2;
+BETAvessel_transp = 1E-12;
 
 
 
