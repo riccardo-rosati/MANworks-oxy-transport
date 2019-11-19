@@ -10,7 +10,7 @@
 /*! 
   @file   oxygen_transport3d1d.cpp
   @author Riccardo Rosati <riccardo1.rosati@mail.polimi.it>
-  @date   September 2016 - September 2018.
+  @date   March 2018 - April 2019.
   @brief Definizione della classe principale per risolvere il problema del trasporto di ossigeno
  */
  
@@ -650,19 +650,6 @@ oxygen_transport3d1d::modifing_Uvi(vector_type Hi, vector_type uvi, size_type i,
 
 		//salvo i dof della mesh di Cv e Uv e Ht
 		vector_type dof_enum_C, dof_enum_U, dof_enum_H, dof_enum_PSI;
-		
-		/*for (mr_visitor mrv(rg_branch); !mrv.finished(); ++mrv){
-				for (auto b : mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv()))
-					{dof_enum_C.emplace_back(b);}
-				
-					//fine_C++;}			
-				for (auto b : mf_Uvi[i].ind_basic_dof_of_element(mrv.cv()))
-					{dof_enum_U.emplace_back(b);}
-				
-					//fine_U++;}	
-				for (auto b : mf_Hi[i].ind_basic_dof_of_element(mrv.cv()))
-					{dof_enum_H.emplace_back(b);}
-				}*/
 
 size_type pos=0;
 	for(getfem::mr_visitor mrv(rg_branch); !mrv.finished(); ++mrv){
@@ -743,14 +730,15 @@ cout<<"\n Pos= "<<pos<<"\n Branch #"<<i<<": DOF per la mesh della concentrazione
 		scalar_type sat=0;
 
 		for(size_type j=0; j<dof_enum_H.size(); j++){
-			cout<<"\n dof_enum_C["<<j<<"]= "<<dof_enum_C[j];
+/*			cout<<"\n dof_enum_C["<<j<<"]= "<<dof_enum_C[j];
 			cout<<"dof_enum_H["<<j<<"]= "<<dof_enum_H[j];
 			cout<<"\n *************** "<<endl;
 			cout<<"Cv[dof_enum_C["<<j<<"]]= "<<Cv[dof_enum_C[j]]<<endl;
 			cout<<"Hi[dof_enum_H["<<j<<"]]= "<<Hi[dof_enum_H[j]]<<endl;
+*/
 			sat = dimensioning_saturation(Cv[dof_enum_C[j]]);
 			psi[dof_enum_H[j]] = Hi[dof_enum_H[j]] * k1 * sat;
-			cout<<"psi[dof_enum_H["<<j<<"]]= "<<psi[dof_enum_H[j]]<<endl;
+			//cout<<"psi[dof_enum_H["<<j<<"]]= "<<psi[dof_enum_H[j]]<<endl;
 		}
 /*
 		vector_type saturation(mf_Hi[i].nb_dof()); gmm::clear(saturation);
@@ -800,12 +788,12 @@ cout<<"\n Branch #"<<i<<": DOF di PSI post interpolazione= "<<dof_enum_PSI<<endl
 //della velocità mf_Uvi (P2), così non sto neanche a cambiare la mesh nella fase di assemblaggio
 
 		for(size_type j=0; j<dof_enum_U.size(); j++){
-			cout<<"\n dof_enum_U["<<j<<"]= "<<dof_enum_U[j];
-			cout<<"dof_enum_PSI["<<j<<"]= "<<dof_enum_PSI[j];
+			//cout<<"\n dof_enum_U["<<j<<"]= "<<dof_enum_U[j];
+			//cout<<"dof_enum_PSI["<<j<<"]= "<<dof_enum_PSI[j];
 			new_uvi[dof_enum_U[j]] = uvi[dof_enum_U[j]] * (1.0 + new_psi[dof_enum_PSI[j]]);
 		}
 
-		cout<<"new_uvi= "<<new_uvi<<endl;
+		//cout<<"new_uvi= "<<new_uvi<<endl;
 		return new_uvi;
 	}; //end of modifing velocity
 
@@ -876,15 +864,16 @@ oxygen_transport3d1d::dimensioning_saturation (scalar_type cv){
 	//Matrici di scambio
 	//Matrice di scambio tissue-to-tisse
 	sparse_matrix_type Btt (dof_oxy_transp.Ct(), dof_oxy_transp.Ct()); gmm::clear(Btt);
-	//Matrice di scambio tissue-to-vessel
-	sparse_matrix_type Btv (dof_oxy_transp.Ct(), dof_oxy_transp.Cv()); gmm::clear(Btv);
 	//Matrice di scambio vessel-to-tissue
+	sparse_matrix_type Btv (dof_oxy_transp.Ct(), dof_oxy_transp.Cv()); gmm::clear(Btv);
+	//Matrice di scambio tissue-to-vessel
 	sparse_matrix_type Bvt (dof_oxy_transp.Cv(), dof_oxy_transp.Ct()); gmm::clear(Bvt);
 	//Matrice di scambio vessel-to-vessel
 	sparse_matrix_type Bvv (dof_oxy_transp.Cv(), dof_oxy_transp.Cv()); gmm::clear(Bvv);
 
 	// Aux tissue-to-vessel averaging matrix
 	sparse_matrix_type Mbar (dof_oxy_transp.Cv(), dof_oxy_transp.Ct()); gmm::clear(Mbar);
+
 	// Aux tissue-to-vessel interpolation matrix
 	sparse_matrix_type Mlin (dof_oxy_transp.Cv(), dof_oxy_transp.Ct()); gmm::clear(Mlin);
 		
@@ -954,9 +943,10 @@ oxygen_transport3d1d::dimensioning_saturation (scalar_type cv){
 */
 
 	//Coefficient for reaction term:
-	//vector_type ct_guess(dof_oxy_transp.Ct(), param_oxy_transp.Ct_guess());
-	vector_type consump_coeff(dof.Pt(), param_oxy_transp.Ct_guess());
-	
+	vector_type consump_coeff(dof.Pt(), param_oxy_transp.M0());
+	cout<<"M0= "<<param_oxy_transp.M0()<<endl;
+	if(descr_oxy_transp.REACTION==1){
+	vector_type ct(dof.Pt(), param_oxy_transp.Ct_guess());
 	vector_type PRESS50(dof.Pt(), param_oxy_transp.Pm_50());
 
 	scalar_type k;
@@ -964,10 +954,14 @@ oxygen_transport3d1d::dimensioning_saturation (scalar_type cv){
 
 	gmm::scale(PRESS50, k);
 
-	gmm::add(PRESS50, consump_coeff);
-	gmm::reciprocal(consump_coeff); //1/consump_coeff[i];
-	gmm::scale(consump_coeff, param_oxy_transp.M0());
+	gmm::add(PRESS50, ct);
+	gmm::reciprocal(ct); //1/ct[i];
+	gmm::scale(ct, param_oxy_transp.M0());
+	gmm::copy(ct, consump_coeff);
+	}
 
+	cout<<"M0= "<<consump_coeff[0]<<endl;
+	
 	//RR
 	//Perché? cosi da avere la dimensione di cv_guess, consump_coeff e press50 identica a quella di UM_oxy(0, Ct) --> utile per il FPM, e 
 	//dare come input a asm_tissue_transp il vettore di coefficienti (da costruire su mf_coeft) con le dimensioni corrette	
@@ -985,12 +979,11 @@ oxygen_transport3d1d::dimensioning_saturation (scalar_type cv){
 					gmm::sub_interval(0, dof_oxy_transp.Ct()), 
 					gmm::sub_interval(0, dof_oxy_transp.Ct())));  
 
-	if(descr_oxy_transp.REACTION==1){
  	gmm::add(Rt, 
 			  gmm::sub_matrix(AM_oxy, 
 					gmm::sub_interval(0, dof_oxy_transp.Ct()), 
 				 	gmm::sub_interval(0, dof_oxy_transp.Ct()))); 
- 	}
+
 /*		 	
 	// Copy Lt: linfatic drainage in tissue
 	 gmm::add(Lt, 
@@ -1093,6 +1086,7 @@ oxygen_transport3d1d::dimensioning_saturation (scalar_type cv){
 	if(PARAM.int_value("couple", "flag for coupling function (notaro 0, brambilla 1)")){
    		bool READ_INTERPOLATOR = PARAM.int_value("READ_INTERPOLATOR","flag for read interpolator from file"); //flag for read interpolator from file 
     	if (!READ_INTERPOLATOR){
+    		cout<<"QUESTO1"<<endl;
 		asm_exchange_aux_mat_transp(Mbar, Mlin, mimv, mf_oxy_Ct, mf_oxy_Cv, mf_coefv, param.R(), descr.NInt, nb_branches);
       	std::ostringstream mbar_name,mlin_name;
       	mbar_name << descr_oxy_transp.OUTPUT+"Mbar_transp";
@@ -1102,6 +1096,7 @@ oxygen_transport3d1d::dimensioning_saturation (scalar_type cv){
     	}
     	else
     	{
+    		cout<<"QUESTO2"<<endl;
       	std::ostringstream mbar_name,mlin_name;
       	mbar_name << descr_oxy_transp.OUTPUT+"Mbar_transp";
       	mlin_name << descr_oxy_transp.OUTPUT+"Mlin_transp";
@@ -1112,6 +1107,7 @@ oxygen_transport3d1d::dimensioning_saturation (scalar_type cv){
 	if(!PARAM.int_value("couple", "flag for coupling function (notaro 0, brambilla 1)")){
    		bool READ_INTERPOLATOR = PARAM.int_value("READ_INTERPOLATOR","flag for read interpolator from file");//flag for read interpolator from file 
     	if (!READ_INTERPOLATOR){
+    		cout<<"QUESTO3"<<endl;
 			asm_exchange_aux_mat(Mbar, Mlin, mimv, mf_oxy_Ct, mf_oxy_Cv, param.R(), descr.NInt);
       	std::ostringstream mbar_name,mlin_name;
       	mbar_name << "./vtk/Mbar";
@@ -1121,6 +1117,7 @@ oxygen_transport3d1d::dimensioning_saturation (scalar_type cv){
     	}
     	else
     	{
+    		cout<<"QUESTO4"<<endl;
       	std::ostringstream mbar_name,mlin_name;
       	mbar_name << "./vtk/Mbar";
       	mlin_name << "./vtk/Mlin";
@@ -1133,40 +1130,61 @@ oxygen_transport3d1d::dimensioning_saturation (scalar_type cv){
 	cout << "  Assembling exchange matrices ..." << endl;
 	#endif
 
-
+cout<<"1"<<endl;
 	bool NEWFORM = PARAM.int_value("NEW_FORMULATION", "flag for the new formulation");
+cout<<"2"<<endl;
 	
 	// bluid oncotic term fot tissue
 	vector_type ONCOTIC (dof.Pv());
 	gmm::copy(gmm::sub_vector(UM, 
-		  		  gmm::sub_interval(dof.Ut()+dof.Pt()+dof.Uv(), dof.Pv())),
-		  ONCOTIC);
+		gmm::sub_interval(dof.Ut()+dof.Pt()+dof.Uv(), dof.Pv())), ONCOTIC);
+cout<<"3"<<endl;
+//PROVAAA
+	vector_type Um_pt(dof.Pt());
+		gmm::copy(gmm::sub_vector(UM, 
+		  		  gmm::sub_interval(dof.Ut(), dof.Pt())), Um_pt);
 		
-	gmm::mult_add(gmm::scaled(Mbar,-1.0), 
-		  gmm::sub_vector(UM, 
-		  		  gmm::sub_interval(dof.Ut(), dof.Pt())),
-		  ONCOTIC);
+		cout<<"Mbar rows: "<<gmm::mat_nrows(Mbar)<<"and columns: "<<gmm::mat_ncols(Mbar)<<endl;
+		cout<<"Umpt size: "<<Um_pt.size()<<endl;
+
+		cout<<"Dimesnione di Mbar: colonne "<<gmm::mat_ncols(Mbar)<<" e righe "<<gmm::mat_nrows(Mbar)<<endl;
+		cout<<"Dimensione di Cv= "<<mf_oxy_Cv.nb_dof()<<endl;
+		cout<<"Dimensione di Ct= "<<mf_oxy_Ct.nb_dof()<<endl;
+		cout<<"Dimensione di UM= "<<UM.size()<<endl;
+		cout<<"Dimensione di Pt= "<<dof.Pt()<<endl;
+		cout<<"Dimensione di Pv= "<<dof.Pv()<<endl;
+		cout<<"Dimensione di Ut= "<<dof.Ut()<<endl;
+		cout<<"Dimensione di Uv= "<<dof.Uv()<<endl;
+		cout<<"Dimensione mf_coeft= "<<mf_coeft.nb_dof()<<endl;
+		cout<<"Dimensione mf_coefV= "<<mf_coefv.nb_dof()<<endl;
+		//////////////////////
+	gmm::mult_add(gmm::scaled(Mbar,-1.0), gmm::sub_vector(UM, 
+		gmm::sub_interval(dof.Ut(), dof.Pt())),ONCOTIC);
+cout<<"4"<<endl;
 		
 	scalar_type picoef=param.sigma()*(param.pi_v()-param.pi_t());
         vector_type DeltaPi(dof.Pv(),picoef);
+        cout<<"5"<<endl;
+
         gmm::add(gmm::scaled(DeltaPi,-1.0), ONCOTIC);	
 	gmm::scale(ONCOTIC,0.5*(1.0-param.sigma())*param.Q(0));
+cout<<"6"<<endl;
 
 	if(descr_oxy_transp.TEST_ANALYTICAL){
 		gmm::scale(ONCOTIC, 0.0) ;
 	}
+cout<<"7"<<endl;
 	
 	// build permeability term for tissue
 	vector_type PERM (dof.coefv());
+	cout<<"8"<<endl;
+
 	gmm::copy(param.R(), PERM);
 	gmm::scale(PERM, 2*pi*param_oxy_transp.Y()[0]);
-	// PERM adimensionale: 27.5 (Perm/U = 27.5e-3/1.0e-4)
+cout<<"9"<<endl;
 
 	//build exchange matrixes for tissue
-	asm_exchange_mat_transp(Btt, Btv, Bvt, Bvv,
-			mimv, mf_oxy_Cv, mf_coefv, mf_Pv, Mbar, Mlin, 
-			ONCOTIC, PERM, NEWFORM);
-
+	asm_exchange_mat_transp(Btt, Btv, Bvt, Bvv, mimv, mf_oxy_Cv, mf_coefv, mf_Pv, Mbar, Mlin, ONCOTIC, PERM, NEWFORM);
 
 	// Copying Btt
 	gmm::add(Btt,			 
@@ -1950,7 +1968,7 @@ if(descr_oxy_transp.HEMOADVECTION==1){
 	#endif	
 
 	//PROVA
-	/*
+	
 	cout<<"Dimensione Jv_oxy_transp= "<<Jv_oxy_transp.size()<<endl;
 	// initialize the MBD and MBA to zero (clear at eac time step)
 	for (size_type i=0; i<Jv_oxy_transp.size(); ++i){
@@ -1965,7 +1983,7 @@ if(descr_oxy_transp.HEMOADVECTION==1){
 		cout<<"\n Jv_oxy_transp["<<i<<"].branches= "<<Jv_oxy_transp[i].branches<<endl;
 		///////
 	}	
-	*/
+	
 	size_type shift = 0; //counter for branches
 	
 	for (size_type i=0; i<mf_Uvi.size(); ++i){ // branch loop 	
@@ -2229,11 +2247,19 @@ cout<<"Branch #"<<i<<endl;
 	// Array of unknown dof of the network velocity
 	vector_type Cv(dof_oxy_transp.Cv()); 
 
+	vector_type Cv_dim(dof_oxy_transp.Cv());
+	
 	//Copy solution
 	gmm::copy(gmm::sub_vector(UM_oxy, 
 		gmm::sub_interval(0, dof_oxy_transp.Ct())),  Ct);
 	gmm::copy(gmm::sub_vector(UM_oxy, 
 		gmm::sub_interval(dof_oxy_transp.Ct(), dof_oxy_transp.Cv())), Cv);	
+
+	gmm::copy(Cv, Cv_dim);
+
+ 	gmm::scale(Cv, param_oxy_transp.C());
+
+ 	gmm::scale(Ct, param_oxy_transp.C());
 
 
 	for(size_type a=0;a<dof_oxy_transp.Ct();a++){
@@ -2278,7 +2304,8 @@ cout<<"Branch #"<<i<<endl;
 		length = mf_Hi[i].nb_dof();
 
 		gmm::copy(gmm::sub_vector(UM_HT, gmm::sub_interval(start, length)), Hi);
-		psi = computing_oxyhemoglobin(Hi, i, Cv);
+		psi = computing_oxyhemoglobin(Hi, i, Cv_dim);
+		gmm::scale(psi, param_oxy_transp.C());
 		cout<<"psi= "<<psi<<endl;
 
 		vtk_export exp_Oh(descr_oxy_transp.OUTPUT+"Oh"+suff+std::to_string(i)+".vtk");

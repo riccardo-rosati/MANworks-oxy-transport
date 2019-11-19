@@ -217,6 +217,11 @@ asm_exchange_mat_transp
 					    mf_c, mf_pv, mf_coefv,
 					gmm::scaled(ONCOTIC, +1),
 					gmm::scaled(PERM, -1)); 
+	//PROVAAAAA
+cout<<"Dimensione Mbar: righe "<<gmm::mat_nrows(Mbar)<<" e colonne "<<gmm::mat_ncols(Mbar)<<endl;
+cout<<"Dimensione Bvv_temp: righe "<<gmm::mat_nrows(Bvv_temp)<<" e colonne "<<gmm::mat_ncols(Bvv_temp)<<endl;
+cout<<"Dimensione Bvt: righe "<<gmm::mat_nrows(Bvt)<<" e colonne "<<gmm::mat_ncols(Bvt)<<endl;
+	///
 	gmm::mult(Bvv_temp, Mbar, Bvt);
 	gmm::clear(Bvv_temp);
 

@@ -162,9 +162,6 @@ protected:
 
 	//! Set finite elements and integration methods: mf_t should be defined only on Omega_plus	
 	void set_im_and_fem_model(void);
-
-
-
 	
 }; //end of class trasport3d1d
 
