@@ -62,7 +62,7 @@ TEST_ANALYTICAL = 0;
 
 %Fissi! si posso anche togliere
 %Couple (0: uso quella di Notaro; 1: uso quello di Brambilla)
-couple = 1;
+couple = 0;
 %flag for read interpolator from file
 READ_INTERPOLATOR = 0;
 
@@ -72,7 +72,7 @@ READ_INTERPOLATOR = 0;
 % Flag to import dimensionless param
 TEST_PARAM      = 0;
 % Flag to import the dimensionless radius (to do that TEST_PARAM must be equal to 0 and parameters P U d k mu must be left)
-IMPORT_RADIUS   = 1;
+IMPORT_RADIUS   = 0;
 % Flag to import the file with curvature (Remember to ENABLE CURVE_PROBLEM) - If this flag is 0, the curvature is computed from the mesh
 IMPORT_CURVE = 0;
 
@@ -104,7 +104,7 @@ PRINT_RESIDUALS       = 1;
 % Flags to build a regular 3d mesh
 TEST_GEOMETRY = 1;
 GT_T       = 'GT_PK(3,1)';
-NSUBDIV_T  = '[3,3,3]'; %[11,11,11]
+NSUBDIV_T  = '[11,11,11]'; %[11,11,11]
 ORG_T      = '[0,0,0]';
 SIZES_T    = '[1,1,1]';
 NOISED_T   = '0';
@@ -238,15 +238,15 @@ k=1.0E-18; %condizioni fisiologiche
 % Average interstitial pressure [Pa]
 P  = 133.32;
 % Characteristic flow speed in the capillary bed [m/s]
-U  = 1E-03; %100E-6
+U  = 1E-3; %100E-6
 % Characteristic length of the problem [m]
-d  = 1.0E-4; %5E-4
+d  = 1E-4; %5E-4
 % Hydraulic conductivity of the capillary walls [m^2 s/kg]
-Lp = 0*1E-12; 
+Lp = 1E-12; 
 % Average radius of the capillary vessels [m]
-RADIUS = 4.00E-6;
+RADIUS = 4E-6; %4E-6
 % Blood Viscosity [kg/m/s]
-mu_v = 9.33E-3; %3E-3
+mu_v = 9.33E-3; 
 % Interstial Fluid Viscosity [kg/m/s]
 mu_t = 1.2E-3;
 % Oncotic plasma pressure [Pa]
@@ -263,7 +263,7 @@ Gamma = 2;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%% LINEAR case
 % Hydraulic conductivity of the lymphatic wall [kg * m/s]
-Lp_LF = 1.04E-06;
+Lp_LF = 0*1.04E-06;
 % Pressure inside lymphatic capillaries [-] %% This is dimensionless pressure as the ones specified for the network!
 PL = 0;
 %%%%%%%%%%%%%%% Coefficient of lymphatic flow modelled as a SIGMOID of equation QLF = A - B / ( 1 + exp ( ( Pt + D ) / C )
@@ -279,30 +279,34 @@ D_LF = -2*133.32;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%										Oxygen transport											%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Tissue concentration guess [ml_O2/ml_tissue]
-Ct_guess =  1.0;
-%Vessel concentration guess [ml_O2/ml_Blood]
-Cv_guess =  1.0;
+%Tissue concentration guess [mlO2/ml_Blood]
+Ct_guess =  1;
+%Vessel concentration guess [mlO2/cm^3]
+Cv_guess =  1;
 
-%Max oxygen consumption rate [ml_O2/ml_tissue/s]
-m0 =  1.6E-4;  %PER TEST: *0 - 1.11E-6;
+%%%%%Parametri sono stati presi da "A dynamic model of oxygen transport from capillaries - LUCKER"
+%Max oxygen consumption rate [ml_O2/cm^3/s]
+m0 = 6.17E-5; %Welter %PER TEST: *0 - 1.11E-6;
 %Partial pressure at half max rate of metabolization [mmHg]
-Pm_50 = 4.0; %PER TEST:  *0;
-%Solubility of oxygen in the tissue [ml_O2/(ml_Blood*mmHg]
-alpha_t = 2.8E-5; %PER TEST: *0;
+Pm_50 = 1.0; %PER TEST:  *0;
+%Solubility of oxygen in the tissue [ml_O2/cm^3/mmHg]
+alpha_t = 3.89E-5; %PER TEST: *0;
 
 %Mean Corpuscolar Hematocrit Concentration [g_Hb/ml_RBC];
 MCHC = 0.34;
 %Hufner factor [ml_O2/g_Hb]
 N = 1.36;
 %Hill constant [-]
-delta = 2.7; %2.7
+delta = 2.64;
 %Partial pressure at half saturation [mmHg]
-Ps_50 = 30;
+Ps_50 = 47.9;
 %Oxygen solubility in the plasma [ml_O2/(ml_tissue*mmHg)]
-alpha_pl = 3.0E-5;
+alpha_pl = 2.82E-5;
 %maximum concentration [ml_O2/ml_Blood]
 C = 3E-3; %free oxygen concentration;
+
+%Coefficient of the capillary membrane for oxygen [-]
+sigma_oxy = 0.3; %DA VERIFICARE
 
 %Diffusivity in the tissue [m^2/s]  
 Dt = 2.41E-9; %condizioni fisiologiche
@@ -310,13 +314,13 @@ Dt = 2.41E-9; %condizioni fisiologiche
 Dt_test = 2.41E-3; %per la soluzione analitica
 
 %Diffusivity in the vessels [m^2/s] 
-Dv = 2.75E-9; %per la soluzione analitica 3 casi in cui Dv cambia di 3 ordini di grandezza
+Dv = 2.18E-9; %per la soluzione analitica 3 casi in cui Dv cambia di 3 ordini di grandezza
 %Dv = 2.75E-6;
 %Dv = 2.75E-3;
 %Dv = 2.75;
 
-%Permeability of the vessel wall [m/s] = Dv/h, con h = spessore della membrana endoteliale (1.0E-6 [m])
-Perm = 0*2.75E-3;
+%Permeability of the vessel wall [m/s] = Dv/h, con h = spessore della membrana endoteliale (0.6E-6 [m])
+Perm = 3.5E-5;
 % surface area of lymphatic vessels per unit volume of tissue [1/m]
 SV = 1;
 
@@ -384,12 +388,12 @@ Q_pl=0.0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Faces are ordered as follow:   x=0  x=L  y=0  y=L  z=0  z=L
 % BC labels (DIR / MIX) - DIR = Dirichlet considions, MIX = Robin mixed condition
-BClabel = 'DIR MIX  MIX  MIX  MIX  MIX'
+BClabel = 'MIX  MIX  MIX  MIX  MIX  MIX'
 % BC values (Specify pressure for DIR, or far field pressure for MIX)
-BCvalue = '1.0 0.0  0.0  0.0  0.0  0.0'
+BCvalue = '0.0 0.0  0.0  0.0  0.0  0.0'
 % Coefficient beta for MIX condition
 BETA = 1.10E-1;
-BCbeta = '2.22E-16 2.22E-16 2.22E-16 2.22E-16 2.22E-16 2.22E-16';
+BCbeta = '2.22E-6 2.22E-6 2.22E-6 2.22E-6 2.22E-6 2.22E-6';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%											RBC flow 												%%%%%%
@@ -405,13 +409,13 @@ Temp=37
 %% Riccardo metti qui quelli che ti servono (questi sono di esempio)
 % Faces are ordered as follow:   x=0  x=L  y=0  y=L  z=0  z=L
 % BC labels (DIR / MIX)
-BClabel_transp = 'DIR  MIX  MIX  MIX  MIX  MIX'
+BClabel_transp = 'MIX  MIX  MIX  MIX  MIX  MIX'
 % BC values tissue
-BCvalue_transp = '1.0  0.0  0.0  0.0  0.0  0.0'
+BCvalue_transp = '0.0  0.0  0.0  0.0  0.0  0.0'
 % Coefficient for MIX condition in tissue
-BETAtissue_transp = 1E-12;
+BETAtissue_transp = 0*1E-12;
 % Coefficient for MIX condition in vessels
-BETAvessel_transp = 1E-12;
+BETAvessel_transp = 0*1E-12;
 
 
 
