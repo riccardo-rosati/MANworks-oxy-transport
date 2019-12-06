@@ -54,7 +54,7 @@ NEW_FORMULATION = 1;
 %Flag to study oxygen transport
 OXYGEN_TRANSPORT = 1;
 %Flag to add reaction termn
-REACTION = 0;
+REACTION = 1;
 %Flag to add oxyhemoglobin advection termn (psi function)
 HEMOADVECTION = 1;
 %Flag to test the analytical solution for Cv
@@ -72,7 +72,7 @@ READ_INTERPOLATOR = 0;
 % Flag to import dimensionless param
 TEST_PARAM      = 0;
 % Flag to import the dimensionless radius (to do that TEST_PARAM must be equal to 0 and parameters P U d k mu must be left)
-IMPORT_RADIUS   = 0;
+IMPORT_RADIUS   = 1;
 % Flag to import the file with curvature (Remember to ENABLE CURVE_PROBLEM) - If this flag is 0, the curvature is computed from the mesh
 IMPORT_CURVE = 0;
 
@@ -138,7 +138,6 @@ FEM_TYPET   = 'FEM_RT0(3)';
 FEM_TYPET_P = 'FEM_PK_DISCONTINUOUS(3,0)';
 FEM_TYPET_DATA = 'FEM_PK(3,0)';
 FEM_TYPET_OT = 'FEM_PK(3,1)';		%Oxygen tissue concentration
-%FEM_TYPET_ODATA = 'FEM_PK(3,0)';	%Oxygen coeff mesh 	//RR
 % GetFem type for the 3D Integration Method
 IM_TYPET    = 'IM_TETRAHEDRON(8)'; 
 
@@ -164,7 +163,7 @@ IM_TYPEV_OXY_TRANSP = 'IM_GAUSS1D(6)';	%Oxygen transport
 %%%											Coupling (3D/1D) 										%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Nb of discretisation point for 3D-1D interpolation
-NInt = 50;
+NInt = 30; %50
 
 
 
@@ -410,9 +409,9 @@ BClabel_transp = 'MIX  MIX  MIX  MIX  MIX  MIX'
 % BC values tissue
 BCvalue_transp = '0.0  0.0  0.0  0.0  0.0  0.0'
 % Coefficient for MIX condition in tissue (At[])
-BETAtissue_transp = 1E-2;
+BETAtissue_transp = 1E-12;
 % Coefficient for MIX condition in vessels (Av[])
-BETAvessel_transp = 1E-2;
+BETAvessel_transp = 1E-12;
 
 
 
