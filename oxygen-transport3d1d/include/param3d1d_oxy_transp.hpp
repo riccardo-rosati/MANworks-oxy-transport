@@ -63,6 +63,8 @@ struct param3d1d_oxy_transp {
 	scalar_type Ps_50_;
 	//Maximum concentration
 	scalar_type C_;
+	//Reflexion coefficient of the capillary membrane for oxygen [-]
+	//scalar_type sigma_oxy_;
 
 
 	//Under-relaxation coefficient
@@ -162,6 +164,7 @@ struct param3d1d_oxy_transp {
 
 			C_ =  FILE_.real_value("C","maximum concentration [kg/m^3]");
 			//underOXY_ = FILE_.real_value("UNDER_RELAXATION_COEFFICIENT_OXY","Under-relaxation coefficient for Transport Solution");
+			//sigma_oxy_ = FILE_.real_value("sigma_oxy","coefficient of the capillary membrane for oxygen [-]");
 
 
 			Perm_ = FILE_.real_value("Perm","Permeability of the capillary walls [m/s]");
@@ -235,6 +238,8 @@ struct param3d1d_oxy_transp {
 	inline scalar_type delta  () { return delta_;  } const
 	//! Get the under-relaxation coefficient
 	//inline scalar_type underOXY  () { return underOXY_; } const
+	//! Get the reflexion coefficient for oxygen
+	//inline scalar_type sigma_oxy  () { return sigma_oxy_;  } const
 		
 	//! Get the radius at a given mesh_region
 	//scalar_type R  (const getfem::mesh_im & mim, const size_type rg) 
