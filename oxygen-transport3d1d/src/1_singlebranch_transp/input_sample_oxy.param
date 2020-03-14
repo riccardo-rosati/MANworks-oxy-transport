@@ -36,7 +36,7 @@ LINEAR_LYMPHATIC_DRAINAGE = 1;
 %%%											RBC flow 												%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Flag to study the hematocrit distribution all over the network (0 = constant; 1= transport)
-HEMATOCRIT_TRANSPORT = 1;
+HEMATOCRIT_TRANSPORT = 0;
 % Flag for Type of Viscosity (0 = Vivo - including glycocalyx effect - or 1 = vitro) based on Pries and Secomb works
 Visco_v=0;
 
@@ -45,7 +45,7 @@ Visco_v=0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Flag to add advection terms
 ADVECTION=1;
-%Flag to add coupling terms
+%Flag to add coupling terms (sia per FLUID problem che per TRANSPORT problem: 0, Lp=Pl=0; 1, Lp e Pl !=0)
 COUPLING=1;
 %Flag to take the stationary problem
 %STATIONARY=1;
@@ -163,7 +163,7 @@ IM_TYPEV_OXY_TRANSP = 'IM_GAUSS1D(6)';	%Oxygen transport
 %%%											Coupling (3D/1D) 										%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Nb of discretisation point for 3D-1D interpolation
-NInt = 30; %50
+NInt = 50; %50
 
 
 
@@ -191,7 +191,7 @@ FACE = 0;
 %%%										General		 												%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Maximum number of iterations for FPM
-Number_Iteration   = 30; %30 itaration for results
+Number_Iteration   = 30;
 % Number of iteration between saving progress (saving process overwrites files)
 Saving_Iteration   = 1;
 
@@ -240,11 +240,11 @@ P  = 133.32;
 % Characteristic flow speed in the capillary bed [m/s]
 U  = 1E-3; %100E-6
 % Characteristic length of the problem [m]
-d  = 1E-4; %5E-4
+d  = 5E-4; %5E-4
 % Hydraulic conductivity of the capillary walls [m^2 s/kg]
-Lp = 1E-12; 
+Lp = 0*1E-12; 
 % Average radius of the capillary vessels [m]
-RADIUS = 4E-6; %4E-6
+RADIUS = 4E-6;
 % Blood Viscosity [kg/m/s]
 mu_v = 9.33E-3; 
 % Interstial Fluid Viscosity [kg/m/s]
@@ -299,17 +299,17 @@ N = 1.36;
 %Hill constant [-]
 delta = 2.64;
 %Partial pressure at half saturation [mmHg]
-Ps_50 = 47.9;
+Ps_50 = 27; %da WELTER
 %Oxygen solubility in the plasma [ml_O2/(ml_tissue*mmHg)]
 alpha_pl = 2.82E-5;
 %maximum concentration [ml_O2/ml_Blood]
 C = 3E-3; %free oxygen concentration;
 
 %Coefficient of the capillary membrane for oxygen [-]
-sigma_oxy = 0.3; %DA VERIFICARE
+sigma_oxy = 0.1; %0.1 DA VERIFICARE
 
 %Diffusivity in the tissue [m^2/s]  
-Dt = 2.41E-9; %condizioni fisiologiche
+Dt = 2.41E-9; % 2.41E-9 condizioni fisiologiche
 %Test diffusivity in the tissue [m^2/s]
 Dt_test = 2.41E-3; %per la soluzione analitica
 
@@ -320,7 +320,7 @@ Dv = 2.18E-9; %per la soluzione analitica 3 casi in cui Dv cambia di 3 ordini di
 %Dv = 2.75;
 
 %Permeability of the vessel wall [m/s] = Dv/h, con h = spessore della membrana endoteliale (0.6E-6 [m])
-Perm = 3.5E-5;
+Perm = 3.5E-5; %TEST1 Perm = 3.5E-5 x [10 ,100 ,200]; TEST2 = 3.5E-5 x [10 0.1]
 % surface area of lymphatic vessels per unit volume of tissue [1/m]
 SV = 1;
 
@@ -388,7 +388,7 @@ Q_pl=0.0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Faces are ordered as follow:   x=0  x=L  y=0  y=L  z=0  z=L
 % BC labels (DIR / MIX) - DIR = Dirichlet considions, MIX = Robin mixed condition
-BClabel = 'MIX  MIX  MIX  MIX  MIX  MIX'
+BClabel = 'MIX  MIX MIX  MIX  MIX  MIX'
 % BC values (Specify pressure for DIR, or far field pressure for MIX)
 BCvalue = '0.0 0.0  0.0  0.0  0.0  0.0'
 % Coefficient beta for MIX condition
