@@ -54,9 +54,9 @@ NEW_FORMULATION = 1;
 %Flag to study oxygen transport
 OXYGEN_TRANSPORT = 1;
 %Flag to add reaction termn
-REACTION = 0;
+REACTION = 1;
 %Flag to add oxyhemoglobin advection termn (psi function)
-HEMOADVECTION = 0;
+HEMOADVECTION = 1;
 %Flag to test the analytical solution for Cv
 TEST_ANALYTICAL = 0;
 
@@ -72,7 +72,7 @@ READ_INTERPOLATOR = 0;
 % Flag to import dimensionless param
 TEST_PARAM      = 0;
 % Flag to import the dimensionless radius (to do that TEST_PARAM must be equal to 0 and parameters P U d k mu must be left)
-IMPORT_RADIUS   = 0;
+IMPORT_RADIUS   = 1;
 % Flag to import the file with curvature (Remember to ENABLE CURVE_PROBLEM) - If this flag is 0, the curvature is computed from the mesh
 IMPORT_CURVE = 0;
 
@@ -100,7 +100,7 @@ PRINT_RESIDUALS       = 1;
 %=========================================================================================================
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%										Tissue mesh	(3D)	 										%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % Flags to build a regular 3d mesh
 TEST_GEOMETRY = 1;
 GT_T       = 'GT_PK(3,1)';
@@ -115,15 +115,15 @@ MESH_FILET = ' ';
 %%%									Network mesh (1D) 												%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Path to import the 1d list of points (fluid flow)
-MESH_FILEV = './segment.pts'
+MESH_FILEV = './anastomosi.pts'
 % Path to import radius of the newtork (read if IMPORT_RADIUS=1)
 RFILE      = 'radius.pts'
 % Path to import the 1d list of points for Ht (as the 1d list of points but with H boundary conditions)
-MESH_FILEH = './segment_Ht.pts'
+MESH_FILEH = './HT_BCs.pts'
 % Path to import the curvature of the vessels (if IMPORT_CURVE = 1)
 CURVE_FILE = 'curve.pts'
 % Path to import the 1d list of points for transport
-MESH_FILEV_OXY_TRANSP = './segment_transp.pts';
+MESH_FILEV_OXY_TRANSP = './anastomosi_transp.pts';
 
 %=========================================================================================================
 %								GETFEM DESCRIPTORS (element types and couping)
@@ -163,7 +163,7 @@ IM_TYPEV_OXY_TRANSP = 'IM_GAUSS1D(6)';	%Oxygen transport
 %%%											Coupling (3D/1D) 										%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Nb of discretisation point for 3D-1D interpolation
-NInt = 30; %50
+NInt = 50; %50
 
 
 
@@ -180,7 +180,7 @@ SOLVE_METHOD_OXY_TRANSP = 'SuperLU';		%Oxygen transport
 % Maximum number of iterations for iterative solvers
 MAXITER  = 100;
 % Residual for conjugate gradient
-RESIDUAL = 1E-16;  
+RESIDUAL = 1E-10; %1E-16;  
 % Number of region of the first face of the boundary of the 3d domain
 FACE = 0;  
 
@@ -240,7 +240,7 @@ P  = 133.32;
 % Characteristic flow speed in the capillary bed [m/s]
 U  = 1E-3; %100E-6
 % Characteristic length of the problem [m]
-d  = 1E-4; %5E-4
+d  = 5E-4; %5E-4
 % Hydraulic conductivity of the capillary walls [m^2 s/kg]
 Lp = 1E-12; 
 % Average radius of the capillary vessels [m]
@@ -299,14 +299,14 @@ N = 1.36;
 %Hill constant [-]
 delta = 2.64;
 %Partial pressure at half saturation [mmHg]
-Ps_50 = 47.9;
+Ps_50 = 27; %da WELTER
 %Oxygen solubility in the plasma [ml_O2/(ml_tissue*mmHg)]
 alpha_pl = 2.82E-5;
 %maximum concentration [ml_O2/ml_Blood]
 C = 3E-3; %free oxygen concentration;
 
 %Coefficient of the capillary membrane for oxygen [-]
-sigma_oxy = 0.3; %DA VERIFICARE
+sigma_oxy = 0.1; %Koppl
 
 %Diffusivity in the tissue [m^2/s]  
 Dt = 2.41E-9; %condizioni fisiologiche
@@ -314,13 +314,13 @@ Dt = 2.41E-9; %condizioni fisiologiche
 Dt_test = 2.41E-3; %per la soluzione analitica
 
 %Diffusivity in the vessels [m^2/s] 
-Dv = 2.18E-9; %per la soluzione analitica 3 casi in cui Dv cambia di 3 ordini di grandezza
+Dv = 2.18E-5; %TEST ANASTO: aumento la Dv per far sovrapporre le due curve in inlet//per la soluzione analitica 3 casi in cui Dv cambia di 3 ordini di grandezza
 %Dv = 2.75E-6;
 %Dv = 2.75E-3;
 %Dv = 2.75;
 
 %Permeability of the vessel wall [m/s] = Dv/h, con h = spessore della membrana endoteliale (0.6E-6 [m])
-Perm = 3.5E-5;
+Perm = 3.5E-5; %Koppl
 % surface area of lymphatic vessels per unit volume of tissue [1/m]
 SV = 1;
 
@@ -413,9 +413,9 @@ BClabel_transp = 'MIX  MIX  MIX  MIX  MIX  MIX'
 % BC values tissue
 BCvalue_transp = '0.0  0.0  0.0  0.0  0.0  0.0'
 % Coefficient for MIX condition in tissue
-BETAtissue_transp = 0*1E-12;
+BETAtissue_transp = 1E-6;
 % Coefficient for MIX condition in vessels
-BETAvessel_transp = 0*1E-12;
+BETAvessel_transp = 1E-6;
 
 
 

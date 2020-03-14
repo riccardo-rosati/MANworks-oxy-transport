@@ -94,20 +94,39 @@ int main(int argc, char *argv[])
 				}
 				}
 			else
-				{if(!p.problem3d1d::LINEAR_LYMPH())
-					{
+				{//if(!p.problem3d1d::LINEAR_LYMPH())
+					//{
 					// Solve the problem
-					if (!p.problemHT::solve_fixpoint()) GMM_ASSERT1(false, "solve procedure has failed");
+					//if (!p.problemHT::solve_fixpoint()) GMM_ASSERT1(false, "solve procedure has failed");
 					
                                         // Add flag with message if oxy-transp YES (and Ht NO)
-					}
-				else
-					{
-					// Solve the problem
-					if (!p.solve()) GMM_ASSERT1(false, "solve procedure has failed");
-					}
+					//}
+				//else
+					if (!p.problem3d1d::solve()) GMM_ASSERT1(false, "solve procedure has failed");
+					cout<<"***** Risolto il problema fluido *****"<<endl;
+					 //Solve the problem
+					 if(p.OXYGEN_TRANSPORT(argc, argv))
+                                {
+				  cout<<"!!C'è trasporto di ossigeno SENZA EMATOCRITO!!"<<endl;
+                                    //initialize the transport problem
+                                    p.init_oxy_transp(argc, argv);
+				std::cout<<"***** Inizializzato il trasporto di ossigeno *****"<<std::endl;
+				
+                                    //assemble
+                                    p.assembly_oxy_transp();
+				std::cout<<"***** Assemblato il trasporto di ossigeno *****"<<std::endl;
+                                    //solve
+                                    //if (!p.solve_oxygen_fixpoint()) GMM_ASSERT1(false, "solve procedure has failed");  // the export is in the solve at each time step
+									if (!p.solve_oxy_transp()) GMM_ASSERT1(false, "solve procedure has failed");  // the export is in the solve at each time step
+					cout<<"***** Risolto il trasporto di ossigeno *****"<<endl;
+                                    // Save results in .vtk format
+                                    p.export_vtk_oxy_transp();
+                                    p.mass_balance();
+
 				}
-				p.mass_balance();
+					
+					
+				}
 		// Save results in .vtk format
                 p.problem3d1d::export_vtk();		      
 		   
