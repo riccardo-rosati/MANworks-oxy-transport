@@ -202,13 +202,15 @@
 	mf_coeft.clear();
 
 
+
 	problem3d1d::set_im_and_fem();
 
-
+	if(PARAM.int_value("HEMATOCRIT_TRANSPORT")){
 	mf_Hi.clear();
 	mf_coefh.clear();
 
 	problemHT::set_im_and_fem();
+	}
 
 	}; // end of set_im_and_oxy_fem
 	
@@ -671,8 +673,8 @@ size_type pos=0;
 			}
 	}
 
-cout<<"\n Pos= "<<pos<<"\n Branch #"<<i<<": DOF per la mesh dell'ematocrito= "<<dof_enum_H<<endl;
-	cout<<"***************"<<endl;
+//cout<<"\n Pos= "<<pos<<"\n Branch #"<<i<<": DOF per la mesh dell'ematocrito= "<<dof_enum_H<<endl;
+//	cout<<"***************"<<endl;
 	pos=0;
 	for(getfem::mr_visitor mrv(rg_branch); !mrv.finished(); ++mrv){
 		//cout<<"\n Elemento della mesh fem della velocità: "<<mrv.cv()<<endl;
@@ -701,8 +703,8 @@ cout<<"\n Pos= "<<pos<<"\n Branch #"<<i<<": DOF per la mesh dell'ematocrito= "<<
 			pos ++;*/
 			}
 	}
-cout<<"\n Pos= "<<pos<<"\n Branch #"<<i<<": DOF per la mesh della veclotià= "<<dof_enum_U<<endl;
-	cout<<"***********************"<<endl;
+//cout<<"\n Pos= "<<pos<<"\n Branch #"<<i<<": DOF per la mesh della veclotià= "<<dof_enum_U<<endl;
+//	cout<<"***********************"<<endl;
 		pos=0;
 	for (getfem::mr_visitor mrv(rg_branch); !mrv.finished(); ++mrv)
 		{
@@ -783,7 +785,7 @@ cout<<"\n Pos= "<<pos<<"\n Branch #"<<i<<": DOF per la mesh della concentrazione
 			pos ++;*/
 			}
 	}
-cout<<"\n Branch #"<<i<<": DOF di PSI post interpolazione= "<<dof_enum_PSI<<endl;
+//cout<<"\n Branch #"<<i<<": DOF di PSI post interpolazione= "<<dof_enum_PSI<<endl;
 //assemblo una nuova velocità: uv(1+PSI), ma PSI vive su mf_Hi (P1), invece la uv vive su mf_Uvi (P2) --> interpolo psi (che vive su mf_Hi[i]) sulla mesh
 //della velocità mf_Uvi (P2), così non sto neanche a cambiare la mesh nella fase di assemblaggio
 
@@ -1050,7 +1052,7 @@ oxygen_transport3d1d::dimensioning_saturation (scalar_type cv){
 
 
 		if(descr_oxy_transp.HEMOADVECTION==1){
-			cout<<"***********************"<<endl;
+			//cout<<"***********************"<<endl;
 		vector_type Hi(mf_Hi[i].nb_dof()); gmm::clear(Hi); //salvo l'ematocrito per ogni branch (come è definito)
 
 		if(i>0) shift_h += mf_Hi[i-1].nb_dof();
@@ -1570,9 +1572,6 @@ computing_residual (vector_type Ct_new, vector_type Ct_old, vector_type Cv_new, 
 
 	scalar_type Vnew = gmm::vect_norm2(Cv_new);
 	scalar_type Vold = gmm::vect_norm2(Cv_old);
-
-	cout<<"Residuo di Ct= "<<Tnew/Told<<endl;
-	cout<<"Residuo di Cv= "<<Vnew/Vold<<endl;
 	
 	scalar_type error;
 	error = Tnew/Told + Vnew/Vold;
@@ -1887,7 +1886,7 @@ if(descr_oxy_transp.HEMOADVECTION==1){
 		//Assemblo nuovamente il rhs
 		//gmm::clear(FM_oxy);
 		assembly_rhs_oxy_transp();
-		cout<<"Risolvo il sistema nuovamente"<<endl;
+		//cout<<"Risolvo il sistema nuovamente"<<endl;
 			RK = solve_oxy_transp();
 
 			gmm::copy(gmm::sub_vector(UM_oxy,
@@ -1958,7 +1957,7 @@ if(descr_oxy_transp.HEMOADVECTION==1){
 	#endif	
 
 	//PROVA
-	
+	/*
 	cout<<"Dimensione Jv_oxy_transp= "<<Jv_oxy_transp.size()<<endl;
 	// initialize the MBD and MBA to zero (clear at eac time step)
 	for (size_type i=0; i<Jv_oxy_transp.size(); ++i){
@@ -1973,7 +1972,7 @@ if(descr_oxy_transp.HEMOADVECTION==1){
 		cout<<"\n Jv_oxy_transp["<<i<<"].branches= "<<Jv_oxy_transp[i].branches<<endl;
 		///////
 	}	
-	
+	*/
 	size_type shift = 0; //counter for branches
 	
 	for (size_type i=0; i<mf_Uvi.size(); ++i){ // branch loop 	
@@ -2110,8 +2109,8 @@ if(descr_oxy_transp.HEMOADVECTION==1){
 
 vector_type
 oxygen_transport3d1d::computing_oxyhemoglobin(vector_type Hi, size_type i, vector_type Cv){
-cout<<"\n ********** Calcolando PSI ..."<<endl;
-cout<<"Branch #"<<i<<endl;
+//cout<<"\n ********** Calcolando PSI ..."<<endl;
+//cout<<"Branch #"<<i<<endl;
 	scalar_type k1;
 		k1 = param_oxy_transp.MCHC() * param_oxy_transp.N() / param_oxy_transp.C();
 	scalar_type k2;
@@ -2214,9 +2213,127 @@ cout<<"Branch #"<<i<<endl;
 		//gmm::scale(denum, k1);
 		//gmm::copy(denum, psi);
 
-	//return psi_i;
-		return psi;
+	return psi;
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+////////////////		CALCOLO DI CVTOT 		///////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////
+vector_type
+oxygen_transport3d1d::computing_totaloxygen(vector_type Hi, size_type i, vector_type Cv){
+//cout<<"\n ********** Calcolando CVTOT ..."<<endl;
+//cout<<"Branch #"<<i<<endl;
+	scalar_type k1;
+		k1 = param_oxy_transp.MCHC() * param_oxy_transp.N() / param_oxy_transp.C();
+	scalar_type k2;
+		k2 = pow(param_oxy_transp.Ps_50()*param_oxy_transp.alpha_pl(),param_oxy_transp.delta())/pow(param_oxy_transp.C(),param_oxy_transp.delta()); //ml_O2/ml_B^delta
+
+		vector_type dof_enum_C, dof_enum_H;
+
+		vector_type psi(Hi.size()); gmm::clear(psi);
+
+		vector_type Cvtot(Hi.size()); gmm::clear(Cvtot);
+		
+		/*
+		vector_type cv_i(Hi.size()); gmm::clear(cv_i);	
+		vector_type ht_i(Hi.size()); gmm::clear(ht_i);
+		vector_type psi_i(Hi.size()); gmm::clear(psi_i);
+		*/
+
+		mesh_region &rg_branch = meshv.region(i);	
+
+		size_type pos=0;
+	for (getfem::mr_visitor mrv(rg_branch); !mrv.finished(); ++mrv)
+		{
+		if(pos == 0)
+			{
+			dof_enum_C.emplace_back(mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[0]); pos++;
+			dof_enum_C.emplace_back(mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1]); pos++;
+			/*cv_i[pos] = Cv[mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[0]];
+			cout << " cv_i [" << pos << "] = cv[" << mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[0] << "]" <<"="<<Cv[mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[0]]<< endl;
+			pos ++;
+			cv_i[pos] = Cv[mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1]];
+			cout << " cv_i [" << pos << "] = cv[" << mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1] << "]" <<"="<<Cv[mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1]]<< endl;
+			pos ++;*/
+			}
+		else{
+			dof_enum_C.emplace_back(mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1]); pos++;
+			/*cv_i[pos] = Cv[mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1]];
+			cout << " cv_i [" << pos << "] = cv[" << mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1] << "]" <<"="<<Cv[mf_oxy_Cv.ind_basic_dof_of_element(mrv.cv())[1]]<< endl;
+			pos ++;*/
+			}
+		}
+
+	pos=0;
+	for(getfem::mr_visitor mrv(rg_branch); !mrv.finished(); ++mrv){
+		//cout<<"\n Elemento della mesh fem dell'ematocrito: "<<mrv.cv()<<endl;
+		if(pos==0){
+			dof_enum_H.emplace_back(mf_Hi[i].ind_basic_dof_of_element(mrv.cv())[0]); pos++;
+			dof_enum_H.emplace_back(mf_Hi[i].ind_basic_dof_of_element(mrv.cv())[1]); pos++;
+			/*ht_i[pos] = Hi[mf_Hi[i].ind_basic_dof_of_element(mrv.cv())[0]];
+			cout << " ht_i [" << pos << "] = Hi[" << mf_Hi[i].ind_basic_dof_of_element(mrv.cv())[0] << "]" <<"="<<Hi[mf_Hi[i].ind_basic_dof_of_element(mrv.cv())[0]]<< endl;
+			pos ++;
+			ht_i[pos] = Hi[mf_Hi[i].ind_basic_dof_of_element(mrv.cv())[1]];
+			cout << " ht_i [" << pos << "] = Hi[" << mf_Hi[i].ind_basic_dof_of_element(mrv.cv())[1] << "]" <<"="<<Hi[mf_Hi[i].ind_basic_dof_of_element(mrv.cv())[1]]<< endl;
+			pos ++;*/
+			}
+			else{
+			dof_enum_H.emplace_back(mf_Hi[i].ind_basic_dof_of_element(mrv.cv())[1]); pos++;
+			/*ht_i[pos] = Hi[mf_Hi[i].ind_basic_dof_of_element(mrv.cv())[1]];
+			cout << " ht_i [" << pos << "] = Hi[" << mf_Hi[i].ind_basic_dof_of_element(mrv.cv())[1] << "]" <<"="<<Hi[mf_Hi[i].ind_basic_dof_of_element(mrv.cv())[1]]<< endl;
+			pos ++;*/
+			}
+	}
+
+	scalar_type sat;
+	scalar_type num;
+	scalar_type denum;
+	for(size_type j=0; j<dof_enum_H.size(); j++){
+		num = pow(Cv[dof_enum_C[j]], param_oxy_transp.delta());
+		denum = num + k2;
+		sat = num/denum;
+		psi[dof_enum_H[j]] = Hi[dof_enum_H[j]] * k1 * sat;
+
+		Cvtot[dof_enum_H[j]] = Cv[dof_enum_C[j]] + psi[dof_enum_H[j]];
+	}
+
+/*
+		//gmm::reciprocal(denum);
+		//gmm::vscale(num, denum); //calcolo della saturazione: OUTPUT: denum
+
+		for (size_type j=0; j<Hi.size(); j++)
+		{
+			psi[j] = ht_i[j]*k1*saturation[j];
+			cout<<"Psi["<<j<<"]= "<<psi[j]<<endl;
+		}
+
+		pos=0;
+	for(getfem::mr_visitor mrv(rg_branch); !mrv.finished(); ++mrv){
+		cout<<"\n Elemento della mesh per il calcolo di PSI: "<<mrv.cv()<<endl;
+		if(pos==0){
+			psi_i[pos] = psi[mf_Hi[i].ind_basic_dof_of_element(mrv.cv())[0]];
+			cout << " psi_i [" << pos << "] = Psi[" << mf_Hi[i].ind_basic_dof_of_element(mrv.cv())[0] << "]" <<"="<<psi[mf_Hi[i].ind_basic_dof_of_element(mrv.cv())[0]]<< endl;
+			pos ++;
+			psi_i[pos] = psi[mf_Hi[i].ind_basic_dof_of_element(mrv.cv())[1]];
+			cout << " psi_i [" << pos << "] = Psi[" << mf_Hi[i].ind_basic_dof_of_element(mrv.cv())[1] << "]" <<"="<<psi[mf_Hi[i].ind_basic_dof_of_element(mrv.cv())[1]]<< endl;
+			pos ++;
+			}
+			else{
+			psi_i[pos] = psi[mf_Hi[i].ind_basic_dof_of_element(mrv.cv())[1]];
+			cout << " psi_i [" << pos << "] = Psi[" << mf_Hi[i].ind_basic_dof_of_element(mrv.cv())[1] << "]" <<"="<<psi[mf_Hi[i].ind_basic_dof_of_element(mrv.cv())[1]]<< endl;
+			pos ++;
+			}
+	}
+	*/
+		//gmm::vscale(ht_i, denum);
+		//gmm::scale(denum, k1);
+		//gmm::copy(denum, psi);
+
+	//return psi;
+		return Cvtot;
+}
+///////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////
  
 
  const void oxygen_transport3d1d::export_vtk_oxy_transp (const string & time_suff,const string & suff)
@@ -2280,7 +2397,7 @@ cout<<"Branch #"<<i<<endl;
 
 	if(descr_oxy_transp.HEMOADVECTION==1){
 	#ifdef M3D1D_VERBOSE_
-	cout<< "  Exporting Oxyhemoglobin ..." <<endl;
+	cout<< "  Exporting Oxyhemoglobin and Total Oxygen Concentration.." <<endl;
 	#endif
 	size_type start = 0;
 	size_type length = 0;
@@ -2288,6 +2405,7 @@ cout<<"Branch #"<<i<<endl;
 	last_dof=nb_branches*mf_Hi[nb_branches-1].nb_dof();
 	for(size_type i=0; i<nb_branches; ++i){
 		vector_type psi(mf_Hi[i].nb_dof());
+		vector_type Cvtot(mf_Hi[i].nb_dof());
 		vector_type Hi(mf_Hi[i].nb_dof());
 
 		if(i>0) start += mf_Hi[i-1].nb_dof();
@@ -2295,13 +2413,21 @@ cout<<"Branch #"<<i<<endl;
 
 		gmm::copy(gmm::sub_vector(UM_HT, gmm::sub_interval(start, length)), Hi);
 		psi = computing_oxyhemoglobin(Hi, i, Cv_dim);
+		Cvtot = computing_totaloxygen(Hi, i, Cv_dim);
 		gmm::scale(psi, param_oxy_transp.C());
-		cout<<"psi= "<<psi<<endl;
+		gmm::scale(Cvtot, param_oxy_transp.C());
+		//cout<<"psi= "<<psi<<endl;
+		//cout<<"Cvtot= "<<Cvtot<<endl;
 
 		vtk_export exp_Oh(descr_oxy_transp.OUTPUT+"Oh"+suff+std::to_string(i)+".vtk");
 			exp_Oh.exporting(mf_Hi[i]);
 			exp_Oh.write_mesh();
 			exp_Oh.write_point_data(mf_Hi[i], psi, "Psi"); 
+
+		vtk_export exp_Cvtot(descr_oxy_transp.OUTPUT+"Cvtot"+suff+std::to_string(i)+".vtk");
+			exp_Cvtot.exporting(mf_Hi[i]);
+			exp_Cvtot.write_mesh();
+			exp_Cvtot.write_point_data(mf_Hi[i], Cvtot, "Cvtot"); 
 			}
 	}
 

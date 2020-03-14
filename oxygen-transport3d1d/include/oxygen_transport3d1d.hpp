@@ -67,6 +67,8 @@ public:
 	vector_type modifing_Uvi(vector_type Hi, vector_type uvi, size_type i, vector_type cv);
 	//! Compute the oxyhemoglobin concentration before exporting (RR)
 	vector_type computing_oxyhemoglobin(vector_type Hi, size_type i, vector_type cv);
+	//! Compute the total oxygen concentration as sum of free and bound-hemoglobin oxygen (RR)
+	vector_type computing_totaloxygen(vector_type Hi, size_type i, vector_type cv);
 	
 
 	//! Getter for solution
