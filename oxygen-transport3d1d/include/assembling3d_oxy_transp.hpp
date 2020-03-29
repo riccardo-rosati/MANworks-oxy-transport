@@ -128,15 +128,6 @@ asm_tissue_bc_transp
 	 const scalar_type beta
 	 )
 {
-
-	
-	//PROVA:
-	//for(size_type bc=0; bc<BC.size(); bc++){
-	//	cout<<"LABEL di BC["<<bc<<"] = "<<BC[bc].label<<endl;
-	//	cout<<"VALUE di BC["<<bc<<"] = "<<BC[bc].value<<endl;
-	//	cout<<"REGION di BC["<<bc<<"] = "<<BC[bc].rg<<endl;
-	//}
-	/////////////////
 	
 	GMM_ASSERT1(mf_c.get_qdim()==1,  "invalid data mesh fem (Qdim=1 required)");
 	GMM_ASSERT1(mf_data.get_qdim()==1, "invalid data mesh fem (Qdim=1 required)");

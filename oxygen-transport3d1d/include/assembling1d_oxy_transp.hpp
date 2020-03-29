@@ -167,14 +167,6 @@ asm_network_bc_transp
 	GMM_ASSERT1(mf_c.get_qdim()==1,  "invalid data mesh fem (Qdim=1 required)");
 	GMM_ASSERT1(mf_data.get_qdim()==1, "invalid data mesh fem (Qdim=1 required)");
 
-	//PROVA:
-	for(size_type bc=0; bc<BC.size(); bc++){
-		cout<<"LABEL di BC["<<bc<<"] = "<<BC[bc].label<<endl;
-		cout<<"VALUE di BC["<<bc<<"] = "<<BC[bc].value<<endl;
-		cout<<"REGION di BC["<<bc<<"] = "<<BC[bc].rg<<endl;
-	}
-	///////////////
-
 	for (size_type bc=0; bc < BC.size(); bc++) { 
 		GMM_ASSERT1(mf_c.linked_mesh().has_region(bc), "missed mesh region" << bc);
 		if (BC[bc].label=="DIR") { // Dirichlet BC

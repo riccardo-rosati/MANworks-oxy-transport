@@ -634,13 +634,6 @@ oxygen_transport3d1d::modifing_Uvi(vector_type Hi, vector_type uvi, size_type i,
 		per (1+psi) --> uv(1+psi), così da considerare la presenza dell'emoglobina  
 
 	*/
-		//4 vettori utili a mettere in ordine la Cv, la Uvi, e la Ht al fine di calcolare puntualmente PSI
-		/*vector_type cv_i(mf_Hi[i].nb_dof()); gmm::clear(cv_i);
-		vector_type uv_i(mf_Uvi[i].nb_dof()); gmm::clear(uv_i);
-		vector_type ht_i(mf_Hi[i]. nb_dof()); gmm::clear(ht_i);
-		vector_type psi_i(mf_Uvi[i].nb_dof()); gmm::clear(psi_i);*/
-
-		cout<<"***************************"<<endl;
 		vector_type new_uvi(mf_Uvi[i].nb_dof()); gmm::clear(new_uvi);
 		vector_type psi(mf_Hi[i].nb_dof()); gmm::clear(psi); //salvo i valori di PSI = ossigeno legato all'emoglobina
 		vector_type new_psi (mf_Uvi[i].nb_dof()); gmm::clear(new_psi);//la nuova PSI: (1+PSI) dopo interpola
@@ -726,7 +719,7 @@ size_type pos=0;
 			pos ++;*/
 			}
 		}
-cout<<"\n Pos= "<<pos<<"\n Branch #"<<i<<": DOF per la mesh della concentrazione= "<<dof_enum_C<<endl;
+//cout<<"\n Pos= "<<pos<<"\n Branch #"<<i<<": DOF per la mesh della concentrazione= "<<dof_enum_C<<endl;
 //ho fatto questo tipo di ciclo perché sul singolo elemento mi prendeva due volte il nodo iniziale: ora prendo entrambi nodi per il primo ciclo e poi per il secondo prendo solo il secondo valore del nodo
 //NB: in questo modo metto in ordine la Cv per ogni branch: dato che la numerazione dei vertici salta per default di getfem, così ottengo la  numerazione corretta
 		scalar_type sat=0;
@@ -785,7 +778,6 @@ cout<<"\n Pos= "<<pos<<"\n Branch #"<<i<<": DOF per la mesh della concentrazione
 			pos ++;*/
 			}
 	}
-//cout<<"\n Branch #"<<i<<": DOF di PSI post interpolazione= "<<dof_enum_PSI<<endl;
 //assemblo una nuova velocità: uv(1+PSI), ma PSI vive su mf_Hi (P1), invece la uv vive su mf_Uvi (P2) --> interpolo psi (che vive su mf_Hi[i]) sulla mesh
 //della velocità mf_Uvi (P2), così non sto neanche a cambiare la mesh nella fase di assemblaggio
 
@@ -1135,26 +1127,6 @@ oxygen_transport3d1d::dimensioning_saturation (scalar_type cv){
 	vector_type ONCOTIC (dof.Pv());
 	gmm::copy(gmm::sub_vector(UM, 
 		gmm::sub_interval(dof.Ut()+dof.Pt()+dof.Uv(), dof.Pv())), ONCOTIC);
-//PROVAAA
-/*	vector_type Um_pt(dof.Pt());
-		gmm::copy(gmm::sub_vector(UM, 
-		  		  gmm::sub_interval(dof.Ut(), dof.Pt())), Um_pt);
-		
-		cout<<"Mbar rows: "<<gmm::mat_nrows(Mbar)<<"and columns: "<<gmm::mat_ncols(Mbar)<<endl;
-		cout<<"Umpt size: "<<Um_pt.size()<<endl;
-
-		cout<<"Dimesnione di Mbar: colonne "<<gmm::mat_ncols(Mbar)<<" e righe "<<gmm::mat_nrows(Mbar)<<endl;
-		cout<<"Dimensione di Cv= "<<mf_oxy_Cv.nb_dof()<<endl;
-		cout<<"Dimensione di Ct= "<<mf_oxy_Ct.nb_dof()<<endl;
-		cout<<"Dimensione di UM= "<<UM.size()<<endl;
-		cout<<"Dimensione di Pt= "<<dof.Pt()<<endl;
-		cout<<"Dimensione di Pv= "<<dof.Pv()<<endl;
-		cout<<"Dimensione di Ut= "<<dof.Ut()<<endl;
-		cout<<"Dimensione di Uv= "<<dof.Uv()<<endl;
-		cout<<"Dimensione mf_coeft= "<<mf_coeft.nb_dof()<<endl;
-		cout<<"Dimensione mf_coefV= "<<mf_coefv.nb_dof()<<endl;
-		*/
-		//////////////////////
 	gmm::mult_add(gmm::scaled(Mbar,-1.0), gmm::sub_vector(UM, 
 		gmm::sub_interval(dof.Ut(), dof.Pt())),ONCOTIC);
 		
@@ -1228,25 +1200,6 @@ oxygen_transport3d1d::dimensioning_saturation (scalar_type cv){
 	#ifdef M3D1D_VERBOSE_
 	cout << "  Building coupling dirichlet boundary term ..." << endl;
 	#endif
-
-/*
-	//PROVA:
-	for(size_type bc; bc<BCt_oxy_transp.size();bc++){
-	cout<<"BCt_transp LABEL= "<<BCt_oxy_transp[bc].label<<endl;
-	cout<<"BCt_transp VALUE= "<<BCt_oxy_transp[bc].value<<endl;
-	//cout<<"BCt_transp IDX= "<<BCt_oxy_transp[bc].idx<<endl;
-	cout<<"BCt_transp REGION= "<<BCt_oxy_transp[bc].rg<<"\n"<<endl;
-	}
-
-
-	cout<<"******************************************************"<<endl;
-	for(size_type bc; bc<BCv_oxy_transp.size();bc++){
-	cout<<"BCv_transp LABEL= "<<BCv_oxy_transp[bc].label<<endl;
-	cout<<"BCv_transp VALUE= "<<BCv_oxy_transp[bc].value<<endl;
-	//cout<<"BCv_transp IDX= "<<BCv_oxy_transp[bc].idx<<endl;
-	cout<<"BCv_transp REGION= "<<BCv_oxy_transp[bc].rg<<"\n"<<endl;
-	}*/
-	/////////////////
 
 	asm_coupled_bc_transp (AM_oxy, FM_oxy, mf_oxy_Ct, mf_oxy_Cv, BCt_oxy_transp, BCv_oxy_transp);
 	
@@ -1589,6 +1542,8 @@ bool oxygen_transport3d1d::solve_oxygen_fixpoint (void)
 	bool RK;
 	RK = solve_oxy_transp(); 
 
+	clock_t time_G;
+
 // Declaration of variables
 	vector_type Ct_new(dof_oxy_transp.Ct()); gmm::clear(Ct_new);	//Ct(k)
 	vector_type Ct_old(dof_oxy_transp.Ct()); gmm::clear(Ct_old);	//Ct(k-1)
@@ -1702,6 +1657,7 @@ bool oxygen_transport3d1d::solve_oxygen_fixpoint (void)
 	}
 
 	else {
+		time_G=clock();
 while (RK && iteration<=max_iter && err>oxyres)
 {
 
@@ -1923,26 +1879,15 @@ if(descr_oxy_transp.HEMOADVECTION==1){
 			//cout << "\t\t\t\tTime: " <<  ((float)t)/CLOCKS_PER_SEC << " s "<< endl;
 					}
 			cout << "********************************************************" << endl;
-/*
-	//Uso i flussi, convettivo e diffusivo, come condizione per il while
-	scalar_type DIFF=0, ADV=0;
-	int count_diff=0, count_adv=0;
-	mass_balance();
-	for(size_type j=0; j<Jv_oxy_transp.size(); j++){
-	DIFF = Jv_oxy_transp[j].MBD;
-	ADV = Jv_oxy_transp[j].MBA;
-	
-	if(abs(DIFF)<toll_diff) count_diff++;
-	if(abs(ADV)<toll_adv) count_adv++;
-	}
-	cout<<"Count_diff= "<<count_diff<<endl;
-	cout<<"Count_adv= "<<count_adv<<endl;
-	//se questi due valori sono = al numeri di giunzioni --> condizione per uscire dal while
-*/
+
 	iteration++;
 	gmm::clear(Ct_new);
 	gmm::clear(Cv_new);
 	}//esco dal while
+
+
+	time_G=clock()-time_G;
+	cout<< "Iterative Process Time = " << ((float)time_G)/CLOCKS_PER_SEC << " s"<< endl;
 } //fine dell'if (presenza o no di non linearità)
 
 	return true;
@@ -2091,7 +2036,7 @@ if(descr_oxy_transp.HEMOADVECTION==1){
 	} // end of branch loop	
 
 
-
+/* DA RIMETTERE
 	cout << "  Junctions: " << endl;
 	for (size_type i=0; i<Jv_oxy_transp.size(); ++i){
 		cout << "    -  label=" << Jv_oxy_transp[i].label 
@@ -2102,7 +2047,7 @@ if(descr_oxy_transp.HEMOADVECTION==1){
 		cout << "             ------------------- "   << endl;
 	} 	
 		cout << "----------------------------------------------- "   << endl;
-
+*/
 
 	
 	}; // end of mass_balance
@@ -2120,11 +2065,6 @@ oxygen_transport3d1d::computing_oxyhemoglobin(vector_type Hi, size_type i, vecto
 
 		vector_type psi(Hi.size()); gmm::clear(psi);
 		
-		/*
-		vector_type cv_i(Hi.size()); gmm::clear(cv_i);	
-		vector_type ht_i(Hi.size()); gmm::clear(ht_i);
-		vector_type psi_i(Hi.size()); gmm::clear(psi_i);
-		*/
 
 		mesh_region &rg_branch = meshv.region(i);	
 
@@ -2368,7 +2308,7 @@ oxygen_transport3d1d::computing_totaloxygen(vector_type Hi, size_type i, vector_
 
  	gmm::scale(Ct, param_oxy_transp.C());
 
-
+/* DA RIMETTERE
 	for(size_type a=0;a<dof_oxy_transp.Ct();a++){
 		cout<<"Ct["<<a<<"]= "<<Ct[a]<<endl;
 	}
@@ -2376,6 +2316,7 @@ oxygen_transport3d1d::computing_totaloxygen(vector_type Hi, size_type i, vector_
 	for(size_type b=0;b<dof_oxy_transp.Cv();b++){
 		cout<<"Cv["<<b<<"]= "<<Cv[b]<<endl;
 	}
+*/
 
 	#ifdef M3D1D_VERBOSE_
 	cout << "  Exporting Ct ..." << endl;
@@ -2394,7 +2335,11 @@ oxygen_transport3d1d::computing_totaloxygen(vector_type Hi, size_type i, vector_
 	exp_Cv.write_mesh();
 	exp_Cv.write_point_data(mf_oxy_Cv, Cv, "Cv");
 
+	cout<<"NUMERI DOF DELLA MESH T E V"<<endl;
+	cout<<"#DOF di T: "<<dof_oxy_transp.Ct()<<endl;
+	cout<<"#DOF di V: "<<dof_oxy_transp.Cv()<<endl;
 
+/* 	DA RIMETTERE
 	if(descr_oxy_transp.HEMOADVECTION==1){
 	#ifdef M3D1D_VERBOSE_
 	cout<< "  Exporting Oxyhemoglobin and Total Oxygen Concentration.." <<endl;
@@ -2430,6 +2375,7 @@ oxygen_transport3d1d::computing_totaloxygen(vector_type Hi, size_type i, vector_
 			exp_Cvtot.write_point_data(mf_Hi[i], Cvtot, "Cvtot"); 
 			}
 	}
+	*/
 
 	#ifdef M3D1D_VERBOSE_
 	cout << "... export done, visualize the data file with (for example) Paraview" << endl; 
